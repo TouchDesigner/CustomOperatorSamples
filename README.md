@@ -83,7 +83,7 @@ _Some projects make use of various openCV modules. Which openCV release is requi
 ![alt_text](images/image5.png "additional dependencies")
 
 ##### 
-    Using external openCV libraries
+Using external openCV libraries
 
 
 *   Download the precompiled version of the openCV windows libraries from here: [https://github.com/opencv/opencv/releases](https://github.com/opencv/opencv/releases) - there are self extracting archives available 
@@ -95,7 +95,7 @@ _Some projects make use of various openCV modules. Which openCV release is requi
 
 #### Compiling openCV with CUDA support
 
-    _Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
+_Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
 
 
 ##### Prerequisites
@@ -113,22 +113,21 @@ _Some projects make use of various openCV modules. Which openCV release is requi
     *   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
 
 ##### 
-    Generating openCV build files with CMake
+Generating openCV build files with CMake
 
 
 The original instructions ask for running everything in a Command Prompt, arguably it’s easier to create a .bat file.
 
 *   create a .bat file and open it in your editor:
 
-        ```
-        set "openCvSource=PATH_TO_OPENCV_SOURCE"
-        set "openCVExtraModules=PATH_TO_OPENCV_CONTRIB_MODULES"
-        set "openCvBuild=%openCvSource%\build"
-        set "buildType=Release"
-        set "generator=Visual Studio 16 2019"
+```
+set "openCvSource=PATH_TO_OPENCV_SOURCE"
+set "openCVExtraModules=PATH_TO_OPENCV_CONTRIB_MODULES"
+set "openCvBuild=%openCvSource%\build"
+set "buildType=Release"
+set "generator=Visual Studio 16 2019"
 "C:\Program Files\CMake\bin\cmake.exe" -B"%openCvBuild%/" -H"%openCvSource%/" -G"%generator%" -DCMAKE_BUILD_TYPE=%buildType% -DOPENCV_EXTRA_MODULES_PATH="%openCVExtraModules%/" -DINSTALL_TESTS=ON -DINSTALL_C_EXAMPLES=ON -DBUILD_EXAMPLES=ON -DBUILD_opencv_world=ON -DWITH_CUDA=ON -DCUDA_TOOLKIT_ROOT_DIR="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2" -DCUDA_FAST_MATH=ON -DWITH_CUBLAS=ON -DCUDA_ARCH_PTX=7.5 -DWITH_NVCUVID=ON -DWITH_OPENGL=ON -DWITH_MFX=ON
-        ```
-
+```
 
 *   run the bat file in a Terminal or Command Prompt
 *   make changes to the configuration as required using the CMake GUI
@@ -143,6 +142,5 @@ The original instructions ask for running everything in a Command Prompt, arguab
         CMake Error at cmake/OpenCVDownload.cmake:240 (message):
          IPPICV: Unpack failed: 1
 ```
-
 
 This can be resolved by using 7zip as explained here: [https://stackoverflow.com/a/61489779](https://stackoverflow.com/a/61489779)
