@@ -17,7 +17,7 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
   * [DistanceTransformTOP]()
   * [ContoursTOP]()
   * [ObjectDetectorTOP]()
-  * [DFTTOP]()
+  * [SpectrumTOP]()
 * [CHOP Family]()
   * [BasicFilterCHOP]()
   * [TimeslicedFilterCHOP]()
