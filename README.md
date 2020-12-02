@@ -1,6 +1,6 @@
 # Custom Operator Samples
 
-During the first half of 2020, Derivative had Gabriel Robels as a coop student work on a set of custom operators that we hope can be a starting point for anybody including members of the community only starting with c++ development.
+During the first half of 2020, Derivative had Gabriel Robels as a coop student work on a set of custom operators that we hope can be a starting point for anybody including members of the community only beginning with c++ development.
 
 A collection of these operators can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. Others, which depend on more external libraries can be found on the Derivative github here: [https://github.com/TouchDesigner](https://github.com/TouchDesigner)
 
