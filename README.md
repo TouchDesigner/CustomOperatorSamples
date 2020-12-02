@@ -81,7 +81,7 @@ _Some other projects require the openCV windows libraries with CUDA modules incl
 *   Visual Studio (using _Visual Studio 2019_ in this example)
 *   The sources for o[penCV](https://github.com/opencv/opencv) and o[penCV Contrib](https://github.com/opencv/opencv_contrib)
 *   [CMake](https://cmake.org/download/)
-*   CUDA Toolkit
+*   [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
 *   _Optional:_ for video decoding on the gpu - [Nvidia Video Codec SDK](https://developer.nvidia.com/nvidia-video-codec-sdk)
 *   Extract and copy the **include** and **Lib** directories to your CUDA installation
 *   Optional: for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
