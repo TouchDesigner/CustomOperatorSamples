@@ -4,7 +4,7 @@ During the first half of 2020, Derivative had Gabriel Robels as a coop student w
 
 A collection of these operators can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. Others, which depend on more external libraries can be found on the Derivative github here: [https://github.com/TouchDesigner](https://github.com/TouchDesigner)
 
-## Contents
+## Operators
 
 * [TOP Family]()
   * FilterTOP
