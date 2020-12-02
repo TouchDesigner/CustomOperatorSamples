@@ -1,7 +1,7 @@
 # FilterDAT
 
-Thisi s a simple examlpe of a Custom Filter DAT operator.
-It's functionality is to convert input strings into `Upper Camel Case`, `Upper Case` or `Lower Case` as well as the possibility to strip spaces from the input string.
+This is a simple examlpe of a Custom Filter DAT operator.
+Its functionality is to convert input strings into `Upper Camel Case`, `Upper Case` or `Lower Case` as well as the possibility to strip spaces from the input string.
 
 ## Parameters
 * **Case** - select how to convert the input string
