@@ -53,8 +53,8 @@ FillDATPluginInfo(DAT_PluginInfo *info)
 	// English readable name
 	customInfo.opLabel->setString("Filter");
 	// Information of the author of the node
-	customInfo.authorName->setString("Name");
-	customInfo.authorEmail->setString("name@domain.com");
+	customInfo.authorName->setString("Gabriel Robels");
+	customInfo.authorEmail->setString("support@derivative.ca");
 
 	// This Dat takes no input
 	customInfo.minInputs = 1;
@@ -67,7 +67,7 @@ CreateDATInstance(const OP_NodeInfo* info)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per DAT that is using the .dll
-	return new DATFilter(info);
+	return new FilterDAT(info);
 }
 
 DLLEXPORT
@@ -77,7 +77,7 @@ DestroyDATInstance(DAT_CPlusPlusBase* instance)
 	// Delete the instance here, this will be called when
 	// Touch is shutting down, when the DAT using that instance is deleted, or
 	// if the DAT loads a different DLL
-	delete (DATFilter*)instance;
+	delete (FilterDAT*)instance;
 }
 
 };
@@ -140,23 +140,23 @@ namespace
 	}
 };
 
-DATFilter::DATFilter(const OP_NodeInfo* info)
+FilterDAT::FilterDAT(const OP_NodeInfo* info)
 {
 }
 
-DATFilter::~DATFilter()
+FilterDAT::~FilterDAT()
 {
 }
 
 void
-DATFilter::getGeneralInfo(DAT_GeneralInfo* ginfo, const OP_Inputs*, void*)
+FilterDAT::getGeneralInfo(DAT_GeneralInfo* ginfo, const OP_Inputs*, void*)
 {
 	// This will cause the node to not cook every frame
 	ginfo->cookEveryFrameIfAsked = false;
 }
 
 void
-DATFilter::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
+FilterDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 {
 	const OP_DATInput* dat	= inputs->getInputDAT(0);
 	if (!dat)
@@ -171,7 +171,7 @@ DATFilter::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void 
-DATFilter::setupParameters(OP_ParameterManager* manager, void*)
+FilterDAT::setupParameters(OP_ParameterManager* manager, void*)
 {
 	{
 		OP_StringParameter sp;
@@ -200,14 +200,14 @@ DATFilter::setupParameters(OP_ParameterManager* manager, void*)
 }
 
 void 
-DATFilter::handleParameters(const OP_Inputs* in)
+FilterDAT::handleParameters(const OP_Inputs* in)
 {
 	myCase = static_cast<Case>(in->getParInt(CASE_NAME));
 	myKeepSpaces = in->getParInt(WHITESPACE_NAME) ? true : false;
 }
 
 void
-DATFilter::fillTable(DAT_Output* out, const OP_DATInput* in)
+FilterDAT::fillTable(DAT_Output* out, const OP_DATInput* in)
 {
 	for (int i = 0; i < in->numRows; ++i)
 	{

@@ -12,8 +12,8 @@
 * prior written permission from Derivative.
 */
 
-#ifndef __DATFilter__
-#define __DATFilter__
+#ifndef __FilterDAT__
+#define __FilterDAT__
 
 #include "DAT_CPlusPlusBase.h"
 
@@ -33,11 +33,11 @@ It takes the following parameters:
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
 
-class DATFilter : public DAT_CPlusPlusBase
+class FilterDAT : public DAT_CPlusPlusBase
 {
 public:
-	DATFilter(const OP_NodeInfo*);
-	virtual ~DATFilter();
+	FilterDAT(const OP_NodeInfo*);
+	virtual ~FilterDAT();
 
 	virtual void		getGeneralInfo(DAT_GeneralInfo*, const OP_Inputs*, void* reserved) override;
 
