@@ -47,8 +47,8 @@ FillCHOPPluginInfo(CHOP_PluginInfo *info)
 	// English readable name
 	customInfo.opLabel->setString("Filter Basic");
 	// Information of the author of the node
-	customInfo.authorName->setString("Name");
-	customInfo.authorEmail->setString("name@domain.com");
+	customInfo.authorName->setString("Gabriel Robels");
+	customInfo.authorEmail->setString("support@derivative.ca");
 
 	// This CHOP takes one input
 	customInfo.minInputs = 1;
