@@ -6,7 +6,7 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
 
 ## Contents
 
-* TOP Family
+* [TOP Family]()
   * FilterTOP
   * CPUMemoryTOP
   * OpenGLTOP
@@ -25,7 +25,16 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
   * BasicGeneratorCHOP
   * TImeslicedGeneratorCHOP
 * SOP Family
-
+  * BasicFilterSOP
+  * BasicGeneratorSOP
+  * IntersectPointsSOP
+  * SpiralSOP
+  * SprinkleSOP
+  * WrapPointsSOP
+* DAT Family
+  * BasicFilterDAT
+  * BasicGeneratorDAT
+  
 ## Compiling Custom Operators
 
 This text should be a small guide to getting started with compiling custom operators that can be found on github or elsewhere as pure source code. Often setting up your environment is the most difficult step followed by making accessible all libraries that might be necessary for successfully compiling other’s projects.
