@@ -3,7 +3,7 @@ This is a bare bones example for creating a timesliced filter CHOP. It looks at 
 
 ## Parameters
 * **Operation** - The operation of the operator.
-  **Max** - Display the maximum of all previous values.
-  **Min** - Display the minimum of all previous values.
-  **Average** - Display the average of all previous values.
+  * **Max** - Display the maximum of all previous values.
+  * **Min** - Display the minimum of all previous values.
+  * **Average** - Display the average of all previous values.
 * **Reset** - Reset the CHOP.
