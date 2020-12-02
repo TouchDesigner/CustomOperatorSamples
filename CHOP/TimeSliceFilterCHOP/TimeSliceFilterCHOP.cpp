@@ -111,9 +111,9 @@ FillCHOPPluginInfo(CHOP_PluginInfo *info)
 	OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
-	customInfo.opType->setString("Filtertimeslice");
+	customInfo.opType->setString("Timeslicefilter");
 	// English readable name
-	customInfo.opLabel->setString("Filter Time Slice");
+	customInfo.opLabel->setString("Time Slice Filter");
 	// Information of the author of the node
 	customInfo.authorName->setString("Gabriel Robels");
 	customInfo.authorEmail->setString("support@derivative.ca");

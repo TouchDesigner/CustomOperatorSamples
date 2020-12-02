@@ -43,9 +43,9 @@ FillCHOPPluginInfo(CHOP_PluginInfo *info)
 	OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
-	customInfo.opType->setString("Oneeurofilter");
+	customInfo.opType->setString("Oneeuro");
 	// English readable name
-	customInfo.opLabel->setString("One Euro Filter");
+	customInfo.opLabel->setString("One Euro");
 	// Information of the author of the node
 	customInfo.authorName->setString("Gabriel Robels");
 	customInfo.authorEmail->setString("support@derivative.ca");
