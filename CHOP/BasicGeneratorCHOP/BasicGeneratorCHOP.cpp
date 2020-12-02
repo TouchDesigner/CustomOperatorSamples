@@ -53,9 +53,9 @@ FillCHOPPluginInfo(CHOP_PluginInfo *info)
 	OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
-	customInfo.opType->setString("Generatorbasic");
+	customInfo.opType->setString("Basicgenerator");
 	// English readable name
-	customInfo.opLabel->setString("Generator Basic");
+	customInfo.opLabel->setString("Basic Generator");
 	// Information of the author of the node
 	customInfo.authorName->setString("Gabriel Robels");
 	customInfo.authorEmail->setString("support@derivative.ca");
