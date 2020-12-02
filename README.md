@@ -1,10 +1,34 @@
-## Compiling Custom Operators
-
-This text should be a small guide to getting started with compiling custom operators that can be found on github or elsewhere as pure source code. Often setting up your environment is the most difficult step followed by making accessible all libraries that might be necessary for successfully compiling other’s projects.
+# Custom Operator Samples
 
 During the first half of 2020, Derivative had Gabriel Robels as a coop student work on a set of custom operators that we hope can be a starting point for anybody including members of the community only starting with c++ development.
 
 A collection of these operators can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. Others, which depend on more external libraries can be found on the Derivative github here: [https://github.com/TouchDesigner](https://github.com/TouchDesigner)
+
+## Contents
+
+* TOP Family
+  * FilterTOP
+  * CPUMemoryTOP
+  * OpenGLTOP
+  * CudaTOP
+  * OpticalFlowGPUTOP
+  * OpticalFlowCPUTOP
+  * CannyEdgeTOP
+  * DistanceTransformTOP
+  * ContoursTOP
+  * ObjectDetectorTOP
+  * DFTTOP
+* CHOP Family
+  * BasicFilterCHOP
+  * TimeslicedFilterCHOP
+  * OneEuroFilterCHOP
+  * BasicGeneratorCHOP
+  * TImeslicedGeneratorCHOP
+* SOP Family
+
+## Compiling Custom Operators
+
+This text should be a small guide to getting started with compiling custom operators that can be found on github or elsewhere as pure source code. Often setting up your environment is the most difficult step followed by making accessible all libraries that might be necessary for successfully compiling other’s projects.
 
 ### Installing Visual Studio Community Edition
 
