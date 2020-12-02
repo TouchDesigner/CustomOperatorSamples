@@ -1,11 +1,10 @@
-# FilterDAT
+# GeneratorDAT
 
-This is a simple examlpe of a Custom Filter DAT operator.
-Its functionality is to convert input strings into `Upper Camel Case`, `Upper Case` or `Lower Case` as well as the possibility to strip spaces from the input string.
+This is a simple examlpe of a Custom Generator DAT operator.
+Its functionality is to create random strings.
 
 ## Parameters
-* **Case** - select how to convert the input string
-  * _Upper Camel Case_ - will convert the string to Upper Camel Case. For example `ARUCO Markers` will become `Aruco Markers`
-  * _Lower Case_ - will convert the string to Lower Case. For example `ARUCO Markers` will become `aruco markers`
-  * _Upper Case_ - will convert the string to Upper Case. For example `ARUCO Markers` will become `ARUCO MARKERS`
-* **Keep Spaces** - When enabled will preserve spaces in the input string, otherwise will strip spaces.
+* **Seed** - Change the seed for the random generator.
+* **Rows** - Specify number of rows for the created table.
+* **Columns** - Specify number of columns for the created table.
+* **Length** - Specify length of random string generated in each cell.
