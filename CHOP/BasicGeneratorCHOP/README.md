@@ -1,7 +1,7 @@
 # Basic Generator CHOP
 
 The Basic Generator CHOP is a barebones example for creating a custom CHOP generator. The example creates a number of channels with certain length. 
-The channel values are acted upon depended by the operation choosen and their index. For example with the operation `Add` the first channel has 0 added (the first channels index is 0) while the second channel has 1 added (the second channels index is 1).
+The channel values are acted upon depended by the operation choosen and their index. For example with the operation `Add` the first channel has 0 added (the first channel's index is 0) while the second channel has 1 added (the second channel's index is 1).
 
 ## Parameters
 * **Length** - The number of samples in the operator.
