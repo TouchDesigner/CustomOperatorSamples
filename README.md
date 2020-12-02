@@ -7,33 +7,33 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
 ## Operators
 
 * [TOP Family]()
-  * FilterTOP
-  * CPUMemoryTOP
-  * OpenGLTOP
-  * CudaTOP
-  * OpticalFlowGPUTOP
-  * OpticalFlowCPUTOP
-  * CannyEdgeTOP
-  * DistanceTransformTOP
-  * ContoursTOP
-  * ObjectDetectorTOP
-  * DFTTOP
-* CHOP Family
-  * BasicFilterCHOP
-  * TimeslicedFilterCHOP
-  * OneEuroFilterCHOP
-  * BasicGeneratorCHOP
-  * TImeslicedGeneratorCHOP
-* SOP Family
-  * BasicFilterSOP
-  * BasicGeneratorSOP
-  * IntersectPointsSOP
-  * SpiralSOP
-  * SprinkleSOP
-  * WrapPointsSOP
-* DAT Family
-  * BasicFilterDAT
-  * BasicGeneratorDAT
+  * [FilterTOP]()
+  * [CPUMemoryTOP]()
+  * [OpenGLTOP]()
+  * [CudaTOP]()
+  * [OpticalFlowGPUTOP]()
+  * [OpticalFlowCPUTOP]()
+  * [CannyEdgeTOP]()
+  * [DistanceTransformTOP]()
+  * [ContoursTOP]()
+  * [ObjectDetectorTOP]()
+  * [DFTTOP]()
+* [CHOP Family]()
+  * [BasicFilterCHOP]()
+  * [TimeslicedFilterCHOP]()
+  * [OneEuroFilterCHOP]()
+  * [BasicGeneratorCHOP]()
+  * [TImeslicedGeneratorCHOP]()
+* [SOP Family]()
+  * [BasicFilterSOP]()
+  * [BasicGeneratorSOP]()
+  * [IntersectPointsSOP]()
+  * [SpiralSOP]()
+  * [SprinkleSOP]()
+  * [WrapPointsSOP]()
+* [DAT Family]()
+  * [BasicFilterDAT]()
+  * [BasicGeneratorDAT]()
   
 ## Compiling Custom Operators
 
