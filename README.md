@@ -14,35 +14,36 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
   * [Compiling openCV with CUDA support](#Compiling-openCV-with-CUDA-support)
     * [Prerequisites](#Prerequisites)
     * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
+  * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
 
 ## Operators
 
-* [TOP Family]()
-  * [FilterTOP]()
+* **TOP Family**
+  * [BasicFilterTOP](TOP/BasicFilterTOP)
   * [CPUMemoryTOP]()
-  * [OpenGLTOP]()
-  * [CudaTOP]()
-  * [OpticalFlowGPUTOP]()
-  * [OpticalFlowCPUTOP]()
   * [CannyEdgeTOP]()
-  * [DistanceTransformTOP]()
   * [ContoursTOP]()
+  * [CudaTOP]()
+  * [DistanceTransformTOP]()
   * [ObjectDetectorTOP]()
+  * [OpenGLTOP]()
+  * [OpticalFlowCPUTOP]()
+  * [OpticalFlowGPUTOP]()
   * [SpectrumTOP]()
-* [CHOP Family]()
+* **CHOP Family**
   * [BasicFilterCHOP]()
   * [TimeslicedFilterCHOP]()
   * [OneEuroFilterCHOP]()
   * [BasicGeneratorCHOP]()
   * [TImeslicedGeneratorCHOP]()
-* [SOP Family]()
+* **SOP Family**
   * [BasicFilterSOP]()
   * [BasicGeneratorSOP]()
   * [IntersectPointsSOP]()
   * [SpiralSOP]()
   * [SprinkleSOP]()
   * [WrapPointsSOP]()
-* [DAT Family]()
+* **DAT Family**
   * [BasicFilterDAT]()
   * [BasicGeneratorDAT]()
   
@@ -75,17 +76,9 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ![alt_text](images/image6.png "$(CudaToolkitIncludeDir)")
 
-*   In the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitIncludeDir), is present.
+*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitIncludeDir), is present.
 
 ![alt_text](images/image9.png "$(CudaToolkitIncludeDir)")
-
-#### Specifying the Nvidia GPUs to generate Code for
-
-*   In the Configuration Properties, navigate to CUDA C/C++ and edit the “Code Generation” entry to include all NVIDIA architectures to compile code for. 
-*   For a reference on GPU compilation and virtual as well as gpu features, please refer to [https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures](https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures)
-*   For best performance, when omitting older architectures, specify _compute_xx,compute_xx_ for each omitted architecture. To support all future architecture, also add an additional _compute_xx,compute_xx_ entry for the newest architecture. Here _xx_ is referring to the 2 digit hardware architecture identifier.
-
-![alt_text](images/image1.png "cuda architecture")
 
 ### Referencing openCV libraries
 
@@ -155,3 +148,13 @@ IPPICV: Unpack failed: 1
 ```
 
 This can be resolved by using 7zip as explained here: [https://stackoverflow.com/a/61489779](https://stackoverflow.com/a/61489779)
+
+## Specifying the Nvidia GPUs to generate Code for
+
+Projects in this repositroy are setup to support all previous and future gpu hardware by compiling for virtual support for any pre pascal hardware and any post turing hardware. To make changes to this configuration:
+
+*   In the Configuration Properties, navigate to CUDA C/C++ and edit the “Code Generation” entry to include all NVIDIA architectures to compile code for. 
+*   For a reference on GPU compilation and virtual as well as gpu features, please refer to [https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures](https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures)
+*   For best performance, when omitting older architectures, specify _compute_xx,compute_xx_ for each omitted architecture. To support all future architecture, also add an additional _compute_xx,compute_xx_ entry for the newest architecture. Here _xx_ is referring to the 2 digit hardware architecture identifier.
+
+![alt_text](images/image1.png "cuda architecture")
