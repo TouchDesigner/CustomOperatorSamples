@@ -84,7 +84,7 @@ _Some projects make use of various openCV modules. Which openCV release is requi
 
 #### Using external openCV libraries
 
-If you want to use a different openCV version, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling openCV with CUDA support) to compile openCV with CUDA support.
+If you want to use a different openCV version, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling-openCV-with-CUDA-support) to compile openCV with CUDA support.
 
 *   Download the precompiled version of the openCV windows libraries from here: [https://github.com/opencv/opencv/releases](https://github.com/opencv/opencv/releases) - there are self extracting archives available 
 *   Extract to a location on your computer
