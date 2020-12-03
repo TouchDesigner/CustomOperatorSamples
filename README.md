@@ -11,9 +11,9 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
       * [Reference CUDA in VS](#Referencing-CUDA-libraries)
     * [Referencing openCV in VS](#Referencing-openCV-libraries)
       * [Using external openCV libraries](#Using-external-openCV-libraries)
-    * [Compiling openCV with CUDA support](#Compiling-openCV-with-CUDA-support)
-      * [Prerequisites](#Prerequisites)
-      * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
+  * [Compiling openCV with CUDA support](#Compiling-openCV-with-CUDA-support)
+    * [Prerequisites](#Prerequisites)
+    * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
 
 ## Operators
 
@@ -111,11 +111,11 @@ If you want to use a different openCV version, you can follow these instructions
 *   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
 
 ![alt_text](images/image5.png "additional dependencies")
-### Compiling openCV with CUDA support
+## Compiling openCV with CUDA support
 
 _Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
 
-#### Prerequisites
+### Prerequisites
 
 *   Visual Studio (using _Visual Studio 2019_ in this example)
 *   The sources for o[penCV](https://github.com/opencv/opencv) and o[penCV Contrib](https://github.com/opencv/opencv_contrib)
@@ -126,7 +126,7 @@ _Some other projects require the openCV windows libraries with CUDA modules incl
 *   Optional: for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
 *   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
 
-#### Generating openCV build files with CMake
+### Generating openCV build files with CMake
 
 The original instructions ask for running everything in a Command Prompt, arguably it’s easier to create a .bat file.
 
