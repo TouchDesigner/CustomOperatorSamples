@@ -78,7 +78,9 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ### Referencing openCV libraries
 
-_Some projects make use of various openCV modules. Which openCV release is required depends on the version used by the creator. Since TouchDesigner 2020.40k openCV 4.5’s libraries are included in the TouchDesigner Installfolder at Samples\CPlusPlus\3rdParty_. The solutions using openCV require an environmental variable called _$(TOUCHDESIGNER_3RDPARTY_TOOLS_PATH)_ which should point to the before mentioned _3rdParty_ path. Before building, add this variable via windows' _System Properties_ dialog. 
+_Some projects make use of various openCV modules. Which openCV release is required depends on the version used by the creator. Since TouchDesigner 2020.40k openCV 4.5’s libraries are included in the TouchDesigner Installfolder at Samples\CPlusPlus\3rdParty_. The solutions using openCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via windows' _System Properties_ dialog. 
+
+![alt_text](images/image10.png "system variabes")
 
 #### Using external openCV libraries
 
