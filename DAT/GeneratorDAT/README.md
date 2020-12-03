@@ -1,4 +1,4 @@
-# GeneratorDAT
+# Generator DAT
 
 This is a simple examlpe of a Custom Generator DAT operator.
 Its functionality is to create random strings.
