@@ -4,6 +4,8 @@ During the first half of 2020, Derivative had Gabriel Robels as a coop student w
 
 A collection of these operators can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. Others, which depend on more external libraries can be found on the Derivative github here: [https://github.com/TouchDesigner](https://github.com/TouchDesigner)
 
+For discussions around this repository, please use our [forum](https://forum.derivative.ca).
+
 * [List of Operators](#Operators)
   * [Compiling Custom Operators](#Compiling-Custom-Operators)
     * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
