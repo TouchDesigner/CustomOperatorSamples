@@ -1,0 +1,3 @@
+# Timeslice Generator CHOP
+
+## Parameters
