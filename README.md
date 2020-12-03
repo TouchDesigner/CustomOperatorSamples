@@ -78,23 +78,7 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ### Referencing openCV libraries
 
-_Some projects make use of various openCV modules. Which openCV release is required depends on the version used by the creator. Since TouchDesigner 2020.40k openCV 4.5’s libraries are included in the TouchDesigner Installfolder at Samples\CPlusPlus\3rdParty_
-
-#### Using the included libraries for openCV 4.5
-
-*   After loading a project in Visual Studio, open the Project’s Properties via the Project>Properties or by hitting Alt+F7
-*   Make sure to set the “Configuration“ Dropdown to “All Configurations”
-*   In the Configuration Properties, navigate to C/C++ and edit the “Additional Include Directories” to include the path to the folder containing the openCV includes. For a default TouchDesigner installation this would be: C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\opencv\include
-
-![alt_text](images/image7.png "openCV include directory")
-
-*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to include the path to the folder containing the openCV libraries. For a default TouchDesigner installation this would be: C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\opencv\lib\Win64
-
-![alt_text](images/image9.png "openCV Linker")
-
-*   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
-
-![alt_text](images/image5.png "additional dependencies")
+_Some projects make use of various openCV modules. Which openCV release is required depends on the version used by the creator. Since TouchDesigner 2020.40k openCV 4.5’s libraries are included in the TouchDesigner Installfolder at Samples\CPlusPlus\3rdParty_. The solutions using openCV require an environmental variable called _$(TOUCHDESIGNER_3RDPARTY_TOOLS_PATH)_ which should point to the before mentioned _3rdParty_ path. Before building, add this variable via windows' _System Properties_ dialog. 
 
 #### Using external openCV libraries
 
@@ -105,6 +89,13 @@ _Some projects make use of various openCV modules. Which openCV release is requi
 
 ![alt_text](images/image2.png "image_tooltip")
 
+*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to include the path to the folder containing the openCV libraries. 
+
+![alt_text](images/image9.png "openCV Linker")
+
+*   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
+
+![alt_text](images/image5.png "additional dependencies")
 ### Compiling openCV with CUDA support
 
 _Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
