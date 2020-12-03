@@ -21,7 +21,7 @@ For discussions around this repository, please use our [forum](https://forum.der
 ## Operators
 
 * **TOP Family**
-  * [BasicFilterTOP](TOP/BasicFilterTOP)
+  * [FilterTOP](TOP/BasicFilterTOP)
   * [CPUMemoryTOP](TOP/CPUMemoryTOP)
   * [CannyEdgeTOP](TOP/CannyEdgeTOP)
   * [ContoursTOP](TOP/ContoursTOP)
@@ -33,8 +33,8 @@ For discussions around this repository, please use our [forum](https://forum.der
   * [OpticalFlowGPUTOP](TOP/OpticalFlowGPUTOP)
   * [SpectrumTOP](TOP/SpectrumTOP)
 * **CHOP Family**
-  * [BasicFilterCHOP](CHOP/BasicFilterCHOP)
-  * [BasicGeneratorCHOP](CHOP/BasicGeneratorCHOP)
+  * [FilterCHOP](CHOP/BasicFilterCHOP)
+  * [GeneratorCHOP](CHOP/BasicGeneratorCHOP)
   * [OneEuroCHOP](CHOP/OneEuroCHOP)
   * [TimesliceFilterCHOP](CHOP/TimeSliceFilterCHOP)
   * [TimesliceGeneratorCHOP](CHOP/TimeSliceGeneratorCHOP)
