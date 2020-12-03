@@ -1,4 +1,4 @@
-# Time Slice Filter CHOP
+# Timeslice Filter CHOP
 This is a bare bones example for creating a timesliced filter CHOP. It looks at its input and displays the Minimum, Maximum or Average of all previous values. 
 
 ## Parameters
