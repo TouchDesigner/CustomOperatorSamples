@@ -7,16 +7,17 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
 For discussions around this repository, please use our [forum](https://forum.derivative.ca).
 
 * [List of Operators](#Operators)
-  * [Compiling Custom Operators](#Compiling-Custom-Operators)
-    * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
-    * [Installing CUDA Toolkit](#Installing-the-CUDA-Toolkit)
-      * [Reference CUDA in VS](#Referencing-CUDA-libraries)
-    * [Referencing openCV in VS](#Referencing-openCV-libraries)
-      * [Using external openCV libraries](#Using-external-openCV-libraries)
-  * [Compiling openCV with CUDA support](#Compiling-openCV-with-CUDA-support)
-    * [Prerequisites](#Prerequisites)
-    * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
-  * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
+* [Compiling Custom Operators](#Compiling-Custom-Operators)
+  * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
+  * [Installing CUDA Toolkit](#Installing-the-CUDA-Toolkit)
+    * [Reference CUDA in VS](#Referencing-CUDA-libraries)
+  * [Referencing openCV in VS](#Referencing-openCV-libraries)
+    * [Using external openCV libraries](#Using-external-openCV-libraries)
+* [Compiling openCV with CUDA support](#Compiling-openCV-with-CUDA-support)
+  * [Prerequisites](#Prerequisites)
+  * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
+* [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
+* [Loading Custom Operators in TouchDesigner](#Loading-Custom-Operators-in-TouchDesigner)
 
 ## Operators
 
