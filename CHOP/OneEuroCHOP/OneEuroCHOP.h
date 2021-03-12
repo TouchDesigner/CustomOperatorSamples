@@ -15,6 +15,7 @@
 #define __OneEuroCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 #include <vector>
 
 class OneEuroImpl;
@@ -53,6 +54,8 @@ public:
 	virtual void		execute(CHOP_Output*, const OP_Inputs*, void*) override;
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
+
+	Parameters myParms;
 
 private:
 	void				handleParameters(const OP_Inputs*, const OP_CHOPInput*);

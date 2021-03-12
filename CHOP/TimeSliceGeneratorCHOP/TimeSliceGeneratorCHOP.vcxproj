@@ -83,12 +83,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TimeSliceGeneratorCHOP.h" />
     <ClInclude Include="CHOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="GL_Extensions.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="TimeSliceGeneratorCHOP.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

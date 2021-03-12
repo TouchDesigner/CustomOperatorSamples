@@ -16,6 +16,7 @@
 #define __BasicFilterCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 /*
 This example implements a CHOP which takes the following parameters:
@@ -46,6 +47,8 @@ public:
 	virtual void		execute(CHOP_Output*, const OP_Inputs*, void*) override;
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
+
+	Parameters myParms;
 };
 
 #endif

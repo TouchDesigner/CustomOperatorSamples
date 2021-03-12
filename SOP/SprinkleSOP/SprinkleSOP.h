@@ -16,13 +16,12 @@
 #define __SprinkleSOP__
 
 #include "SOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <random>
 #include <string>
 #include <vector>
 #include <array>
-
-struct Parameters;
 
 class RandomPointsBuffer;
 class VolSprinkleTree;
@@ -90,7 +89,7 @@ private:
 
 	bool				addPointToVolume(const OP_SOPInput*, BoundingBox&);
 
-	Parameters*		myParms;
+	Parameters		myParms;
 	int64_t			myInputCook;
 	std::mt19937	myRNG;
 	std::string		myError;

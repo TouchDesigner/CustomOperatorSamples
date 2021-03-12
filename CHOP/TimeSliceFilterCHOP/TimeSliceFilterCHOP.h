@@ -16,6 +16,7 @@
 #define __TimeSliceFilterCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 #include <vector>
 
 class FilterValues;
@@ -49,6 +50,8 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 	virtual void		pulsePressed(const char* name, void* reserved1) override;
+
+	Parameters myParms;
 private:
 	std::vector<FilterValues>	myValues;
 };
