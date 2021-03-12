@@ -1,76 +1,122 @@
-#include "Parameters.h"
+#include <string>
+#include <array>
 #include "CPlusPlus_Common.h"
-#include <opencv2\core.hpp>
+#include "Parameters.h"
 
-void
-Parameters::evalParms(const OP_Inputs* input)
+#pragma region Evals
+
+ModeMenuItems
+Parameters::evalMode(const OP_Inputs* input)
 {
-	transform = static_cast<Transform>(input->getParInt(TRANSFORM_NAME));
-	channel = static_cast<Channel>(input->getParInt(CHANNEL_NAME));
-	transformrows = input->getParInt(TRANSFORMROWS_NAME) ? true : false;
-	coordinatesystem = static_cast<CoordinatesSys>(input->getParInt(COORDINATESYSTEM_NAME));
-
-	flags = cv::DFT_COMPLEX_INPUT;
-	flags |= transformrows ? cv::DFT_ROWS : 0;
-	flags |= transform == Transform::Inverse ? cv::DFT_INVERSE | cv::DFT_SCALE : 0;
-
-	input->enablePar(CHANNEL_NAME, transform == Transform::Forward);
+	return static_cast<ModeMenuItems>(input->getParInt(ModeName));
 }
 
+CoordMenuItems
+Parameters::evalCoord(const OP_Inputs* input)
+{
+	return static_cast<CoordMenuItems>(input->getParInt(CoordName));
+}
+
+ChanMenuItems
+Parameters::evalChan(const OP_Inputs* input)
+{
+	return static_cast<ChanMenuItems>(input->getParInt(ChanName));
+}
+
+bool
+Parameters::evalTransrows(const OP_Inputs* input)
+{
+	return input->getParInt(TransrowsName) ? true : false;
+}
+
+
+#pragma endregion
+
+#pragma region Setup
+
 void
-Parameters::setupParms(OP_ParameterManager* manager)
+Parameters::setup(OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;
-		p.name = TRANSFORM_NAME;
-		p.label = "Transform";
-		p.page = "DFT";
-		p.defaultValue = "name1";
-
-		const char*	names[] = { "Imagetodft", "Dfttoimage" };
-		const char*	labels[] = { "Image To DFT", "DFT To Image" };
-		OP_ParAppendResult res = manager->appendMenu(p, 2, names, labels);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_StringParameter p;
-		p.name = COORDINATESYSTEM_NAME;
-		p.label = "Coordinate System";
-		p.page = "DFT";
-		p.defaultValue = "Polar";
-
-		const char*	names[] = { "Polar", "Cartesian" };
-		const char*	labels[] = { "Polar [Magnitude, Phase]", "Cartesian [Real, Imaginary]" };
-		OP_ParAppendResult res = manager->appendMenu(p, 2, names, labels);
+		p.name = ModeName;
+		p.label = ModeLabel;
+		p.page = "Spectrum";
+		p.defaultValue = "dft";
+		std::array<const char*, 2> Names =
+		{
+			"dft",
+			"idft"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Discrete Fourier Transform",
+			"Inverse Discrete Fourier Transform"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_StringParameter p;
-		p.name = CHANNEL_NAME;
-		p.label = "Channel";
-		p.page = "DFT";
-		p.defaultValue = "R";
+		p.name = CoordName;
+		p.label = CoordLabel;
+		p.page = "Spectrum";
+		p.defaultValue = "polar";
+		std::array<const char*, 2> Names =
+		{
+			"polar",
+			"cartesian"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Polar (Magnitude, Phase)",
+			"Cartesian (Real, Imaginary)"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
-		const char*	names[] = { "R", "G", "B", "A" };
-		const char*	labels[] = { "R", "G", "B", "A" };
-		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_StringParameter p;
+		p.name = ChanName;
+		p.label = ChanLabel;
+		p.page = "Spectrum";
+		p.defaultValue = "r";
+		std::array<const char*, 4> Names =
+		{
+			"r",
+			"g",
+			"b",
+			"a"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_NumericParameter p;
-		p.name = TRANSFORMROWS_NAME;
-		p.label = "Per Row";
-		p.page = "DFT";
-
+		p.name = TransrowsName;
+		p.label = TransrowsLabel;
+		p.page = "Spectrum";
 		p.defaultValues[0] = false;
+
 		OP_ParAppendResult res = manager->appendToggle(p);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
+
+
 }
+
+#pragma endregion
