@@ -16,10 +16,9 @@
 #define __WrapPointsSOP__
 
 #include "SOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <string>
-
-struct Parameters;
 
 /*
 This example implements a SOP which uses sendRay to wrap input 1 to input 2.
@@ -54,11 +53,13 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
 	virtual void		getWarningString(OP_String*, void*) override;
+	
+	Parameters	myParms;
 
 private:
-	void		castParallel(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Vector);
+	void		castParallel(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Vector, bool, double, Color, Color);
 
-	void		castRadial(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Position);
+	void		castRadial(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Position, bool, double, Color, Color);
 
 	// This method returns true if the input geometry only has triangles and lines
 	void		copyPrimitives(SOP_Output*, const OP_SOPInput*);
@@ -72,11 +73,10 @@ private:
 
 	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
 
-	void		castPoint(SOP_Output*, const Position*, const Vector* normals, int index, const OP_SOPInput* geo, Vector direction);
+	void		castPoint(SOP_Output*, const Position*, const Vector* normals, int index, const OP_SOPInput* geo, Vector direction, double, Color, Color);
 
 	std::string	myWarningString;
 
-	Parameters*	myParms;
 };
 
 #endif // !__WrapPointsSOP__

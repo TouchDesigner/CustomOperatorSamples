@@ -90,6 +90,7 @@ private:
 	bool				addPointToVolume(const OP_SOPInput*, BoundingBox&);
 
 	Parameters		myParms;
+	int				myPointCount;
 	int64_t			myInputCook;
 	std::mt19937	myRNG;
 	std::string		myError;

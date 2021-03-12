@@ -16,6 +16,7 @@
 #define __FilterSOP__
 
 #include "SOP_CPlusPlusBase.h"
+#include "Parameters.h"
 #include <string>
 
 /*
@@ -44,6 +45,8 @@ public:
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 
 	virtual void		getWarningString(OP_String*, void*) override;
+
+	Parameters myParms;
 
 private:
 	void		copyPointsTranslated(SOP_Output*, const OP_SOPInput*, const Vector&) const;

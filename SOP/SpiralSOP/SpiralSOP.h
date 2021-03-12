@@ -18,10 +18,7 @@
 #include <vector>
 
 #include "SOP_CPlusPlusBase.h"
-
-enum class OutGeometry;
-enum class SpiralType;
-enum class Orientation;
+#include "Parameters.h"
 
 /*
 This example implements a SOP outputs an Archimedean Spiral given the following
@@ -59,6 +56,8 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
+	Parameters myParms;
+
 private:
 	void		handleParameters(const OP_Inputs*);
 
@@ -76,16 +75,15 @@ private:
 	std::vector<TexCoord>	myLineStripTexture;
 	BoundingBox				myBoundingBox;
 
-	// Parameters
-	Orientation	myOrientation;
-	double		myTopRad;
-	double		myBotRad;
-	double		myHeight;
-	double		myTurns;
-	SpiralType	mySpiralType;
-	int			myNumPoints;
-	OutGeometry	myOutput;
-	double		myStripWidth;
+	//// Parameters
+	OrientationMenuItems		myOrientation;
+	double						myTopRad;
+	double						myBotRad;
+	double						myHeight;
+	double						myTurns;
+	int							myNumPoints;
+	OutputgeometryMenuItems		myOutput;
+	double						myStripWidth;
 };
 
 #endif // !__SpiralSOP__
