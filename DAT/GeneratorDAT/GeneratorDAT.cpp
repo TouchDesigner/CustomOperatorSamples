@@ -13,6 +13,7 @@
 */
 
 #include "GeneratorDAT.h"
+#include "Parameters.h"
 
 #include <string>
 #include <random>
@@ -22,12 +23,6 @@ static const char ALPHANUM[] =
 "0123456789"
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 "abcdefghijklmnopqrstuvwxyz";
-
-// Names of the parameters
-constexpr static char	SEED_NAME[] = "Seed";
-constexpr static char	ROWSN_NAME[] = "Rows";
-constexpr static char	COLSN_NAME[] = "Columns";
-constexpr static char	CHARN_NAME[] = "Length";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -101,114 +96,41 @@ GeneratorDAT::getGeneralInfo(DAT_GeneralInfo* ginfo, const OP_Inputs*, void*)
 void
 GeneratorDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 {
-	handleParameters(inputs);
+	double mySeed = myParms.evalSeed(inputs);
+	unsigned int* tmp = reinterpret_cast<unsigned int*>(&mySeed);
+	myRNG.seed(*tmp);
 
 	output->setOutputDataType(DAT_OutDataType::Table);
-	output->setTableSize(myRowsN, myColsN);
+	output->setTableSize(myParms.evalRows(inputs), myParms.evalColumns(inputs));
 
-	fillTable(output);
+	fillTable(inputs, output);
 }
 
 void
 GeneratorDAT::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter	np;
-
-		np.name = SEED_NAME;
-		np.label = "Seed";
-		np.page = "Generator";
-
-		np.defaultValues[0] = 1.0f;
-		np.minSliders[0] = 0.0f;
-		np.maxSliders[0] = 10.0f;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter np;
-
-		np.name = ROWSN_NAME;
-		np.label = "Rows";
-		np.page = "Generator";
-
-		np.defaultValues[0] = 3;
-		np.minSliders[0] = 0;
-		np.maxSliders[0] = 100;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter np;
-
-		np.name = COLSN_NAME;
-		np.label = "Columns";
-		np.page = "Generator";
-
-		np.defaultValues[0] = 4;
-		np.minSliders[0] = 0;
-		np.maxSliders[0] = 100;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter np;
-
-		np.name = CHARN_NAME;
-		np.label = "Length";
-		np.page = "Generator";
-
-		np.defaultValues[0] = 5;
-		np.minSliders[0] = 0;
-		np.maxSliders[0] = 100;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-}
-
-void 
-GeneratorDAT::handleParameters(const OP_Inputs* in)
-{
-	mySeed = in->getParDouble(SEED_NAME);
-	unsigned int* tmp = reinterpret_cast<unsigned int*>(&mySeed);
-	myRNG.seed(*tmp);
-
-	myRowsN = in->getParInt(ROWSN_NAME);
-	myColsN = in->getParInt(COLSN_NAME);
-	myCharN = in->getParInt(CHARN_NAME);
+	myParms.setup(manager);
 }
 
 void
-GeneratorDAT::fillTable(DAT_Output* out)
+GeneratorDAT::fillTable(const OP_Inputs* inputs, DAT_Output* out)
 {
-	for (int i = 0; i < myRowsN; ++i)
+
+	for (int i = 0; i < myParms.evalRows(inputs); ++i)
 	{
-		for (int j = 0; j < myColsN; ++j)
+		for (int j = 0; j < myParms.evalColumns(inputs); ++j)
 		{
-			out->setCellString(i, j, generateString().c_str());
+			out->setCellString(i, j, generateString(inputs).c_str());
 		}
 	}
 }
 
 std::string
-GeneratorDAT::generateString()
+GeneratorDAT::generateString(const OP_Inputs* inputs)
 {
 	std::uniform_int_distribution<> dis(0, sizeof(ALPHANUM) - 2);
 	std::string ret{};
-	for (int i = 0; i < myCharN; ++i)
+	for (int i = 0; i < myParms.evalLength(inputs); ++i)
 	{
 		ret.push_back(ALPHANUM[dis(myRNG)]);
 	}
