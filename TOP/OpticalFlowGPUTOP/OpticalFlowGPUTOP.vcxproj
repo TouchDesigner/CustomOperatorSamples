@@ -14,10 +14,12 @@
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="GL_Extensions.h" />
     <ClInclude Include="OpticalFlowGPUTOP.h" />
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpticalFlowGPUTOP.cpp" />
+    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />

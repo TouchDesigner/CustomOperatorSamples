@@ -15,6 +15,7 @@
 #define __OpticalFlowGPUTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <string>
 
@@ -63,8 +64,6 @@ public:
 	virtual void		getErrorString(OP_String*, void* reserved) override;
 
 private:
-    void                handleParameters(const OP_Inputs*);
-
     void                inputTopToMat(const OP_TOPInput*) const;
 
 	void 				cvMatToOutput(const cv::cuda::GpuMat&, TOP_OutputFormatSpecs*) const;
@@ -77,15 +76,7 @@ private:
 
 	std::string			myError;
 
-    // Parameters
-	int		myNumLevels;
-	double	myPyrScale;
-	bool	myFastPyramids;
-	int		myWinSize;
-	int		myNumIter;
-	int		myPolyN;
-	double	myPolySigma;
-	int		myFlags;
+	Parameters myParms;
 };
 
 #endif

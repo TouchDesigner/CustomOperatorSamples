@@ -15,6 +15,7 @@
 #define __OpticalFlowCPUTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 namespace cv
 {
@@ -40,19 +41,6 @@ It takes the following parameters:
 This TOP takes one input where the optical flow of sequencial frames is calculated.
 */
 
-enum class OP_TOPInputDownloadType;
-
-enum class Channel
-{
-	R,
-	Mono = R,
-	G,
-	Second = G,
-	B,
-	A,
-	Invalid
-};
-
 // To get more help about these functions, look at TOP_CPlusPlusBase.h
 class OpticalFlowCPUTOP : public TOP_CPlusPlusBase
 {
@@ -69,9 +57,7 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
 
 private:
-        void                            handleParameters(const OP_Inputs*);
-
-        void                            inputToMat(const OP_Inputs*) const;
+    void                            inputToMat(const OP_Inputs*) const;
 
 	void 				cvMatToOutput(const cv::Mat&, TOP_OutputFormatSpecs*) const;
 
@@ -79,16 +65,7 @@ private:
 	cv::Mat*	myPrev;
 	cv::Mat*	myFlow;
 
-    // Parameters
-	int		myNumLevels;
-	double	myPyrScale;
-	int		myWinSize;
-	int		myNumIter;
-	int		myPolyN;
-	double	myPolySigma;
-	int		myFlags;
-        OP_TOPInputDownloadType myDownloadtype;
-        Channel         myChannel;
+	Parameters myParms;
 };
 
 #endif
