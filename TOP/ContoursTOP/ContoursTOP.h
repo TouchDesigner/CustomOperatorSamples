@@ -17,11 +17,10 @@
 #define __ContoursTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
-
-struct Parameters;
 
 /*
 This example implements a TOP to find contours and do image segmentation using openCV's cuda functionallity.
@@ -65,7 +64,7 @@ private:
 
 	void 		    cvMatToOutput(TOP_OutputFormatSpecs*) const;
 
-	Parameters*		myParms;
+	Parameters		myParms;
 
 	cv::Mat*		myFrame;
 	cv::Mat*		mySecondInputFrame;

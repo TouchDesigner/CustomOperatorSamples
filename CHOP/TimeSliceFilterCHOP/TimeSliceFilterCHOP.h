@@ -51,8 +51,8 @@ public:
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 	virtual void		pulsePressed(const char* name, void* reserved1) override;
 
-	Parameters myParms;
 private:
+	Parameters myParms;
 	std::vector<FilterValues>	myValues;
 };
 

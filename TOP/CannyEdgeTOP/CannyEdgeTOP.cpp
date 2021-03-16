@@ -135,8 +135,9 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 	if (myFrame->empty())
 		return;
 
-	if (myParms.evalApperturesize(inputs) % 2 == 0)
-		++myParms.evalApperturesize(inputs);
+	int appertureSize = myParms.evalApperturesize(inputs);
+	if (appertureSize % 2 == 0)
+		++appertureSize;
 
 	myFrame->convertTo(*myFrame, CV_8U);
 	if (myNumChan > 1)
@@ -154,7 +155,7 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 void
 CannyEdgeTOP::setupParameters(OP_ParameterManager* in, void*)
 {
-	myParms.setupParms(in);
+	myParms.setup(in);
 }
 
 void 

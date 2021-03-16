@@ -90,8 +90,8 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = L2GradientName;
-		p.label = L2GradientLabel;
+		p.name = L2gradientName;
+		p.label = L2gradientLabel;
 		p.page = "Edge Detector";
 		p.defaultValues[0] = false;
 

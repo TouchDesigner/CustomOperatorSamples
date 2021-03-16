@@ -54,8 +54,6 @@ public:
 
 	virtual void		getWarningString(OP_String*, void*) override;
 
-	Parameters myParms;
-
 private:
 	void		copyPoints(SOP_Output*, const OP_SOPInput*) const;
 
@@ -74,7 +72,8 @@ private:
 	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
 
 	std::string	myWarningString;
-
+	
+	Parameters myParms;
 };
 
 #endif // !__IntersectPointsSOP__

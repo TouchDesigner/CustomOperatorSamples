@@ -89,7 +89,6 @@ private:
 
 	bool				addPointToVolume(const OP_SOPInput*, BoundingBox&);
 
-	Parameters		myParms;
 	int				myPointCount;
 	int64_t			myInputCook;
 	std::mt19937	myRNG;
@@ -98,6 +97,8 @@ private:
 	RandomPointsBuffer*	myPoints;
 	VolSprinkleTree*	myVolSprinkleTree;
 	std::vector<float>	mySurfaceAttribute;
+	
+	Parameters		myParms;
 };
 
 #endif // !__SprinkleSOP__

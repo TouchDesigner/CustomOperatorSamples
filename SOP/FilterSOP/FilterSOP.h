@@ -46,7 +46,6 @@ public:
 
 	virtual void		getWarningString(OP_String*, void*) override;
 
-	Parameters myParms;
 
 private:
 	void		copyPointsTranslated(SOP_Output*, const OP_SOPInput*, const Vector&) const;
@@ -67,6 +66,8 @@ private:
 	Vector		getTranslate(const OP_CHOPInput*);
 
 	std::string			myWarningString;
+	
+	Parameters myParms;
 };
 
 #endif // !__FilterSOP__

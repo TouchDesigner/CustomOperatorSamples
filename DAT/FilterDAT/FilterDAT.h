@@ -44,9 +44,9 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
 
-	Parameters myParms;
 
 private:
+	Parameters myParms;
 	void				fillTable(const OP_Inputs*, DAT_Output*, const OP_DATInput*);
 };
 

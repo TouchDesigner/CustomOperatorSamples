@@ -53,8 +53,6 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
 	virtual void		getWarningString(OP_String*, void*) override;
-	
-	Parameters	myParms;
 
 private:
 	void		castParallel(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Vector, bool, double, Color, Color);
@@ -76,7 +74,8 @@ private:
 	void		castPoint(SOP_Output*, const Position*, const Vector* normals, int index, const OP_SOPInput* geo, Vector direction, double, Color, Color);
 
 	std::string	myWarningString;
-
+	
+	Parameters	myParms;
 };
 
 #endif // !__WrapPointsSOP__

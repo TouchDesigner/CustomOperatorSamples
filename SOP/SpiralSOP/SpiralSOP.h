@@ -56,8 +56,6 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
-	Parameters myParms;
-
 private:
 	void		handleParameters(const OP_Inputs*);
 
@@ -84,6 +82,8 @@ private:
 	int							myNumPoints;
 	OutputgeometryMenuItems		myOutput;
 	double						myStripWidth;
+	
+	Parameters myParms;
 };
 
 #endif // !__SpiralSOP__

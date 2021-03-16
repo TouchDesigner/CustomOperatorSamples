@@ -55,10 +55,11 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 
-	Parameters myParms;
 
 private:
 	void				handleParameters(const OP_Inputs*, const OP_CHOPInput*);
+	
+	Parameters myParms;
 
 	std::vector<OneEuroImpl*>	myFiltersPerChannel;
 };

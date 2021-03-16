@@ -46,11 +46,11 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
-	Parameters myParms;
-
 private:
 	// Class to construct geometry
 	ShapeGenerator myShapeGenerator;
+
+	Parameters myParms;
 };
 
 #endif // !__GeneratorSOP__

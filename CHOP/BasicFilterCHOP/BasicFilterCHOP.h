@@ -48,6 +48,7 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 
+private:
 	Parameters myParms;
 };
 

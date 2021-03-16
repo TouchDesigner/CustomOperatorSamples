@@ -48,9 +48,9 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
+private:
 	Parameters myParms;
 
-private:
 	void			fillTable(const OP_Inputs*, DAT_Output*);
 
 	std::string		generateString(const OP_Inputs*);

@@ -200,7 +200,7 @@ DistanceTransformTOP::inputTopToMat(const OP_Inputs* in)
 
 	OP_TOPInputDownloadOptions	opts = {};
 	opts.verticalFlip = true;
-	opts.downloadType = myParms.evalDownloadtype(in);
+	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
 	opts.cpuMemPixelType = OP_CPUMemPixelType::RGBA8Fixed;
 
 	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);

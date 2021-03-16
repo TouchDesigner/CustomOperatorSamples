@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <array>
+
+
 class OP_Inputs;
 class OP_ParameterManager;
 
