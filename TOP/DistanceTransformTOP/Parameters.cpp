@@ -1,106 +1,153 @@
-#include "Parameters.h"
+#include <string>
+#include <array>
 #include "CPlusPlus_Common.h"
+#include "Parameters.h"
 
-bool
-Parameters::evalParms(const OP_Inputs* input)
+#pragma region Evals
+
+DistancetypeMenuItems
+Parameters::evalDistancetype(const OP_Inputs* input)
 {
-	bool changed = false;
-	Distancetype	tmpdistancetype = static_cast<Distancetype>(input->getParInt(DISTANCETYPE_NAME));
-	changed |= tmpdistancetype != distancetype;
-	distancetype = tmpdistancetype;
-
-	bool needMask = distancetype == Distancetype::L2;
-	input->enablePar(MASKSIZE_NAME, needMask);
-	if (needMask)
-	{
-		Masksize	tmpmasksize = static_cast<Masksize>(input->getParInt(MASKSIZE_NAME));
-		changed |= tmpmasksize != masksize;
-		masksize = tmpmasksize;
-	}
-
-	bool	tmpnormalize = input->getParInt(NORMALIZE_NAME) ? true : false;
-	changed |= tmpnormalize != normalize;
-	normalize = tmpnormalize;
-
-	OP_TOPInputDownloadType tmpdownloadtype = static_cast<OP_TOPInputDownloadType>(input->getParInt(DOWNLOADTYPE_NAME));
-	changed |= tmpdownloadtype != downloadtype;
-	downloadtype = tmpdownloadtype;
-        
-        Channel tmpchannel = static_cast<Channel>(input->getParInt(CHANNEL_NAME));
-        changed |= tmpchannel != channel;
-        channel = tmpchannel;
-
-	return changed;
+	return static_cast<DistancetypeMenuItems>(input->getParInt(DistancetypeName));
 }
 
-void
-Parameters::setupParms(OP_ParameterManager* manager)
+MasksizeMenuItems
+Parameters::evalMasksize(const OP_Inputs* input)
 {
+	return static_cast<MasksizeMenuItems>(input->getParInt(MasksizeName));
+}
 
+bool
+Parameters::evalNormalize(const OP_Inputs* input)
+{
+	return input->getParInt(NormalizeName) ? true : false;
+}
+
+DownloadtypeMenuItems
+Parameters::evalDownloadtype(const OP_Inputs* input)
+{
+	return static_cast<DownloadtypeMenuItems>(input->getParInt(DownloadtypeName));
+}
+
+ChannelMenuItems
+Parameters::evalChannel(const OP_Inputs* input)
+{
+	return static_cast<ChannelMenuItems>(input->getParInt(ChannelName));
+}
+
+
+#pragma endregion
+
+#pragma region Setup
+
+void
+Parameters::setup(OP_ParameterManager* manager)
+{
 	{
 		OP_StringParameter p;
-		p.name = DISTANCETYPE_NAME;
-		p.label = "Distance Type";
+		p.name = DistancetypeName;
+		p.label = DistancetypeLabel;
 		p.page = "Transform";
-		p.defaultValue = "User";
-
-		const char*	names[] = { "L1", "L2", "C" };
-		const char*	labels[] = { "L1", "L2", "C" };
-		OP_ParAppendResult res = manager->appendMenu(p, 3, names, labels);
+		p.defaultValue = "L1";
+		std::array<const char*, 3> Names =
+		{
+			"L1",
+			"L2",
+			"C"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"L1",
+			"L2",
+			"C"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_StringParameter p;
-		p.name = MASKSIZE_NAME;
-		p.label = "Mask Size";
+		p.name = MasksizeName;
+		p.label = MasksizeLabel;
 		p.page = "Transform";
-		p.defaultValue = "3x3";
-
-		const char*	names[] = { "Three", "Five", "Precise" };
-		const char*	labels[] = { "3x3", "5x5", "Precise" };
-		OP_ParAppendResult res = manager->appendMenu(p, 3, names, labels);
+		p.defaultValue = "Three";
+		std::array<const char*, 3> Names =
+		{
+			"Three",
+			"Five",
+			"Precise"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"3x3",
+			"5x5",
+			"Precise"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_NumericParameter p;
-		p.name = NORMALIZE_NAME;
-		p.label = "Normalize";
+		p.name = NormalizeName;
+		p.label = NormalizeLabel;
 		p.page = "Transform";
-
 		p.defaultValues[0] = false;
+
 		OP_ParAppendResult res = manager->appendToggle(p);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_StringParameter sp;
-		sp.name = DOWNLOADTYPE_NAME;
-		sp.label = "Download Type";
-		sp.page = "Transform";
+		OP_StringParameter p;
+		p.name = DownloadtypeName;
+		p.label = DownloadtypeLabel;
+		p.page = "Transform";
+		p.defaultValue = "Delayed";
+		std::array<const char*, 2> Names =
+		{
+			"Delayed",
+			"Instant"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Delayed",
+			"Instant"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
-		const char* names[] = { "Delayed", "Instant" };
-		const char* labels[] = { "Delayed", "Instant" };
-
-		OP_ParAppendResult res = manager->appendMenu(sp, 2, names, labels);
 		assert(res == OP_ParAppendResult::Success);
 	}
 
-        {
+	{
 		OP_StringParameter p;
-		p.name = CHANNEL_NAME;
-		p.label = "Channel";
+		p.name = ChannelName;
+		p.label = ChannelLabel;
 		p.page = "Transform";
 		p.defaultValue = "R";
-
-		const char*	names[] = { "R", "G", "B", "A" };
-		const char*	labels[] = { "R", "G", "B", "A" };
-		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+		std::array<const char*, 4> Names =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
+
+
 }
+
+#pragma endregion

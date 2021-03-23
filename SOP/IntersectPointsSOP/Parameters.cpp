@@ -1,48 +1,58 @@
-#include "Parameters.h"
+#include <string>
+#include <array>
 #include "CPlusPlus_Common.h"
+#include "Parameters.h"
 
-bool
-Parameters::evalParms(const OP_Inputs* input)
+#pragma region Evals
+
+Color
+Parameters::evalInsidecolor(const OP_Inputs* input)
 {
-	bool changed = false;
-	double	tmpinsidevalue[4];
-	input->getParDouble4(INSIDEVALUE_NAME, tmpinsidevalue[0], tmpinsidevalue[1], tmpinsidevalue[2], tmpinsidevalue[3]);
-	changed |= memcmp(insidevalue, tmpinsidevalue, sizeof(insidevalue)) != 0;
-	memcpy(insidevalue, tmpinsidevalue, sizeof(insidevalue));
-
-	double	tmpoutsidevalue[4];
-	input->getParDouble4(OUTSIDEVALUE_NAME, tmpoutsidevalue[0], tmpoutsidevalue[1], tmpoutsidevalue[2], tmpoutsidevalue[3]);
-	changed |= memcmp(outsidevalue, tmpoutsidevalue, sizeof(outsidevalue)) != 0;
-	memcpy(outsidevalue, tmpoutsidevalue, sizeof(outsidevalue));
-
-	return changed;
+	std::array<double, 4> vals;
+	input->getParDouble4(InsidecolorName, vals[0], vals[1], vals[2], vals[3]);
+	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
+
+Color
+Parameters::evalOutsidecolor(const OP_Inputs* input)
+{
+	std::array<double, 4> vals;
+	input->getParDouble4(OutsidecolorName, vals[0], vals[1], vals[2], vals[3]);
+	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+}
+
+
+#pragma endregion
+
+#pragma region Setup
 
 void
-Parameters::setupParms(OP_ParameterManager* manager)
+Parameters::setup(OP_ParameterManager* manager)
 {
 	{
 		OP_NumericParameter p;
-		p.name = INSIDEVALUE_NAME;
-		p.label = "Inside Color";
+		p.name = InsidecolorName;
+		p.label = InsidecolorLabel;
 		p.page = "Intersection";
+		
+		const int ArraySize = 4;
 
-		const double defaultValues[] = { 1.0, 1.0, 1.0, 1.0 };
-		const double minSliders[] = { 0.0, 0.0, 0.0, 0.0 };
-		const double maxSliders[] = { 1.0, 1.0, 1.0, 1.0 };
-		const double minValues[] = { 0.0, 0.0, 0.0, 0.0 };
-		const double maxValues[] = { 1.0, 1.0, 1.0, 1.0 };
-		const bool clampMins[] = { false, false, false, false };
-		const bool clampMaxes[] = { false, false, false, false };
-		for (int i = 0; i < 4; ++i)
+		const std::array<double, ArraySize>  DefaultValues = { 1.0, 1.0, 1.0, 1.0 };
+		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0, 0.0 };
+		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0, 1.0 };
+		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0, 0.0 };
+		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0, 1.0 };
+		const std::array<bool, ArraySize>  ClampMins = { false, false, false, false };
+		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false, false };
+		for (int i = 0; i < DefaultValues.size(); ++i)
 		{
-			p.defaultValues[i] = defaultValues[i];
-			p.minSliders[i] = minSliders[i];
-			p.maxSliders[i] = maxSliders[i];
-			p.minValues[i] = minValues[i];
-			p.maxValues[i] = maxValues[i];
-			p.clampMins[i] = clampMins[i];
-			p.clampMaxes[i] = clampMaxes[i];
+			p.defaultValues[i] = DefaultValues[i];
+			p.minSliders[i] = MinSliders[i];
+			p.maxSliders[i] = MaxSliders[i];
+			p.minValues[i] = MinValues[i];
+			p.maxValues[i] = MaxValues[i];
+			p.clampMins[i] = ClampMins[i];
+			p.clampMaxes[i] = ClampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendRGBA(p);
 
@@ -51,29 +61,35 @@ Parameters::setupParms(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = OUTSIDEVALUE_NAME;
-		p.label = "Outside Color";
+		p.name = OutsidecolorName;
+		p.label = OutsidecolorLabel;
 		p.page = "Intersection";
+		
+		const int ArraySize = 4;
 
-		const double defaultValues[] = { 0.0, 0.0, 0.0, 1.0 };
-		const double minSliders[] = { 0.0, 0.0, 0.0, 0.0 };
-		const double maxSliders[] = { 1.0, 1.0, 1.0, 1.0 };
-		const double minValues[] = { 0.0, 0.0, 0.0, 0.0 };
-		const double maxValues[] = { 1.0, 1.0, 1.0, 1.0 };
-		const bool clampMins[] = { false, false, false, false };
-		const bool clampMaxes[] = { false, false, false, false };
-		for (int i = 0; i < 4; ++i)
+		const std::array<double, ArraySize>  DefaultValues = { 0.0, 0.0, 0.0, 1.0 };
+		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0, 0.0 };
+		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0, 1.0 };
+		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0, 0.0 };
+		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0, 1.0 };
+		const std::array<bool, ArraySize>  ClampMins = { false, false, false, false };
+		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false, false };
+		for (int i = 0; i < DefaultValues.size(); ++i)
 		{
-			p.defaultValues[i] = defaultValues[i];
-			p.minSliders[i] = minSliders[i];
-			p.maxSliders[i] = maxSliders[i];
-			p.minValues[i] = minValues[i];
-			p.maxValues[i] = maxValues[i];
-			p.clampMins[i] = clampMins[i];
-			p.clampMaxes[i] = clampMaxes[i];
+			p.defaultValues[i] = DefaultValues[i];
+			p.minSliders[i] = MinSliders[i];
+			p.maxSliders[i] = MaxSliders[i];
+			p.minValues[i] = MinValues[i];
+			p.maxValues[i] = MaxValues[i];
+			p.clampMins[i] = ClampMins[i];
+			p.clampMaxes[i] = ClampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendRGBA(p);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
+
+
 }
+
+#pragma endregion

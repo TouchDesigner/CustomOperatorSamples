@@ -13,23 +13,11 @@
 */
 
 #include "GeneratorSOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <array>
 
-// Names of the parameters
-constexpr static char SHAPE_NAME[]			= "Shape";
-constexpr static char COLOR_NAME[]			= "Color";
-constexpr static char GPUDIRECT_NAME[]		= "Gpudirect";
-
-enum class
-Shape
-{
-	Point = 0,
-	Line = 1,
-	Square = 2,
-	Cube = 3
-};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -86,7 +74,7 @@ DestroySOPInstance(SOP_CPlusPlusBase* instance)
 
 
 GeneratorSOP::GeneratorSOP(const OP_NodeInfo*) :
-	myColor{}, myShape{}, myShapeGenerator{} 
+	myShapeGenerator{} 
 {
 };
 
@@ -101,32 +89,33 @@ GeneratorSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, vo
 	ginfo->cookEveryFrameIfAsked = false;
 
 	// Direct shape to GPU loading if asked 
-	ginfo->directToGPU = inputs->getParInt(GPUDIRECT_NAME) ? true : false;
+	ginfo->directToGPU = myParms.evalGpudirect(inputs);
 }
 
 void
 GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 {
-	handleParameters(inputs);
+	ShapeMenuItems shape = myParms.evalShape(inputs);
+	Color color = myParms.evalColor(inputs);
 
-	switch (myShape) 
+	switch (shape)
 	{
-		case Shape::Point:
+		case ShapeMenuItems::Point:
 		{
 			myShapeGenerator.outputDot(output);
 			break;
 		}
-		case Shape::Line:
+		case ShapeMenuItems::Line:
 		{
 			myShapeGenerator.outputLine(output);
 			break;
 		}
-		case Shape::Square:
+		case ShapeMenuItems::Square:
 		{
 			myShapeGenerator.outputSquare(output);
 			break;
 		}
-		case Shape::Cube:
+		case ShapeMenuItems::Cube:
 		default:
 		{
 			myShapeGenerator.outputCube(output);
@@ -136,7 +125,7 @@ GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 
 	for (int i = 0; i < output->getNumPoints(); ++i)
 	{
-		output->setColor(myColor, i);
+		output->setColor(color, i);
 	}
 
 	output->setBoundingBox(BoundingBox(-1, -1, -1, 1, 1, 1));
@@ -145,30 +134,31 @@ GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 void
 GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 {
-	handleParameters(inputs);
+	ShapeMenuItems shape = myParms.evalShape(inputs);
+	Color color = myParms.evalColor(inputs);
 
 	output->enableColor();
 	output->enableNormal();
 	output->enableTexCoord(1);
 
-	switch (myShape)
+	switch (shape)
 	{
-		case Shape::Point:
+		case ShapeMenuItems::Point:
 		{
 			myShapeGenerator.outputDotVBO(output);
 			break;
 		}
-		case Shape::Line:
+		case ShapeMenuItems::Line:
 		{
 			myShapeGenerator.outputLineVBO(output);
 			break;
 		}
-		case Shape::Square:
+		case ShapeMenuItems::Square:
 		{
 			myShapeGenerator.outputSquareVBO(output);
 			break;
 		}
-		case Shape::Cube:
+		case ShapeMenuItems::Cube:
 		default:
 		{
 			myShapeGenerator.outputCubeVBO(output);
@@ -181,7 +171,7 @@ GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 	Color* colors = output->getColors();
 	for (int i = 0; i < numVertices; ++i)
 	{
-		colors[i] = myColor;
+		colors[i] = color;
 	}
 
 	output->setBoundingBox(BoundingBox(-1, -1, -1, 1, 1, 1));
@@ -191,55 +181,5 @@ GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 void
 GeneratorSOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_StringParameter	sp;
-
-		sp.name = SHAPE_NAME;
-		sp.label = "Shape";
-		sp.page = "Generator";
-
-		sp.defaultValue = "Cube";
-
-		const char *names[] = { "Point", "Line", "Square", "Cube" };
-		const char *labels[] = { "Point", "Line", "Square", "Cube" };
-
-		OP_ParAppendResult res = manager->appendMenu(sp, 4, names, labels);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = COLOR_NAME;
-		np.label = "Color";
-		np.page = "Generator";
-
-		memcpy(np.defaultValues, std::array<double, 4>{1, 1, 1, 1}.data(), 4 * sizeof(double));
-
-		OP_ParAppendResult res = manager->appendRGBA(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = GPUDIRECT_NAME;
-		np.label = "GPU Direct";
-		np.page = "Generator";
-		np.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-}
-
-void 
-GeneratorSOP::handleParameters(const OP_Inputs* inputs)
-{
-	myShape = static_cast<Shape>(inputs->getParInt(SHAPE_NAME));
-
-	myColor.r = static_cast<float>(inputs->getParDouble(COLOR_NAME, 0));
-	myColor.g = static_cast<float>(inputs->getParDouble(COLOR_NAME, 1));
-	myColor.b = static_cast<float>(inputs->getParDouble(COLOR_NAME, 2));
-	myColor.a = static_cast<float>(inputs->getParDouble(COLOR_NAME, 3));
+	myParms.setup(manager);
 }

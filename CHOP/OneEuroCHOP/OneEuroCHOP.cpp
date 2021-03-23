@@ -14,14 +14,10 @@
 
 #include "OneEuroCHOP.h"
 #include "OneEuroImpl.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <string>
-
-// Names of the parameters
-constexpr static char MINCUTOFF_NAME[]	= "Mincutoff";
-constexpr static char BETA_NAME[]		= "Beta";
-constexpr static char DCUTOFF_NAME[]	= "Dcutoff";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -142,55 +138,15 @@ OneEuroCHOP::execute(CHOP_Output* output,
 void
 OneEuroCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter	np;
-
-		np.name = MINCUTOFF_NAME;
-		np.label = "Cutoff Frequency (Hz)";
-		np.page = "Filter";
-		np.defaultValues[0] = 1.0;
-		np.minSliders[0] = 0.0;
-		np.maxSliders[0] = 10.0;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = BETA_NAME;
-		np.label = "Speed Coefficient";
-		np.page = "Filter";
-		np.defaultValues[0] = 0.0;
-		np.minSliders[0] = 0.0;
-		np.maxSliders[0] = 1.0;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = DCUTOFF_NAME;
-		np.label = "Slope Cutoff Frequency (Hz)";
-		np.page = "Filter";
-		np.defaultValues[0] = 1.0;
-		np.minSliders[0] = 0.0;
-		np.maxSliders[0] = 10.0;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void
 OneEuroCHOP::handleParameters(const OP_Inputs* input, const OP_CHOPInput* chop)
 {
-	double	minCutOff = input->getParDouble(MINCUTOFF_NAME);
-	double	beta = input->getParDouble(BETA_NAME);
-	double	dCutOff = input->getParDouble(DCUTOFF_NAME);
+	double	minCutOff = myParms.evalMincutoff(input);
+	double	beta = myParms.evalBeta(input);
+	double	dCutOff = myParms.evalDcutoff(input);
 	double	rate = chop->sampleRate;
 	int		numChannels = chop->numChannels;
 

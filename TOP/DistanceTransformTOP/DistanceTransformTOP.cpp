@@ -21,30 +21,30 @@
 
 namespace
 {
-	int getType(Distancetype dt)
+	int getType(DistancetypeMenuItems dt)
 	{
 		switch (dt)
 		{
 		default:
-		case Distancetype::L1:
+		case DistancetypeMenuItems::L1:
 			return cv::DIST_L1;
-		case Distancetype::L2:
+		case DistancetypeMenuItems::L2:
 			return cv::DIST_L2;
-		case Distancetype::C:
+		case DistancetypeMenuItems::C:
 			return cv::DIST_C;
 		}
 	}
 
-	int getMask(Masksize ms)
+	int getMask(MasksizeMenuItems ms)
 	{
 		switch (ms)
 		{
 		default:
-		case Masksize::Three:
+		case MasksizeMenuItems::Three:
 			return cv::DIST_MASK_3;
-		case Masksize::Five:
+		case MasksizeMenuItems::Five:
 			return cv::DIST_MASK_5;
-		case Masksize::Precise:
+		case MasksizeMenuItems::Precise:
 			return cv::DIST_MASK_PRECISE;
 		}
 	}
@@ -106,20 +106,19 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 
 
 DistanceTransformTOP::DistanceTransformTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::Mat() }, myParms { new Parameters() }
+	myFrame{ new cv::Mat() }
 {
 }
 
 DistanceTransformTOP::~DistanceTransformTOP()
 {
 	delete myFrame;
-	delete myParms;
 }
 
 void
 DistanceTransformTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
 {
-        ginfo->cookEveryFrame = false;
+    ginfo->cookEveryFrame = false;
 	ginfo->cookEveryFrameIfAsked = false;
 	ginfo->memPixelType = OP_CPUMemPixelType::R32Float;
 }
@@ -155,18 +154,16 @@ DistanceTransformTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* in
 {
 	using namespace cv;
 	
-	myParms->evalParms(inputs);
-
 	inputTopToMat(inputs);
 	if (myFrame->empty())
 		return;
 
-	int distanceType = getType(myParms->distancetype);
-	int maskSize = getMask(myParms->masksize);
+	int distanceType = getType(myParms.evalDistancetype(inputs));
+	int maskSize = getMask(myParms.evalMasksize(inputs));
 
 	distanceTransform(*myFrame, *myFrame, distanceType, maskSize);
 	
-	if (myParms->normalize)
+	if (myParms.evalNormalize(inputs))
 		normalize(*myFrame, *myFrame, 0, 1.0, NORM_MINMAX);
 
 	cvMatToOutput(output);
@@ -175,7 +172,7 @@ DistanceTransformTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* in
 void
 DistanceTransformTOP::setupParameters(OP_ParameterManager* in, void*)
 {
-	myParms->setupParms(in);
+	myParms.setup(in);
 }
 
 void
@@ -203,7 +200,7 @@ DistanceTransformTOP::inputTopToMat(const OP_Inputs* in)
 
 	OP_TOPInputDownloadOptions	opts = {};
 	opts.verticalFlip = true;
-	opts.downloadType = myParms->downloadtype;
+	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
 	opts.cpuMemPixelType = OP_CPUMemPixelType::RGBA8Fixed;
 
 	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);
@@ -220,7 +217,7 @@ DistanceTransformTOP::inputTopToMat(const OP_Inputs* in)
         for (int i = 0; i < height; i += 1) {
                 for (int j = 0; j < width; j += 1) {
                         int pixelN = i*width + j;
-                        int index = 4*pixelN + static_cast<int>(myParms->channel);
+                        int index = 4*pixelN + static_cast<int>(myParms.evalChannel(in));
                         data[pixelN] = pixel[index];
                 }
         }

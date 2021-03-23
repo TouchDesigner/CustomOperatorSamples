@@ -13,24 +13,11 @@
 */
 
 #include "TimeSliceGeneratorCHOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 
 static constexpr double PI = 3.141592653589793238463;
-
-// Names of the parameters
-constexpr static char SPEED_NAME[]		= "Frequency";
-constexpr static char APPLYSCALE_NAME[]	= "Applyscale";
-constexpr static char SCALE_NAME[]		= "Scale";
-constexpr static char SHAPE_NAME[]		= "Type";
-
-enum class
-Shape
-{
-	Sine = 0,
-	Square = 1,
-	Ramp = 2
-};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -129,14 +116,14 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = inputs->getParInt(APPLYSCALE_NAME) ? true : false;
-	double	scale = applyScale ? inputs->getParDouble(SCALE_NAME) : 1.0;
-	double	speed = inputs->getParDouble(SPEED_NAME);
+	bool	applyScale = myParms.evalApplyscale(inputs);
+	double	scale = myParms.evalScale(inputs);
+	double	speed = myParms.evalFrequency(inputs);
 
-	inputs->enablePar(SCALE_NAME, applyScale);
+	inputs->enablePar(ScaleName, applyScale);
 
 	// Menu items can be evaluated as either an integer menu position, or a string
-	int		shape = inputs->getParInt(SHAPE_NAME);
+	TypeMenuItems		shape = myParms.evalType(inputs);
 	
 	double	step = speed / output->sampleRate;
 	double	value = 0;
@@ -149,17 +136,17 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 	{
 		switch (shape)
 		{
-			case Shape::Sine:
+			case TypeMenuItems::Sine:
 			{
 				value = sin(myOffset * 2 * PI);
 				break;
 			}
-			case Shape::Square:		
+			case TypeMenuItems::Square:
 			{
 				value = fmod(myOffset, 1.0) > 0.5 ? 1.0 : -1.0;
 				break;
 			}
-			case Shape::Ramp:
+			case TypeMenuItems::Ramp:
 			default:
 			{
 				value = fabs(fmod(myOffset, 1.0));
@@ -177,63 +164,5 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 void
 TimeSliceGeneratorCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	// shape
-	{
-		OP_StringParameter	sp;
-
-		sp.name = SHAPE_NAME;
-		sp.label = "Type";
-		sp.page = "Generator";
-
-		sp.defaultValue = "Sine";
-
-		const char* names[] = { "Sine", "Square", "Ramp" };
-		const char* labels[] = { "Sine", "Square", "Ramp" };
-
-		OP_ParAppendResult res = manager->appendMenu(sp, 3, names, labels);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// speed
-	{
-		OP_NumericParameter	np;
-
-		np.name = SPEED_NAME;
-		np.label = "Frequency";
-		np.page = "Generator";
-		np.defaultValues[0] = 1.0;
-		np.minSliders[0] = -10.0;
-		np.maxSliders[0] = 10.0;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// Apply Scale
-	{
-		OP_NumericParameter	np;
-
-		np.name = APPLYSCALE_NAME;
-		np.label = "Apply Scale";
-		np.page = "Generator";
-		np.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// scale
-	{
-		OP_NumericParameter	np;
-
-		np.name = SCALE_NAME;
-		np.label = "Scale";
-		np.page = "Generator";
-		np.defaultValues[0] = 1.0;
-		np.minSliders[0] = -10.0;
-		np.maxSliders[0] = 10.0;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }

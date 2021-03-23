@@ -15,6 +15,8 @@
 #define __ObjectDetectorTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
+
 #include <vector>
 #include <string>
 #include <opencv2/core.hpp>
@@ -106,7 +108,9 @@ private:
     bool        myDrawBoundingBox;
     bool        myLimitObjs;
     int         myMaxObjs;
-    OP_TOPInputDownloadType myDownloadtype; 
+    OP_TOPInputDownloadType myDownloadtype;
+
+    Parameters myParms;
 };
 
 #endif

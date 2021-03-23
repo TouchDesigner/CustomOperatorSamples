@@ -72,13 +72,12 @@ DestroySOPInstance(SOP_CPlusPlusBase* instance)
 
 };
 
-IntersectPointsSOP::IntersectPointsSOP(const OP_NodeInfo*) : myParms{ new Parameters() }
+IntersectPointsSOP::IntersectPointsSOP(const OP_NodeInfo*)
 {
 };
 
 IntersectPointsSOP::~IntersectPointsSOP()
 {
-	delete myParms;
 };
 
 void
@@ -99,20 +98,14 @@ IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	if (!sop0 || !sop1)
 		return;
 
-	myParms->evalParms(inputs);
-
 	copyPoints(output, sop0);
 	copyAttributes(output, sop0);
 	copyPrimitives(output, sop0);
 
 	const Position* pos = sop0->getPointPositions();
 
-	double* t = myParms->insidevalue;
-	Color insideC{ static_cast<float>(t[0]), static_cast<float>(t[1]),
-		static_cast<float>(t[2]), static_cast<float>(t[3]) };
-	t = myParms->outsidevalue;
-	Color outsideC{ static_cast<float>(t[0]), static_cast<float>(t[1]),
-		static_cast<float>(t[2]), static_cast<float>(t[3]) };
+	Color inside = myParms.evalInsidecolor(inputs);
+	Color outside = myParms.evalInsidecolor(inputs);
 
 	std::vector<int> insideAttrib;
 	insideAttrib.reserve(sop0->getNumPoints());
@@ -120,9 +113,9 @@ IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	{
 		insideAttrib.push_back(sop1->isInside(pos[i]));
 		if (insideAttrib.at(i))
-			output->setColor(insideC, i);
+			output->setColor(inside, i);
 		else
-			output->setColor(outsideC, i);
+			output->setColor(outside, i);
 	}
 
 	SOP_CustomAttribData attrib{ "Inside", 1, AttribType::Int };
@@ -138,7 +131,7 @@ IntersectPointsSOP::executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*)
 void
 IntersectPointsSOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms->setupParms(manager);
+	myParms.setup(manager);
 }
 
 void
