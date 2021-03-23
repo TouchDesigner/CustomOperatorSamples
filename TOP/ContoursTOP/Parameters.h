@@ -1,97 +1,66 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
+
+#include <cstdint>
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
 // Names of the parameters
+constexpr static char	MODE_NAME[] = "Mode";
+constexpr static char	METHOD_NAME[] = "Method";
+constexpr static char	APPLYWATERSHED_NAME[] = "Applywatershed";
+constexpr static char	SELECTOBJECT_NAME[] = "Selectobject";
+constexpr static char	OBJECT_NAME[] = "Object";
+constexpr static char	DOWNLOADTYPE_NAME[] = "Downloadtype";
+constexpr static char   CHANNEL_NAME[] = "Channel";
 
-constexpr static char ModeName[] = "Mode";
-constexpr static char ModeLabel[] = "Mode";
-
-constexpr static char MethodName[] = "Method";
-constexpr static char MethodLabel[] = "Method";
-
-constexpr static char WatershedName[] = "Watershed";
-constexpr static char WatershedLabel[] = "Watershed";
-
-constexpr static char SelectobjectName[] = "Selectobject";
-constexpr static char SelectobjectLabel[] = "Select Object";
-
-constexpr static char ObjectName[] = "Object";
-constexpr static char ObjectLabel[] = "Object";
-
-constexpr static char DownloadtypeName[] = "Downloadtype";
-constexpr static char DownloadtypeLabel[] = "Download Type";
-
-constexpr static char ChannelName[] = "Channel";
-constexpr static char ChannelLabel[] = "Channel";
-
-
-#pragma endregion
-
-#pragma region Menus
-enum class ModeMenuItems
+enum class
+	Mode
 {
 	External,
 	List,
 	Ccomp,
-	Tree
+	Tree,
 };
 
-enum class MethodMenuItems
+enum class
+	Method
 {
 	None,
 	Simple,
 	Tcl1,
-	Tckcos
+	Tckcos,
 };
 
-enum class DownloadtypeMenuItems
-{
-	Delayed,
-	Instant
-};
-
-enum class ChannelMenuItems
+enum class Channel
 {
 	R,
+	Mono = R,
 	G,
+	Second = G,
 	B,
-	A
+	A,
+	Invalid
 };
 
-#pragma endregion
+enum class OP_TOPInputDownloadType : int32_t;
 
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	// Returns true if parameters have changed since last call
+	bool	evalParms(const OP_Inputs*);
 
-	// Mode
-	static ModeMenuItems		evalMode(const OP_Inputs* input);
+	void	setupParms(OP_ParameterManager*);
 
-	// Method
-	static MethodMenuItems		evalMethod(const OP_Inputs* input);
-
-	// Watershed
-	static bool		evalWatershed(const OP_Inputs* input);
-
-	// Select Object
-	static bool		evalSelectobject(const OP_Inputs* input);
-
-	// Object
-	static int		evalObject(const OP_Inputs* input);
-
-	// Download Type
-	static DownloadtypeMenuItems		evalDownloadtype(const OP_Inputs* input);
-
-	// Channel
-	static ChannelMenuItems		evalChannel(const OP_Inputs* input);
-
-
+	Mode	mode;
+	Method	method;
+	bool	applywatershed;
+	bool	selectobject;
+	int	object;
+	OP_TOPInputDownloadType     downloadtype;
+        Channel channel;
 };
-#pragma endregion
+
+#endif

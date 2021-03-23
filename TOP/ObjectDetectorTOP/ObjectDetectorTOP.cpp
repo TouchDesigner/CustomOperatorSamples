@@ -13,7 +13,6 @@
 */
 
 #include "ObjectDetectorTOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
@@ -22,6 +21,20 @@
 #include <opencv2/core.hpp>
 #include <opencv2/objdetect.hpp>
 #include <opencv2/imgproc.hpp>
+
+// Names of the parameters
+constexpr static char CLASSIFIER_NAME[]			= "Classifier";
+constexpr static char SCALE_NAME[]				= "Scale";
+constexpr static char MINNEIGHBORS_NAME[]		= "Minneighbors";
+constexpr static char LIMITOBJSIZE_NAME[]		= "Limitobjsize";
+constexpr static char MINSIZEW_NAME[]			= "Minsizewidth";
+constexpr static char MINSIZEH_NAME[]			= "Minsizeheight";
+constexpr static char MAXSIZEW_NAME[]			= "Maxsizewidth";
+constexpr static char MAXSIZEH_NAME[]			= "Maxsizeheight";
+constexpr static char DRAWBOUNDINGBOX_NAME[]	= "Drawboundingbox";
+constexpr static char LIMITOBJSDETECTED_NAME[]	= "Limitobjsdetected";
+constexpr static char MAXOBJSDETECTED_NAME[]	= "Maxobjsdetected";
+constexpr static char DOWNLOADTYPE_NAME[]	= "Downloadtype";
 
 enum class
 InfoChopChan
@@ -164,7 +177,183 @@ ObjectDetectorTOP::execute(TOP_OutputFormatSpecs* output,
 void
 ObjectDetectorTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter	sp;
+		sp.name = CLASSIFIER_NAME;
+		sp.label = "Classifier";
+		sp.page = "Object Detector";
+
+		OP_ParAppendResult res = manager->appendFile(sp);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = SCALE_NAME;
+		np.label = "Scale Factor";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 1.05;
+		np.minSliders[0] = 1.0;
+		np.maxSliders[0] = 5.0;
+		np.minValues[0] = 1.0;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MINNEIGHBORS_NAME;
+		np.label = "Min Neighbors";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 3;
+		np.minSliders[0] = 1;
+		np.maxSliders[0] = 10;
+		np.minValues[0] = 1;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = LIMITOBJSIZE_NAME;
+		np.label = "Limit Object Size";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = true;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MINSIZEW_NAME;
+		np.label = "Min Object Width";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 0.1f;
+		np.minSliders[0] = 0.0f;
+		np.minValues[0] = 0.0f;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 1.0f;
+		np.maxValues[0] = 1.0f;
+		np.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MINSIZEH_NAME;
+		np.label = "Min Object Height";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 0.1f;
+		np.minSliders[0] = 0.0f;
+		np.minValues[0] = 0.0f;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 1.0f;
+		np.maxValues[0] = 1.0f;
+		np.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MAXSIZEW_NAME;
+		np.label = "Max Object Width";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 0.9f;
+		np.minSliders[0] = 0.0f;
+		np.minValues[0] = 0.0f;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 1.0f;
+		np.maxValues[0] = 1.0f;
+		np.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MAXSIZEH_NAME;
+		np.label = "Max Object Height";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 0.9f;
+		np.minSliders[0] = 0.0f;
+		np.minValues[0] = 0.0f;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 1.0f;
+		np.maxValues[0] = 1.0f;
+		np.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = DRAWBOUNDINGBOX_NAME;
+		np.label = "Draw Bounding Box";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = true;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = LIMITOBJSDETECTED_NAME;
+		np.label = "Limit Objects Detected";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = false;
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = MAXOBJSDETECTED_NAME;
+		np.label = "Maximum Objects";
+		np.page = "Object Detector";
+
+		np.defaultValues[0] = 10;
+		np.minSliders[0] = 0;
+		np.maxSliders[0] = 20;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_StringParameter sp;
+		sp.name = DOWNLOADTYPE_NAME;
+		sp.label = "Download Type";
+		sp.page = "Object Detector";
+
+		const char* names[] = { "Delayed", "Instant" };
+		const char* labels[] = { "Delayed", "Instant" };
+
+		OP_ParAppendResult res = manager->appendMenu(sp, 2, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 int32_t 
@@ -307,15 +496,15 @@ ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, OP_InfoDAT
 void 
 ObjectDetectorTOP::handleParameters(const OP_Inputs* in)
 {
-	myPath = myParms.evalClassifier(in);
-	myScale = myParms.evalScalefactor(in);
-	myMinNeighbors = myParms.evalMinneighbors(in);
+	myPath = in->getParString(CLASSIFIER_NAME);
+	myScale = in->getParDouble(SCALE_NAME);
+	myMinNeighbors = in->getParInt(MINNEIGHBORS_NAME);
 
-	myLimitSize = myParms.evalLimitobjectsize(in);
-	in->enablePar(MaxobjectwidthName, myLimitSize);
-	in->enablePar(MaxobjectheightName, myLimitSize);
-	in->enablePar(MinobjectwidthName, myLimitSize);
-	in->enablePar(MinobjectheightName, myLimitSize);
+	myLimitSize = in->getParInt(LIMITOBJSIZE_NAME) ? true : false;
+	in->enablePar(MAXSIZEW_NAME, myLimitSize);
+	in->enablePar(MAXSIZEH_NAME, myLimitSize);
+	in->enablePar(MINSIZEW_NAME, myLimitSize);
+	in->enablePar(MINSIZEH_NAME, myLimitSize);
 
 	if (myLimitSize)
 	{
@@ -324,11 +513,11 @@ ObjectDetectorTOP::handleParameters(const OP_Inputs* in)
 		int32_t totalW = top->width;
 
 		double	w, h;
-		w = myParms.evalMinobjectwidth(in);
-		h = myParms.evalMinobjectheight(in);
+		w = in->getParDouble(MINSIZEW_NAME);
+		h = in->getParDouble(MINSIZEH_NAME);
 		myMinSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
-		w = myParms.evalMaxobjectwidth(in);
-		h = myParms.evalMaxobjectheight(in);
+		w = in->getParDouble(MAXSIZEW_NAME);
+		h = in->getParDouble(MAXSIZEH_NAME);
 		myMaxSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
 	}
 	else
@@ -337,11 +526,11 @@ ObjectDetectorTOP::handleParameters(const OP_Inputs* in)
 		myMaxSize = cv::Size();
 	}
 
-	myDrawBoundingBox = myParms.evalDrawboundingbox(in);
-	myLimitObjs = myParms.evalLimitobjectsdetected(in);
-	in->enablePar(MaximumobjectsName, myLimitObjs);
-	myMaxObjs = myLimitObjs ? myParms.evalMaximumobjects(in) : 0;
-        myDownloadtype = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
+	myDrawBoundingBox = in->getParInt(DRAWBOUNDINGBOX_NAME) ? true : false;
+	myLimitObjs = in->getParInt(LIMITOBJSDETECTED_NAME) ? true : false;
+	in->enablePar(MAXOBJSDETECTED_NAME, myLimitObjs);
+	myMaxObjs = myLimitObjs ? in->getParInt(MAXOBJSDETECTED_NAME) : 0;
+        myDownloadtype = static_cast<OP_TOPInputDownloadType>(in->getParInt(DOWNLOADTYPE_NAME));
 }
 
 void 

@@ -13,11 +13,25 @@
 */
 
 #include "BasicGeneratorCHOP.h"
-#include "Parameters.h"
 
 #include <string>
 #include <cassert>
 #include <cmath>
+
+// Names of the parameters
+constexpr static char SAMPLES_NAME[]	= "Length";
+constexpr static char CHAN_NAME[]		= "Channels";
+constexpr static char APPLYSCALE_NAME[]	= "Applyscale";
+constexpr static char SCALE_NAME[]		= "Scale";
+constexpr static char OPERATION_NAME[]	= "Operation";
+
+enum class
+Operation
+{
+	Add = 0,
+	Multiply = 1,
+	Power = 2
+};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -99,8 +113,8 @@ BasicGeneratorCHOP::getGeneralInfo(CHOP_GeneralInfo* ginfo, const OP_Inputs*, vo
 bool
 BasicGeneratorCHOP::getOutputInfo(CHOP_OutputInfo* info, const OP_Inputs* inputs, void*)
 {
-	info->numChannels = myParms.evalNumberofchannels(inputs);
-	info->numSamples = myParms.evalLength(inputs);
+	info->numChannels = inputs->getParInt(CHAN_NAME);
+	info->numSamples = inputs->getParInt(SAMPLES_NAME);
 	info->startIndex = 0;
 	return true;
 }
@@ -118,11 +132,11 @@ BasicGeneratorCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = myParms.evalApplyscale(inputs);
-	double	scale = myParms.evalScale(inputs);
-	OperationMenuItems		operation = myParms.evalOperation(inputs);
+	bool	applyScale = inputs->getParInt(APPLYSCALE_NAME) ? true : false;
+	double	scale = applyScale ? inputs->getParDouble(SCALE_NAME) : 1.0;
+	int		operation = inputs->getParInt(OPERATION_NAME);
 
-	inputs->enablePar(ScaleName, applyScale);
+	inputs->enablePar(SCALE_NAME, applyScale);
 
 	// Get length and channels from the output since they first need to be set to the current size
 	int		length = output->numSamples;
@@ -136,17 +150,17 @@ BasicGeneratorCHOP::execute(CHOP_Output* output,
 		{
 			switch (operation) 
 			{
-				case OperationMenuItems::Add:
+				case Operation::Add:
 				{
 					curValue = (double)i + j;
 					break;
 				}
-				case OperationMenuItems::Multiply:
+				case Operation::Multiply:
 				{
 					curValue = (double)i * j;
 					break;
 				}
-				case OperationMenuItems::Power:
+				case Operation::Power:
 				default:
 				{
 					curValue = std::pow((double)i, (double)j);
@@ -164,5 +178,79 @@ BasicGeneratorCHOP::execute(CHOP_Output* output,
 void
 BasicGeneratorCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	// Sample
+	{
+		OP_NumericParameter	np;
+
+		np.name = SAMPLES_NAME;
+		np.label = "Length";
+		np.page = "Generator Basic";
+		np.defaultValues[0] = 10;
+		np.minSliders[0] = 1;
+		np.maxSliders[0] = 50;
+		np.minValues[0] = 1;
+		np.clampMins[0] = true;
+		
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Number of Channels
+	{
+		OP_NumericParameter	np;
+
+		np.name = CHAN_NAME;
+		np.label = "Number of Channels";
+		np.page = "Generator Basic";
+		np.defaultValues[0] = 10;
+		np.minSliders[0] = 0;
+		np.maxSliders[0] = 50;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Apply Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = APPLYSCALE_NAME;
+		np.label = "Apply Scale";
+		np.page = "Generator Basic";
+		np.defaultValues[0] = false;
+		
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = SCALE_NAME;
+		np.label = "Scale";
+		np.page = "Generator Basic";
+		np.defaultValues[0] = 1.0;
+		np.minSliders[0] = -10.0;
+		np.maxSliders[0] = 10.0;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Operation
+	{
+		OP_StringParameter	sp;
+
+		sp.name = OPERATION_NAME;
+		sp.label = "Operation";
+		sp.page = "Generator Basic";
+		sp.defaultValue = "Add";
+		
+		const char* names[] = { "Add", "Multiply", "Power" };
+		const char* labels[] = { "Add", "Multiply", "Power" };
+
+		OP_ParAppendResult res = manager->appendMenu(sp, 3, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }

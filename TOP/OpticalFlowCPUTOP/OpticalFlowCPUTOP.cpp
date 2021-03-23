@@ -13,11 +13,22 @@
 */
 
 #include "OpticalFlowCPUTOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
 #include <opencv2/video/tracking.hpp>
+
+// Names of the parameters
+constexpr static char NUMLEVELS_NAME[] = "Numlevels";
+constexpr static char PYRSCALE_NAME[] = "Scale";
+constexpr static char WINSIZE_NAME[] = "Winsize";
+constexpr static char ITERATIONS_NAME[] = "Iterations";
+constexpr static char POLYN_NAME[] = "Polyn";
+constexpr static char POLYSIGMA_NAME[] = "Polysigma";
+constexpr static char USEGAUSSIAN_NAME[] = "Usegaussian";
+constexpr static char USEPREVFLOW_NAME[] = "Useprevflow";
+constexpr static char DOWNLOADTYPE_NAME[] = "Downloadtype";
+constexpr static char CHANNEL_NAME[] = "Channel";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -126,6 +137,8 @@ OpticalFlowCPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 {
 	using namespace cv;
 
+	handleParameters(inputs);
+
 	inputToMat(inputs);
 	if (myFrame->empty())
 		return;
@@ -139,9 +152,6 @@ OpticalFlowCPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 		return;
 	}
 
-	int myFlags = myParms.evalUsegaussianfilter(inputs) ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
-	myFlags |= myParms.evalUsepreviousflow(inputs) ? cv::OPTFLOW_USE_INITIAL_FLOW : 0;
-
 	if (myFlow->empty() || myFlow->size() != outSize)
 	{
 		*myFlow = Mat(outSize, CV_32FC2);
@@ -149,8 +159,8 @@ OpticalFlowCPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 	}
 
 	calcOpticalFlowFarneback(
-		*myPrev, *myFrame, *myFlow, myParms.evalPyramidscale(inputs), myParms.evalNumlevels(inputs), myParms.evalWindowsize(inputs),
-		myParms.evalIterations(inputs), myParms.evalPolyn(inputs), myParms.evalPolysigma(inputs), myFlags
+		*myPrev, *myFrame, *myFlow, myPyrScale, myNumLevels, myWinSize, 
+		myNumIter, myPolyN, myPolySigma, myFlags
 	);
 
 	*myPrev = std::move(*myFrame);
@@ -161,7 +171,193 @@ OpticalFlowCPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 void
 OpticalFlowCPUTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_NumericParameter	np;
+
+		np.name = NUMLEVELS_NAME;
+		np.label = "Num Levels";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 5;
+
+		np.minSliders[0] = 0;
+		np.minValues[0] = 0;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 10;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = PYRSCALE_NAME;
+		np.label = "Pyramid Scale";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 0.5f;
+
+		np.minSliders[0] = 0;
+		np.minValues[0] = 0;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 0.5;
+		np.maxValues[0] = 0.5;
+		np.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = WINSIZE_NAME;
+		np.label = "Window Size";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 13;
+
+		np.minSliders[0] = 1;
+		np.minValues[0] = 1;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 100;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = ITERATIONS_NAME;
+		np.label = "Iterations";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 10;
+
+		np.minSliders[0] = 0;
+		np.minValues[0] = 0;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 50;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = POLYN_NAME;
+		np.label = "Poly N";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 5;
+
+		np.minSliders[0] = 5;
+		np.minValues[0] = 5;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 10;
+
+		OP_ParAppendResult res = manager->appendInt(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = POLYSIGMA_NAME;
+		np.label = "Poly Sigma";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = 1.1;
+
+		np.minSliders[0] = 0;
+		np.minValues[0] = 0;
+		np.clampMins[0] = true;
+
+		np.maxSliders[0] = 2;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = USEGAUSSIAN_NAME;
+		np.label = "Use Gaussian Filter";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter	np;
+
+		np.name = USEPREVFLOW_NAME;
+		np.label = "Use Previous Flow";
+		np.page = "Optical Flow";
+
+		np.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+        {
+		OP_StringParameter p;
+		p.name = CHANNEL_NAME;
+		p.label = "Channel";
+		p.page = "Optical Flow";
+		p.defaultValue = "R";
+
+		const char*	names[] = { "R", "G", "B", "A" };
+		const char*	labels[] = { "R", "G", "B", "A" };
+		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_StringParameter sp;
+		sp.name = DOWNLOADTYPE_NAME;
+		sp.label = "Download Type";
+		sp.page = "Optical Flow";
+
+		const char* names[] = { "Delayed", "Instant" };
+		const char* labels[] = { "Delayed", "Instant" };
+
+		OP_ParAppendResult res = manager->appendMenu(sp, 2, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
+}
+
+void 
+OpticalFlowCPUTOP::handleParameters(const OP_Inputs* in)
+{
+	myNumLevels = in->getParInt(NUMLEVELS_NAME);
+	myPyrScale = in->getParDouble(PYRSCALE_NAME);
+	myWinSize = in->getParInt(WINSIZE_NAME);
+	myNumIter = in->getParInt(ITERATIONS_NAME);
+	myPolyN = in->getParInt(POLYN_NAME);
+	myPolySigma = in->getParDouble(POLYSIGMA_NAME);
+
+	bool useGaussin = in->getParInt(USEGAUSSIAN_NAME) ? true : false;
+	bool usePrevFlow = in->getParInt(USEPREVFLOW_NAME) ? true : false;
+	myFlags = useGaussin ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
+	myFlags |= usePrevFlow ? cv::OPTFLOW_USE_INITIAL_FLOW : 0;
+
+        myDownloadtype = static_cast<OP_TOPInputDownloadType>(in->getParInt(DOWNLOADTYPE_NAME));
+        myChannel = static_cast<Channel>(in->getParInt(CHANNEL_NAME));
 }
 
 void 
@@ -191,7 +387,7 @@ OpticalFlowCPUTOP::inputToMat(const OP_Inputs* in) const
 
 	OP_TOPInputDownloadOptions	opts = {};
 	opts.verticalFlip = true;
-	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
+	opts.downloadType = myDownloadtype;
 	opts.cpuMemPixelType = OP_CPUMemPixelType::RGBA8Fixed;
 
 	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);
@@ -209,7 +405,7 @@ OpticalFlowCPUTOP::inputToMat(const OP_Inputs* in) const
         for (int i = 0; i < height; i += 1) {
                 for (int j = 0; j < width; j += 1) {
                         int pixelN = i*width + j;
-                        int index = 4*pixelN + static_cast<int>(myParms.evalChannel(in));
+                        int index = 4*pixelN + static_cast<int>(myChannel);
                         data[pixelN] = pixel[index];
                 }
         }

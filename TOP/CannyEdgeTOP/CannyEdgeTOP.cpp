@@ -80,13 +80,14 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 
 
 CannyEdgeTOP::CannyEdgeTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::cuda::GpuMat() }
+	myFrame{ new cv::cuda::GpuMat() }, myParms{ new Parameters() }
 {
 }
 
 CannyEdgeTOP::~CannyEdgeTOP()
 {
 	delete myFrame;
+	delete myParms;
 }
 
 void
@@ -98,6 +99,9 @@ CannyEdgeTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
 bool
 CannyEdgeTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, void*)
 {
+	// Output format depends on parameters
+	handleParameters(inputs);
+
 	// In this function we could assign variable values to 'format' to specify
 	// the pixel format/resolution etc that we want to output to.
 	// If we did that, we'd want to return true to tell the TOP to use the settings we've
@@ -135,9 +139,8 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 	if (myFrame->empty())
 		return;
 
-	int appertureSize = myParms.evalApperturesize(inputs);
-	if (appertureSize % 2 == 0)
-		++appertureSize;
+	if (myParms->apperturesize % 2 == 0)
+		++myParms->apperturesize;
 
 	myFrame->convertTo(*myFrame, CV_8U);
 	if (myNumChan > 1)
@@ -146,7 +149,7 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 		split(*myFrame, chan);
 		*myFrame = chan[0];
 	}
-	auto cannyEdge = createCannyEdgeDetector(255 * myParms.evalLowthreshold(inputs), 255 * myParms.evalHighthreshold(inputs), myParms.evalApperturesize(inputs), myParms.evalL2gradient(inputs));
+	auto cannyEdge = createCannyEdgeDetector(255 * myParms->lowthreshold, 255 * myParms->highthreshold, myParms->apperturesize, myParms->l2gradient);
 	cannyEdge->detect(*myFrame, *myFrame);
 
 	cvMatToOutput(output);
@@ -155,7 +158,7 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 void
 CannyEdgeTOP::setupParameters(OP_ParameterManager* in, void*)
 {
-	myParms.setup(in);
+	myParms->setupParms(in);
 }
 
 void 
@@ -163,6 +166,12 @@ CannyEdgeTOP::getErrorString(OP_String* error, void*)
 {
 	error->setString(myError.c_str());
 	myError.clear();
+}
+
+void 
+CannyEdgeTOP::handleParameters(const OP_Inputs* in)
+{
+	myParms->evalParms(in);
 }
 
 void 

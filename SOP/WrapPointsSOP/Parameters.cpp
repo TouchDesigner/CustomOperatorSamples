@@ -1,113 +1,101 @@
-#include <string>
-#include <array>
-#include "CPlusPlus_Common.h"
 #include "Parameters.h"
-
-#pragma region Evals
-
-RaysMenuItems
-Parameters::evalRays(const OP_Inputs* input)
-{
-	return static_cast<RaysMenuItems>(input->getParInt(RaysName));
-}
-
-std::array<double, 3>
-Parameters::evalDirection(const OP_Inputs* input)
-{
-	std::array<double, 3> vals;
-	input->getParDouble3(DirectionName, vals[0], vals[1], vals[2]);
-	return vals;
-}
-
-std::array<double, 3>
-Parameters::evalDestination(const OP_Inputs* input)
-{
-	std::array<double, 3> vals;
-	input->getParDouble3(DestinationName, vals[0], vals[1], vals[2]);
-	return vals;
-}
+#include "CPlusPlus_Common.h"
 
 bool
-Parameters::evalReverse(const OP_Inputs* input)
+Parameters::evalParms(const OP_Inputs* input)
 {
-	return input->getParInt(ReverseName) ? true : false;
+	bool changed = false;
+	Rays	tmprays = static_cast<Rays>(input->getParInt(RAYS_NAME));
+	changed |= tmprays != rays;
+	rays = tmprays;
+
+	bool needDirection = rays == Rays::Parallel;
+	input->enablePar(DIRECTION_NAME, needDirection);
+	if (needDirection)
+	{
+		double	tmpdirection[3];
+		input->getParDouble3(DIRECTION_NAME, tmpdirection[0], tmpdirection[1], tmpdirection[2]);
+		changed |= memcmp(direction, tmpdirection, sizeof(direction)) != 0;
+		memcpy(direction, tmpdirection, sizeof(direction));
+	}
+
+	bool needOrigin = rays == Rays::Radial;
+	input->enablePar(ORIGIN_NAME, needOrigin);
+	if (needOrigin)
+	{
+		double	tmporigin[3];
+		input->getParDouble3(ORIGIN_NAME, tmporigin[0], tmporigin[1], tmporigin[2]);
+		changed |= memcmp(origin, tmporigin, sizeof(origin)) != 0;
+		memcpy(origin, tmporigin, sizeof(origin));
+	}
+
+	bool	tmpreverse = input->getParInt(REVERSE_NAME) ? true : false;
+	changed |= tmpreverse != reverse;
+	reverse = tmpreverse;
+
+	Color	tmphitcolor;
+	tmphitcolor.r = static_cast<float>(input->getParDouble(HITCOLOR_NAME, 0));
+	tmphitcolor.g = static_cast<float>(input->getParDouble(HITCOLOR_NAME, 1));
+	tmphitcolor.b = static_cast<float>(input->getParDouble(HITCOLOR_NAME, 2));
+	tmphitcolor.a = static_cast<float>(input->getParDouble(HITCOLOR_NAME, 3));
+	changed |= memcmp(&hitcolor, &tmphitcolor, sizeof(hitcolor)) != 0;
+	hitcolor = tmphitcolor;
+
+	Color	tmpmisscolor;
+	tmpmisscolor.r = static_cast<float>(input->getParDouble(MISSCOLOR_NAME, 0));
+	tmpmisscolor.g = static_cast<float>(input->getParDouble(MISSCOLOR_NAME, 1));
+	tmpmisscolor.b = static_cast<float>(input->getParDouble(MISSCOLOR_NAME, 2));
+	tmpmisscolor.a = static_cast<float>(input->getParDouble(MISSCOLOR_NAME, 3));
+	changed |= memcmp(&misscolor, &tmpmisscolor, sizeof(misscolor)) != 0;
+	misscolor = tmpmisscolor;
+
+	double	tmpscale = input->getParDouble(SCALE_NAME);
+	changed |= tmpscale != scale;
+	scale = tmpscale;
+
+	return changed;
 }
-
-Color
-Parameters::evalHitcolor(const OP_Inputs* input)
-{
-	std::array<double, 4> vals;
-	input->getParDouble4(HitcolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
-}
-
-Color
-Parameters::evalMisscolor(const OP_Inputs* input)
-{
-	std::array<double, 4> vals;
-	input->getParDouble4(MisscolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
-}
-
-double
-Parameters::evalScale(const OP_Inputs* input)
-{
-	return input->getParDouble(ScaleName);
-}
-
-
-#pragma endregion
-
-#pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setupParms(OP_ParameterManager* manager)
 {
+
 	{
 		OP_StringParameter p;
-		p.name = RaysName;
-		p.label = RaysLabel;
+		p.name = RAYS_NAME;
+		p.label = "Rays";
 		p.page = "Cast Ray";
 		p.defaultValue = "Parallel";
-		std::array<const char*, 2> Names =
-		{
-			"Parallel",
-			"Radial"
-		};
-		std::array<const char*, 2> Labels =
-		{
-			"Parallel",
-			"Radial"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		const char*	names[] = { "Parallel", "Radial" };
+		const char*	labels[] = { "Parallel", "Radial" };
+		OP_ParAppendResult res = manager->appendMenu(p, 2, names, labels);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_NumericParameter p;
-		p.name = DirectionName;
-		p.label = DirectionLabel;
+		p.name = DIRECTION_NAME;
+		p.label = "Direction";
 		p.page = "Cast Ray";
-		
-		const int ArraySize = 3;
 
-		const std::array<double, ArraySize>  DefaultValues = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0 };
-		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0 };
-		const std::array<bool, ArraySize>  ClampMins = { false, false, false };
-		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false };
-		for (int i = 0; i < DefaultValues.size(); ++i)
+		const double defaultValues[] = { 0.0, 0.0, 0.0 };
+		const double minSliders[] = { 0.0, 0.0, 0.0 };
+		const double maxSliders[] = { 1.0, 1.0, 1.0 };
+		const double minValues[] = { 0.0, 0.0, 0.0 };
+		const double maxValues[] = { 1.0, 1.0, 1.0 };
+		const bool clampMins[] = { false, false, false };
+		const bool clampMaxes[] = { false, false, false };
+		for (int i = 0; i < 3; ++i)
 		{
-			p.defaultValues[i] = DefaultValues[i];
-			p.minSliders[i] = MinSliders[i];
-			p.maxSliders[i] = MaxSliders[i];
-			p.minValues[i] = MinValues[i];
-			p.maxValues[i] = MaxValues[i];
-			p.clampMins[i] = ClampMins[i];
-			p.clampMaxes[i] = ClampMaxes[i];
+			p.defaultValues[i] = defaultValues[i];
+			p.minSliders[i] = minSliders[i];
+			p.maxSliders[i] = maxSliders[i];
+			p.minValues[i] = minValues[i];
+			p.maxValues[i] = maxValues[i];
+			p.clampMins[i] = clampMins[i];
+			p.clampMaxes[i] = clampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendXYZ(p);
 
@@ -116,28 +104,26 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = DestinationName;
-		p.label = DestinationLabel;
+		p.name = ORIGIN_NAME;
+		p.label = "Destination";
 		p.page = "Cast Ray";
-		
-		const int ArraySize = 3;
 
-		const std::array<double, ArraySize>  DefaultValues = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0 };
-		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0 };
-		const std::array<bool, ArraySize>  ClampMins = { false, false, false };
-		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false };
-		for (int i = 0; i < DefaultValues.size(); ++i)
+		const double defaultValues[] = { 0.0, 0.0, 0.0 };
+		const double minSliders[] = { 0.0, 0.0, 0.0 };
+		const double maxSliders[] = { 1.0, 1.0, 1.0 };
+		const double minValues[] = { 0.0, 0.0, 0.0 };
+		const double maxValues[] = { 1.0, 1.0, 1.0 };
+		const bool clampMins[] = { false, false, false };
+		const bool clampMaxes[] = { false, false, false };
+		for (int i = 0; i < 3; ++i)
 		{
-			p.defaultValues[i] = DefaultValues[i];
-			p.minSliders[i] = MinSliders[i];
-			p.maxSliders[i] = MaxSliders[i];
-			p.minValues[i] = MinValues[i];
-			p.maxValues[i] = MaxValues[i];
-			p.clampMins[i] = ClampMins[i];
-			p.clampMaxes[i] = ClampMaxes[i];
+			p.defaultValues[i] = defaultValues[i];
+			p.minSliders[i] = minSliders[i];
+			p.maxSliders[i] = maxSliders[i];
+			p.minValues[i] = minValues[i];
+			p.maxValues[i] = maxValues[i];
+			p.clampMins[i] = clampMins[i];
+			p.clampMaxes[i] = clampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendXYZ(p);
 
@@ -146,11 +132,11 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = ReverseName;
-		p.label = ReverseLabel;
+		p.name = REVERSE_NAME;
+		p.label = "Reverse";
 		p.page = "Cast Ray";
+
 		p.defaultValues[0] = false;
-
 		OP_ParAppendResult res = manager->appendToggle(p);
 
 		assert(res == OP_ParAppendResult::Success);
@@ -158,28 +144,26 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = HitcolorName;
-		p.label = HitcolorLabel;
+		p.name = HITCOLOR_NAME;
+		p.label = "Hit Color";
 		p.page = "Cast Ray";
-		
-		const int ArraySize = 4;
 
-		const std::array<double, ArraySize>  DefaultValues = { 1.0, 1.0, 1.0, 1.0 };
-		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0, 1.0 };
-		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0, 1.0 };
-		const std::array<bool, ArraySize>  ClampMins = { false, false, false, false };
-		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false, false };
-		for (int i = 0; i < DefaultValues.size(); ++i)
+		const double defaultValues[] = { 1.0, 1.0, 1.0, 1.0 };
+		const double minSliders[] = { 0.0, 0.0, 0.0, 0.0 };
+		const double maxSliders[] = { 1.0, 1.0, 1.0, 1.0 };
+		const double minValues[] = { 0.0, 0.0, 0.0, 0.0 };
+		const double maxValues[] = { 1.0, 1.0, 1.0, 1.0 };
+		const bool clampMins[] = { false, false, false, false };
+		const bool clampMaxes[] = { false, false, false, false };
+		for (int i = 0; i < 4; ++i)
 		{
-			p.defaultValues[i] = DefaultValues[i];
-			p.minSliders[i] = MinSliders[i];
-			p.maxSliders[i] = MaxSliders[i];
-			p.minValues[i] = MinValues[i];
-			p.maxValues[i] = MaxValues[i];
-			p.clampMins[i] = ClampMins[i];
-			p.clampMaxes[i] = ClampMaxes[i];
+			p.defaultValues[i] = defaultValues[i];
+			p.minSliders[i] = minSliders[i];
+			p.maxSliders[i] = maxSliders[i];
+			p.minValues[i] = minValues[i];
+			p.maxValues[i] = maxValues[i];
+			p.clampMins[i] = clampMins[i];
+			p.clampMaxes[i] = clampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendRGBA(p);
 
@@ -188,28 +172,26 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = MisscolorName;
-		p.label = MisscolorLabel;
+		p.name = MISSCOLOR_NAME;
+		p.label = "Miss Color";
 		p.page = "Cast Ray";
-		
-		const int ArraySize = 4;
 
-		const std::array<double, ArraySize>  DefaultValues = { 0.0, 0.0, 0.0, 1.0 };
-		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0, 1.0 };
-		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0, 0.0 };
-		const std::array<double, ArraySize>  MaxValues = { 1.0, 1.0, 1.0, 1.0 };
-		const std::array<bool, ArraySize>  ClampMins = { false, false, false, false };
-		const std::array<bool, ArraySize>  ClampMaxes = { false, false, false, false };
-		for (int i = 0; i < DefaultValues.size(); ++i)
+		const double defaultValues[] = { 0.0, 0.0, 0.0, 1.0 };
+		const double minSliders[] = { 0.0, 0.0, 0.0, 0.0 };
+		const double maxSliders[] = { 1.0, 1.0, 1.0, 1.0 };
+		const double minValues[] = { 0.0, 0.0, 0.0, 0.0 };
+		const double maxValues[] = { 1.0, 1.0, 1.0, 1.0 };
+		const bool clampMins[] = { false, false, false, false };
+		const bool clampMaxes[] = { false, false, false, false };
+		for (int i = 0; i < 4; ++i)
 		{
-			p.defaultValues[i] = DefaultValues[i];
-			p.minSliders[i] = MinSliders[i];
-			p.maxSliders[i] = MaxSliders[i];
-			p.minValues[i] = MinValues[i];
-			p.maxValues[i] = MaxValues[i];
-			p.clampMins[i] = ClampMins[i];
-			p.clampMaxes[i] = ClampMaxes[i];
+			p.defaultValues[i] = defaultValues[i];
+			p.minSliders[i] = minSliders[i];
+			p.maxSliders[i] = maxSliders[i];
+			p.minValues[i] = minValues[i];
+			p.maxValues[i] = maxValues[i];
+			p.clampMins[i] = clampMins[i];
+			p.clampMaxes[i] = clampMaxes[i];
 		}
 		OP_ParAppendResult res = manager->appendRGBA(p);
 
@@ -218,9 +200,10 @@ Parameters::setup(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = ScaleName;
-		p.label = ScaleLabel;
+		p.name = SCALE_NAME;
+		p.label = "Scale";
 		p.page = "Cast Ray";
+
 		p.defaultValues[0] = 1.0;
 		p.minSliders[0] = 0.0;
 		p.maxSliders[0] = 1.0;
@@ -228,12 +211,8 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		OP_ParAppendResult res = manager->appendFloat(p, 1);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
-
-
 }
-
-#pragma endregion

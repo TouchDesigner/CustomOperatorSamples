@@ -13,10 +13,21 @@
 */
 
 #include "FilterDAT.h"
-#include "Parameters.h"
 
 #include <string>
 #include <cctype>
+
+// Names of the parameters
+constexpr static char	CASE_NAME[] = "Case";
+constexpr static char	WHITESPACE_NAME[] = "Whitespace";
+
+enum class
+Case
+{
+	UpperCamel,
+	Lower,
+	Upper
+};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -151,24 +162,53 @@ FilterDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 	if (!dat)
 		return;
 
+	handleParameters(inputs);
+
 	output->setOutputDataType(dat->isTable ? DAT_OutDataType::Table : DAT_OutDataType::Text);
 	output->setTableSize(dat->numRows, dat->numCols);
 
-	fillTable(inputs, output, dat);
+	fillTable(output, dat);
 }
 
 void 
 FilterDAT::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter sp;
+		sp.name = CASE_NAME;
+		sp.label = "Case";
+
+		sp.defaultValue = "UpperCamelCase";
+
+		const char* names[] = { "Uppercamelcase", "Lowercase", "Uppercase" };
+		const char* labels[] = { "Upper Camel Case", "Lower Case", "Upper Case" };
+
+		OP_ParAppendResult res = manager->appendMenu(sp, 3, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = WHITESPACE_NAME;
+		np.label = "Keep Spaces";
+
+		np.defaultValues[0] = true;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+}
+
+void 
+FilterDAT::handleParameters(const OP_Inputs* in)
+{
+	myCase = static_cast<Case>(in->getParInt(CASE_NAME));
+	myKeepSpaces = in->getParInt(WHITESPACE_NAME) ? true : false;
 }
 
 void
-FilterDAT::fillTable(const OP_Inputs* inputs, DAT_Output* out, const OP_DATInput* in)
+FilterDAT::fillTable(DAT_Output* out, const OP_DATInput* in)
 {
-	CaseMenuItems myCase = myParms.evalCase(inputs);
-	bool myKeepSpaces = myParms.evalKeepspaces(inputs);
-
 	for (int i = 0; i < in->numRows; ++i)
 	{
 		for (int j = 0; j < in->numCols; ++j)
@@ -177,13 +217,13 @@ FilterDAT::fillTable(const OP_Inputs* inputs, DAT_Output* out, const OP_DATInput
 			switch (myCase)
 			{
 			default:
-			case CaseMenuItems::Uppercamelcase:
+			case Case::UpperCamel:
 				toCamelCase(tmp, myKeepSpaces);
 				break;
-			case CaseMenuItems::Lowercase:
+			case Case::Lower:
 				toLowerCase(tmp, myKeepSpaces);
 				break;
-			case CaseMenuItems::Uppercase:
+			case Case::Upper:
 				toUpperCase(tmp, myKeepSpaces);
 				break;
 			}

@@ -1,69 +1,51 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
+
+// Names of the parameters
+constexpr static char	TRANSFORM_NAME[] = "Transform";
+constexpr static char	COORDINATESYSTEM_NAME[] = "Coordinatesystem";
+constexpr static char	CHANNEL_NAME[] = "Channel";
+constexpr static char	TRANSFORMROWS_NAME[] = "Transformrows";
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
-// Names of the parameters
-
-constexpr static char ModeName[] = "Mode";
-constexpr static char ModeLabel[] = "Mode";
-
-constexpr static char CoordName[] = "Coord";
-constexpr static char CoordLabel[] = "Coordinate System";
-
-constexpr static char ChanName[] = "Chan";
-constexpr static char ChanLabel[] = "Channel";
-
-constexpr static char TransrowsName[] = "Transrows";
-constexpr static char TransrowsLabel[] = "Transform Rows";
-
-
-#pragma endregion
-
-#pragma region Menus
-enum class ModeMenuItems
+enum class Transform
 {
-	dft,
-	idft
+	Forward,
+	Inverse
 };
 
-enum class CoordMenuItems
+enum class CoordinatesSys
 {
-	polar,
-	cartesian
+	Polar,
+	Cartesian
 };
 
-enum class ChanMenuItems
+enum class Channel
 {
-	r,
-	g,
-	b,
-	a
+	R,
+	Mono = R,
+	G,
+	Second = G,
+	B,
+	A,
+	Invalid
 };
 
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	void	evalParms(const OP_Inputs*);
 
-	// Mode
-	static ModeMenuItems		evalMode(const OP_Inputs* input);
+    void    setupParms(OP_ParameterManager*);
 
-	// Coordinate System
-	static CoordMenuItems		evalCoord(const OP_Inputs* input);
-
-	// Channel
-	static ChanMenuItems		evalChan(const OP_Inputs* input);
-
-	// Transform Rows
-	static bool		evalTransrows(const OP_Inputs* input);
-
-
+	// Parameters saved
+	int				flags;
+	bool			transformrows;
+	CoordinatesSys	coordinatesystem;
+	Transform		transform;
+	Channel			channel;
 };
-#pragma endregion
+
+#endif

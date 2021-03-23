@@ -16,7 +16,6 @@
 #define __SpectrumTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
@@ -33,6 +32,8 @@ namespace GpuUtils
 {
 	enum class ChannelFormat;
 }
+
+struct Parameters;
 
 /*
 This example implements a TOP to calculate the fourier transform using openCV's cuda functionallity.
@@ -68,9 +69,11 @@ public:
 	virtual void		getErrorString(OP_String*, void* reserved) override;
 
 private:
+    void                handleParameters(const OP_Inputs*);
+
     void                inputTopToMat(const OP_TOPInput*);
 
-	void 				cvMatToOutput(const cv::cuda::GpuMat&, const OP_Inputs* input, TOP_OutputFormatSpecs*) const;
+	void 				cvMatToOutput(const cv::cuda::GpuMat&, TOP_OutputFormatSpecs*) const;
 
 	bool				checkInputTop(const OP_TOPInput*);
 
@@ -81,7 +84,7 @@ private:
 	cv::cuda::GpuMat*	myFrame;
 	cv::cuda::GpuMat*	myResult;
 
-	Parameters			myParms;
+	Parameters*			myParms;
 	std::string			myError;
 
 	int						myNumChan;

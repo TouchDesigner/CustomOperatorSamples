@@ -1,37 +1,24 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
 // Names of the parameters
-
-constexpr static char InsidecolorName[] = "Insidecolor";
-constexpr static char InsidecolorLabel[] = "Inside Color";
-
-constexpr static char OutsidecolorName[] = "Outsidecolor";
-constexpr static char OutsidecolorLabel[] = "Outside Color";
+constexpr static char	INSIDEVALUE_NAME[] = "Insidecolor";
+constexpr static char	OUTSIDEVALUE_NAME[] = "Outsidecolor";
 
 
-#pragma endregion
-
-#pragma region Menus
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	// Returns true if parameters have changed since last call
+	bool	evalParms(const OP_Inputs*);
 
-	// Inside Color
-	static Color		evalInsidecolor(const OP_Inputs* input);
+	void	setupParms(OP_ParameterManager*);
 
-	// Outside Color
-	static Color		evalOutsidecolor(const OP_Inputs* input);
-
-
+	double	insidevalue[4];
+	double	outsidevalue[4];
 };
-#pragma endregion
+
+#endif

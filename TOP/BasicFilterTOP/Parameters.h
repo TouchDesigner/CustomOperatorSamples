@@ -1,55 +1,30 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
+
+#include <cstdint>
+
+// Names of the parameters
+constexpr static char COLORBITS_NAME[] = "Colorbits";
+constexpr static char DITHER_NAME[] = "Dither";
+constexpr static char MULTITHREADED_NAME[] = "Multithreaded";
+constexpr static char DOWNLOADTYPE_NAME[] = "Downloadtype";
 
 class OP_Inputs;
 class OP_ParameterManager;
+enum class OP_TOPInputDownloadType : int32_t;
 
-#pragma region ParNames and ParLabels
-
-// Names of the parameters
-
-constexpr static char BitspercolorName[] = "Bitspercolor";
-constexpr static char BitspercolorLabel[] = "Bits per Color";
-
-constexpr static char DitherName[] = "Dither";
-constexpr static char DitherLabel[] = "Dither";
-
-constexpr static char MultithreadedName[] = "Multithreaded";
-constexpr static char MultithreadedLabel[] = "Multithreaded";
-
-constexpr static char DownloadtypeName[] = "Downloadtype";
-constexpr static char DownloadtypeLabel[] = "Download Type";
-
-
-#pragma endregion
-
-#pragma region Menus
-enum class DownloadtypeMenuItems
-{
-	Delayed,
-	Instant
-};
-
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	void	updateParameters(const OP_Inputs*);
 
-	// Bits per Color
-	static int		evalBitspercolor(const OP_Inputs* input);
+    void    setupParameters(OP_ParameterManager*);
 
-	// Dither
-	static bool		evalDither(const OP_Inputs* input);
-
-	// Multithreaded
-	static bool		evalMultithreaded(const OP_Inputs* input);
-
-	// Download Type
-	static DownloadtypeMenuItems		evalDownloadtype(const OP_Inputs* input);
-
-
+	// Parameters saved
+	int						    colorBits;
+	bool						dither;
+	bool						multiThreaded;
+	OP_TOPInputDownloadType     downloadType;
 };
-#pragma endregion
+
+#endif

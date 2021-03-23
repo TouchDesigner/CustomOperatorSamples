@@ -15,7 +15,6 @@
 #define __CudaTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <string>
 #include <array>
@@ -47,6 +46,8 @@ public:
 	virtual void		getErrorString(OP_String*, void* reserved) override;
 
 private:
+	void		handleParameters(const OP_Inputs*);
+
 	void		checkOutputFormat(const TOP_OutputFormatSpecs*);
 
 	void		checkTopFormat(const OP_TOPInput*, const TOP_OutputFormatSpecs*);
@@ -55,8 +56,6 @@ private:
 
 	// Parameters
 	std::array<uint8_t, 4>	myRgba8;
-
-	Parameters myParms;
 };
 
 #endif

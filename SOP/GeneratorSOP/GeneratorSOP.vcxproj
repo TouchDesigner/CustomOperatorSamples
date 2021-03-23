@@ -82,7 +82,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Parameters.h" />
     <ClInclude Include="ShapeGenerator.h" />
     <ClInclude Include="GeneratorSOP.h" />
     <ClInclude Include="SOP_CPlusPlusBase.h" />
@@ -90,7 +89,6 @@
     <ClInclude Include="GL_Extensions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
     <ClCompile Include="GeneratorSOP.cpp" />
   </ItemGroup>

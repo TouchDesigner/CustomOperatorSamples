@@ -82,7 +82,7 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 
 
 SpectrumTOP::SpectrumTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::cuda::GpuMat() }, myResult{ new cv::cuda::GpuMat() }
+	myFrame{ new cv::cuda::GpuMat() }, myResult{ new cv::cuda::GpuMat() }, myParms{ new Parameters() }
 {
 }
 
@@ -90,6 +90,7 @@ SpectrumTOP::~SpectrumTOP()
 {
 	delete myFrame;
 	delete myResult;
+	delete myParms;
 }
 
 void
@@ -101,6 +102,9 @@ SpectrumTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
 bool
 SpectrumTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, void*)
 {
+	// Output format depends on parameters
+	handleParameters(inputs);
+
 	// In this function we could assign variable values to 'format' to specify
 	// the pixel format/resolution etc that we want to output to.
 	// If we did that, we'd want to return true to tell the TOP to use the settings we've
@@ -109,7 +113,7 @@ SpectrumTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, 
 	format->bitsPerChannel = 32;
 	format->floatPrecision = true;
 	format->redChannel = true;
-	format->greenChannel = myParms.evalMode(inputs) == ModeMenuItems::dft;
+	format->greenChannel = myParms->transform == Transform::Forward;
 	format->blueChannel = false;
 	format->alphaChannel = false;
 
@@ -138,11 +142,11 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 	if (myFrame->empty())
 		return;
 
-	if (myParms.evalMode(inputs) == ModeMenuItems::dft)
+	if (myParms->transform == Transform::Forward)
 	{
-		dft(*myFrame, *myResult, mySize, 0);
+		dft(*myFrame, *myResult, mySize, myParms->flags);
 
-		if (!myParms.evalTransrows(inputs))
+		if (!myParms->transformrows)
 		{
 			swapQuadrants(*myResult);
 		}
@@ -151,7 +155,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			swapSides(*myResult);
 		}
 
-		if (myParms.evalCoord(inputs) == CoordMenuItems::polar)
+		if (myParms->coordinatesystem == CoordinatesSys::Polar)
 		{
 			GpuMat channels[2];
 			split(*myResult, channels);
@@ -166,7 +170,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 	}
 	else
 	{
-		if (myParms.evalCoord(inputs) == CoordMenuItems::polar)
+		if (myParms->coordinatesystem == CoordinatesSys::Polar)
 		{
 			GpuMat channels[2];
 			split(*myFrame, channels);
@@ -178,7 +182,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			merge(channels, 2, *myFrame);
 		}
 
-		if (!myParms.evalTransrows(inputs))
+		if (!myParms->transformrows)
 		{
 			swapQuadrants(*myFrame);
 		}
@@ -187,16 +191,16 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			swapSides(*myFrame);
 		}
 
-		dft(*myFrame, *myResult, mySize, 0);
+		dft(*myFrame, *myResult, mySize, myParms->flags);
 	}
 
 	cvMatToOutput(*myResult, output);
 }
 
 void
-SpectrumTOP::setupParameters(OP_ParameterManager* manager, void*)
+SpectrumTOP::setupParameters(OP_ParameterManager* in, void*)
 {
-	myParms.setup(manager);
+	myParms->setupParms(in);
 }
 
 void 
@@ -207,9 +211,15 @@ SpectrumTOP::getErrorString(OP_String* error, void*)
 }
 
 void 
-SpectrumTOP::cvMatToOutput(const cv::cuda::GpuMat& M, const OP_Inputs* input, TOP_OutputFormatSpecs* out) const
+SpectrumTOP::handleParameters(const OP_Inputs* in)
 {
-	if (myParms.evalMode(input) == ModeMenuItems::dft)
+	myParms->evalParms(in);
+}
+
+void 
+SpectrumTOP::cvMatToOutput(const cv::cuda::GpuMat& M, TOP_OutputFormatSpecs* out) const
+{
+	if (myParms->transform == Transform::Forward)
 	{
 		GpuUtils::matGPUToArray(out->width, out->height, M, out->cudaOutput[0], 2 * sizeof(float));
 	}
@@ -223,9 +233,9 @@ void
 SpectrumTOP::inputTopToMat(const OP_TOPInput* top)
 {
 	*myFrame = cv::cuda::GpuMat(top->height, top->width, CV_32FC2);
-	if (myParms.evalMode(top) == ModeMenuItems::dft)
+	if (myParms->transform == Transform::Forward)
 	{
-		GpuUtils::arrayToComplexMatGPU(top->width, top->height, top->cudaInput, *myFrame, myNumChan, static_cast<int>(myParms.evalChan(top)), myChanFormat);
+		GpuUtils::arrayToComplexMatGPU(top->width, top->height, top->cudaInput, *myFrame, myNumChan, static_cast<int>(myParms->channel), myChanFormat);
 	}
 	else
 	{
@@ -260,14 +270,12 @@ SpectrumTOP::inputTopToMat(const OP_TOPInput* top)
 bool
 SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 {
-	ModeMenuItems myMode = myParms.evalMode(topInput);
-	if (myMode == ModeMenuItems::idft && topInput->pixelFormat != RG32F)
+	if (myParms->transform == Transform::Inverse && topInput->pixelFormat != RG32F)
 	{
 		myError = "Inverse transform requires a 32-bit float RG texture.";
 		return false;
 	}
 
-	ChanMenuItems myChan = myParms.evalChan(topInput);
 	switch (topInput->pixelFormat)
 	{
 		case A8:
@@ -275,10 +283,10 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 		case A16F:
 		case A32F:
 			// Only A channel is valid, change to use channel as index
-			if (myChan == ChanMenuItems::a)
-				myChan == ChanMenuItems::r;
+			if (myParms->channel == Channel::A)
+				myParms->channel = Channel::Mono;
 			else
-				myChan = ChanMenuItems::r; // ::Invalid what is invalid here ?
+				myParms->channel = Channel::Invalid;
 		case R8:
 		case R16:
 		case R16F:
@@ -290,10 +298,10 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 		case RA16F:
 		case RA32F:
 			// Only RA channels are valid, change to use channel as index
-			if (myChan == ChanMenuItems::a)
-				myChan = ChanMenuItems::r; // ::Second what is Second here ?
-			else if (myParms.evalChan(topInput) != ChanMenuItems::r)
-				myChan = ChanMenuItems::r;  // ::Invalid what is Invalid here ?
+			if (myParms->channel == Channel::A)
+				myParms->channel = Channel::Second;
+			else if (myParms->channel != Channel::R)
+				myParms->channel = Channel::Invalid;
 		case RG8:
 		case RG16:
 		case RG16F:
@@ -303,8 +311,8 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 		// RGB has alpha on its channels
 		case RGB16F:
 		case RGB32F:
-			if (myChan == ChanMenuItems::a)
-				myChan = ChanMenuItems::r; // ::Invalid what is Invalid here ?
+			if (myParms->channel == Channel::A)
+				myParms->channel = Channel::Invalid;
 		case RGBA8:
 		case RGBA16:
 		case RGBA16F:
@@ -351,7 +359,7 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 			break;
 	}
 
-	if (myMode == ModeMenuItems::dft && static_cast<int>(myChan) >= myNumChan)
+	if (myParms->transform == Transform::Forward && static_cast<int>(myParms->channel) >= myNumChan)
 	{
 		myError = "Channel not available.";
 		return false;

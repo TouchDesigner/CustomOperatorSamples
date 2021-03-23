@@ -89,7 +89,6 @@
     <ClCompile Include="GL\glewinfo.c" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="OpenGLTOP.cpp" />
-    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="Shape.cpp" />
   </ItemGroup>
@@ -99,7 +98,6 @@
     <ClInclude Include="GL_Extensions.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="OpenGLTOP.h" />
-    <ClInclude Include="Parameters.h" />
     <ClInclude Include="Program.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />

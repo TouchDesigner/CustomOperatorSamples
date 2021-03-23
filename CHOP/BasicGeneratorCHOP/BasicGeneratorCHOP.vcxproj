@@ -60,7 +60,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -88,11 +88,9 @@
     <ClInclude Include="CHOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="GL_Extensions.h" />
-    <ClInclude Include="Parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicGeneratorCHOP.cpp" />
-    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

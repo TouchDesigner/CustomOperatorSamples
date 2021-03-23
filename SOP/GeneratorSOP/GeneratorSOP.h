@@ -17,7 +17,8 @@
 
 #include "SOP_CPlusPlusBase.h"
 #include "ShapeGenerator.h"
-#include "Parameters.h"
+
+enum class Shape;
 
 /*
 This example implements a SOP which takes the following parameters:
@@ -47,10 +48,15 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
 private:
+
+	void		handleParameters(const OP_Inputs*);
+
+	// Parameters
+	Color		myColor;
+	Shape		myShape;
+
 	// Class to construct geometry
 	ShapeGenerator myShapeGenerator;
-
-	Parameters myParms;
 };
 
 #endif // !__GeneratorSOP__

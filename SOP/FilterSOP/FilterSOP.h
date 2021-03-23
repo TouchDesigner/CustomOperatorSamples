@@ -16,7 +16,6 @@
 #define __FilterSOP__
 
 #include "SOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include <string>
 
 /*
@@ -46,7 +45,6 @@ public:
 
 	virtual void		getWarningString(OP_String*, void*) override;
 
-
 private:
 	void		copyPointsTranslated(SOP_Output*, const OP_SOPInput*, const Vector&) const;
 
@@ -66,8 +64,6 @@ private:
 	Vector		getTranslate(const OP_CHOPInput*);
 
 	std::string			myWarningString;
-	
-	Parameters myParms;
 };
 
 #endif // !__FilterSOP__

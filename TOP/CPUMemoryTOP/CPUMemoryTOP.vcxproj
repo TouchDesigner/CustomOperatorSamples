@@ -84,13 +84,11 @@
   <ItemGroup>
     <ClCompile Include="CPUMemoryTOP.cpp" />
     <ClCompile Include="FrameQueue.cpp" />
-    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPUMemoryTOP.h" />
     <ClInclude Include="FrameQueue.h" />
     <ClInclude Include="GL_Extensions.h" />
-    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
   </ItemGroup>

@@ -13,11 +13,13 @@
 */
 
 #include "CudaTOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
 #include <array>
+
+// Names of the parameters
+constexpr static char COLOR_NAME[] = "Color";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -111,13 +113,7 @@ CudaTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Con
 		}
 	}
 
-	if (inputs->getNumInputs() == 0) {
-		Color myColor = myParms.evalColor(inputs);
-		myRgba8.at(0) = static_cast<uint8_t>(UINT8_MAX * myColor.r);
-		myRgba8.at(1) = static_cast<uint8_t>(UINT8_MAX * myColor.g);
-		myRgba8.at(2) = static_cast<uint8_t>(UINT8_MAX * myColor.b);
-		myRgba8.at(3) = static_cast<uint8_t>(UINT8_MAX * myColor.a);
-	}
+	handleParameters(inputs);
 
 	doCUDAOperation(output->width, output->height, data, output->cudaOutput[0], myRgba8);
 }
@@ -125,7 +121,24 @@ CudaTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Con
 void 
 CudaTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_NumericParameter	np;
+
+		np.name = COLOR_NAME;
+		np.label = "Color";
+		np.page = "Generator";
+
+		memcpy(np.defaultValues, std::array<double, 4>{1, 1, 1, 1}.data(), 4 * sizeof(double));
+		memcpy(np.clampMaxes, std::array<bool, 4>{true, true, true, true}.data(), 4 * sizeof(double));
+		memcpy(np.maxValues, std::array<double, 4>{1, 1, 1, 1}.data(), 4 * sizeof(double));
+		memcpy(np.maxSliders, std::array<double, 4>{1, 1, 1, 1}.data(), 4 * sizeof(double));
+		memcpy(np.clampMins, std::array<bool, 4>{true, true, true, true}.data(), 4 * sizeof(double));
+		memcpy(np.minValues, std::array<double, 4>{0, 0, 0, 0}.data(), 4 * sizeof(double));
+		memcpy(np.minSliders, std::array<double, 4>{0, 0, 0, 0}.data(), 4 * sizeof(double));
+
+		OP_ParAppendResult res = manager->appendRGBA(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 void 
@@ -133,6 +146,21 @@ CudaTOP::getErrorString(OP_String* error, void*)
 {
 	error->setString(myError.c_str());
 	myError.clear();
+}
+
+void 
+CudaTOP::handleParameters(const OP_Inputs* inputs)
+{
+	bool zeroInput = inputs->getNumInputs() == 0;
+	inputs->enablePar(COLOR_NAME, zeroInput);
+
+	if (zeroInput)
+	{
+		myRgba8.at(0) = static_cast<uint8_t>(UINT8_MAX * inputs->getParDouble(COLOR_NAME, 0));
+		myRgba8.at(1) = static_cast<uint8_t>(UINT8_MAX * inputs->getParDouble(COLOR_NAME, 1));
+		myRgba8.at(2) = static_cast<uint8_t>(UINT8_MAX * inputs->getParDouble(COLOR_NAME, 2));
+		myRgba8.at(3) = static_cast<uint8_t>(UINT8_MAX * inputs->getParDouble(COLOR_NAME, 3));
+	}
 }
 
 void 

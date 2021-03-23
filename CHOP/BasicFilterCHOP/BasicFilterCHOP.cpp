@@ -13,10 +13,15 @@
 */
 
 #include "BasicFilterCHOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
+
+// Names of the parameters
+constexpr static char APPLYSCALE_NAME[]		= "Applyscale";
+constexpr static char APPLYOFFSET_NAME[]	= "Applyoffset";
+constexpr static char SCALE_NAME[]			= "Scale";
+constexpr static char OFFSET_NAME[]			= "Offset";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -113,13 +118,13 @@ BasicFilterCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = myParms.evalApplyscale(inputs);
-	double	scale = myParms.evalScale(inputs);
-	bool	applyOffset = myParms.evalApplyoffset(inputs);
-	double	offset = myParms.evalOffset(inputs);
+	bool	applyScale = inputs->getParInt(APPLYSCALE_NAME) ? true : false;
+	double	scale = applyScale ? inputs->getParDouble(SCALE_NAME) : 1.0;
+	bool	applyOffset = inputs->getParInt(APPLYOFFSET_NAME) ? true : false;
+	double	offset = applyOffset ? inputs->getParDouble(OFFSET_NAME) : 0.0;
 
-	inputs->enablePar(ScaleName, applyScale);
-	inputs->enablePar(OffsetName, applyOffset);
+	inputs->enablePar(SCALE_NAME, applyScale);
+	inputs->enablePar(OFFSET_NAME, applyOffset);
 
 	const OP_CHOPInput* input = inputs->getInputCHOP(0);
 
@@ -140,5 +145,59 @@ BasicFilterCHOP::execute(CHOP_Output* output,
 void
 BasicFilterCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	// Apply Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = APPLYSCALE_NAME;
+		np.label = "Apply Scale";
+		np.page = "Filter";
+		np.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = SCALE_NAME;
+		np.label = "Scale";
+		np.page = "Filter";
+		np.defaultValues[0] = 1.0;
+		np.minSliders[0] = -10.0;
+		np.maxSliders[0] = 10.0;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Apply Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = APPLYOFFSET_NAME;
+		np.label = "Apply Offset";
+		np.page = "Filter";
+		np.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Scale
+	{
+		OP_NumericParameter	np;
+
+		np.name = OFFSET_NAME;
+		np.label = "Offset";
+		np.page = "Filter";
+		np.defaultValues[0] = 0.0;
+		np.minSliders[0] = -10.0;
+		np.maxSliders[0] = 10.0;
+
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }

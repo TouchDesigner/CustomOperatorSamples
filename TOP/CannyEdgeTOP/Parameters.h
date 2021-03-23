@@ -1,49 +1,28 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
 // Names of the parameters
-
-constexpr static char LowthresholdName[] = "Lowthreshold";
-constexpr static char LowthresholdLabel[] = "Low Threshold";
-
-constexpr static char HighthresholdName[] = "Highthreshold";
-constexpr static char HighthresholdLabel[] = "High Threshold";
-
-constexpr static char ApperturesizeName[] = "Apperturesize";
-constexpr static char ApperturesizeLabel[] = "Apperture Size";
-
-constexpr static char L2gradientName[] = "L2gradient";
-constexpr static char L2gradientLabel[] = "L2 Gradient";
+constexpr static char	LOWTHRESHOLD_NAME[] = "Lowthreshold";
+constexpr static char	HIGHTHRESHOLD_NAME[] = "Highthreshold";
+constexpr static char	APPERTURESIZE_NAME[] = "Apperturesize";
+constexpr static char	L2GRADIENT_NAME[] = "L2gradient";
 
 
-#pragma endregion
-
-#pragma region Menus
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	// Returns true if parameters have changed since last call
+	bool	evalParms(const OP_Inputs*);
 
-	// Low Threshold
-	static double		evalLowthreshold(const OP_Inputs* input);
+	void	setupParms(OP_ParameterManager*);
 
-	// High Threshold
-	static double		evalHighthreshold(const OP_Inputs* input);
-
-	// Apperture Size
-	static int		evalApperturesize(const OP_Inputs* input);
-
-	// L2 Gradient
-	static bool		evalL2gradient(const OP_Inputs* input);
-
-
+	double	lowthreshold;
+	double	highthreshold;
+	int	apperturesize;
+	bool	l2gradient;
 };
-#pragma endregion
+
+#endif

@@ -88,12 +88,10 @@
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="GL_Extensions.h" />
     <ClInclude Include="OneEuroImpl.h" />
-    <ClInclude Include="Parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OneEuroCHOP.cpp" />
     <ClCompile Include="OneEuroImpl.cpp" />
-    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

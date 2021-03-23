@@ -15,7 +15,6 @@
 #define __OneEuroCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include <vector>
 
 class OneEuroImpl;
@@ -55,11 +54,8 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
 
-
 private:
 	void				handleParameters(const OP_Inputs*, const OP_CHOPInput*);
-	
-	Parameters myParms;
 
 	std::vector<OneEuroImpl*>	myFiltersPerChannel;
 };

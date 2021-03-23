@@ -13,9 +13,11 @@
 */
 
 #include "FilterSOP.h"
-#include "Parameters.h"
 
 #include <cassert>
+
+// Names of the parameters
+constexpr static char CHOP_NAME[]	= "Translatechop";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -98,7 +100,7 @@ FilterSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 		return;
 
 	Vector t{};
-	const OP_CHOPInput* chop = myParms.evalTranslatechop(inputs);
+	const OP_CHOPInput* chop = inputs->getParCHOP(CHOP_NAME);
 	if (!chop)
 		myWarningString = "Translate CHOP not set.";
 	else
@@ -118,7 +120,16 @@ FilterSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 void
 FilterSOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter	sp;
+
+		sp.name = CHOP_NAME;
+		sp.label = "Translate CHOP";
+		sp.page = "Filter";
+
+		OP_ParAppendResult res = manager->appendCHOP(sp);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 void 

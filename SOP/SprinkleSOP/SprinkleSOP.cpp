@@ -173,12 +173,13 @@ DestroySOPInstance(SOP_CPlusPlusBase* instance)
 };
 
 SprinkleSOP::SprinkleSOP(const OP_NodeInfo*) : 
-	myRNG{}, myPointCount{0}, myPoints{ nullptr }, myVolSprinkleTree{ nullptr }, myInputCook{}
+	myParms{ new Parameters() }, myRNG{}, myPoints{ nullptr }, myVolSprinkleTree{ nullptr }, myInputCook {}
 {
 };
 
 SprinkleSOP::~SprinkleSOP()
 {
+	delete myParms;
 	delete myPoints;
 	delete myVolSprinkleTree;
 };
@@ -199,11 +200,8 @@ SprinkleSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	if (!sop)
 		return;
 
-	myPointCount = myParms.evalPointcount(inputs);
-	
-	double seed = myParms.evalSeed(inputs);
-
-	unsigned int* seedInt = reinterpret_cast<unsigned int*>(&seed);
+	myParms->evalParms(inputs);
+	unsigned int* seedInt = reinterpret_cast<unsigned int*>(&myParms->seed);
 	myRNG.seed(*seedInt);
 
 	if (!checkPrimitives(sop))
@@ -212,34 +210,47 @@ SprinkleSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 		return;
 	}
 
-	//if (!myPoints || myParms.changed || myInputCook != sop->totalCooks)
-	//{
-	delete myPoints;
-	mySurfaceAttribute.clear();
-	myPoints = new RandomPointsBuffer(myParms.evalSeparatepoints(inputs), myParms.evalMinimumdistance(inputs));
-
-	GenerateMenuItems generate = myParms.evalGenerate(inputs);
-
-	switch (generate)
+	// Debug code
+	if (false) 
 	{
-	case GenerateMenuItems::Area:
-		executeAreaScatter(sop);
-		break;
-	case GenerateMenuItems::Primitive:
-		executePrimScatter(sop);
-		break;
-	case GenerateMenuItems::Boundingbox:
-		executeBoundingBoxScatter(sop);
-		break;
-	case GenerateMenuItems::Volume:
-		executeVolumeScatter(sop);
-		break;
+		const Position* p = sop->getPointPositions();
+		BoundingBox& bb = getBoundingBox(p, sop->getNumPoints());
+		if (myInputCook != sop->totalCooks)
+		{
+			delete myVolSprinkleTree;
+			myVolSprinkleTree = new VolSprinkleTree(sop, bb);
+			myInputCook = sop->totalCooks;
+		}
+		myVolSprinkleTree->outputTest(output);
+		return;
 	}
 
-	myInputCook = sop->totalCooks;
-	//}
+	if (!myPoints || myParms->changed || myInputCook != sop->totalCooks)
+	{
+		delete myPoints;
+		mySurfaceAttribute.clear();
+		myPoints = new RandomPointsBuffer(myParms->forcedistance, myParms->pointdistance);
 
-	bool surfaceGen = generate == GenerateMenuItems::Area || generate == GenerateMenuItems::Primitive;
+		switch (myParms->generate)
+		{
+		case Generate::Density:
+			executeAreaScatter(sop);
+			break;
+		case Generate::Primitive:
+			executePrimScatter(sop);
+			break;
+		case Generate::BoundingBox:
+			executeBoundingBoxScatter(sop);
+			break;
+		case Generate::Volume:
+			executeVolumeScatter(sop);
+			break;
+		}
+
+		myInputCook = sop->totalCooks;
+	}
+
+	bool surfaceGen = myParms->generate == Generate::Density || myParms->generate == Generate::Primitive;
 
 	const OP_SOPInput* sop1 = inputs->getInputSOP(1);
 	if (surfaceGen && sop1)
@@ -269,7 +280,7 @@ SprinkleSOP::executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*)
 void
 SprinkleSOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	myParms->setupParms(manager);
 }
 
 void
@@ -290,10 +301,10 @@ SprinkleSOP::executeAreaScatter(const OP_SOPInput* sop)
 	double totalA = cumulativeA.back();
 
 	std::uniform_real_distribution<> uni(0.0, 1.0);
-	for (int i = 0; i < myPointCount; ++i)
+	for (int i = 0; i < myParms->pointcount; ++i)
 	{
 		bool success = false;
-		for (int tries = 0; tries < myPointCount * 0.05; ++tries)
+		for (int tries = 0; tries < myParms->pointcount * 0.05; ++tries)
 		{
 			size_t prim = std::upper_bound(cumulativeA.begin(), cumulativeA.end(), uni(myRNG) * totalA) - cumulativeA.begin();
 			if (addPointToPrim(pos, prims, prim))
@@ -314,7 +325,7 @@ SprinkleSOP::executePrimScatter(const OP_SOPInput* sop)
 	const SOP_PrimitiveInfo* prims = sop->myPrimsInfo;
 	const Position* pos = sop->getPointPositions();
 
-	float pointsPerPrim = myPointCount / static_cast<float>(sop->getNumPrimitives());
+	float pointsPerPrim = myParms->pointcount / static_cast<float>(sop->getNumPrimitives());
 	int pointsGen = 0;
 
 	for (int i = 0; i < sop->getNumPrimitives(); ++i)
@@ -341,10 +352,10 @@ SprinkleSOP::executeVolumeScatter(const OP_SOPInput* sop)
 		myVolSprinkleTree = new VolSprinkleTree(sop, bBox);
 	}
 
-	for (int i = 0; i < myPointCount; ++i)
+	for (int i = 0; i < myParms->pointcount; ++i)
 	{
 		bool success = false;
-		for (int tries = 0; tries < myPointCount * 0.1 + 3; ++tries)
+		for (int tries = 0; tries < myParms->pointcount * 0.1 + 3; ++tries)
 		{
 			if (addPointToVolume(sop, bBox))
 			{
@@ -362,10 +373,10 @@ SprinkleSOP::executeBoundingBoxScatter(const OP_SOPInput* sop)
 {
 	const Position* pos = sop->getPointPositions();
 	BoundingBox bBox = getBoundingBox(pos, sop->getNumPoints());
-	for (int i = 0; i < myPointCount; ++i)
+	for (int i = 0; i < myParms->pointcount; ++i)
 	{
 		bool success = false;
-		for (int tries = 0; tries < myPointCount * 0.05; ++tries)
+		for (int tries = 0; tries < myParms->pointcount * 0.05; ++tries)
 		{
 			if (addPointToBoundingBox(bBox))
 			{

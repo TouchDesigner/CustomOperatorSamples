@@ -1,63 +1,38 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
 // Names of the parameters
+constexpr static char	SEED_NAME[] = "Seed";
+constexpr static char	GENERATE_NAME[] = "Generate";
+constexpr static char	POINTCOUNT_NAME[] = "Pointcount";
+constexpr static char	FORCEDISTANCE_NAME[] = "Forcedistance";
+constexpr static char	POINTDISTANCE_NAME[] = "Pointdistance";
 
-constexpr static char SeedName[] = "Seed";
-constexpr static char SeedLabel[] = "Seed";
-
-constexpr static char GenerateName[] = "Generate";
-constexpr static char GenerateLabel[] = "Generate";
-
-constexpr static char PointcountName[] = "Pointcount";
-constexpr static char PointcountLabel[] = "Point Count";
-
-constexpr static char SeparatepointsName[] = "Separatepoints";
-constexpr static char SeparatepointsLabel[] = "Separate Points";
-
-constexpr static char MinimumdistanceName[] = "Minimumdistance";
-constexpr static char MinimumdistanceLabel[] = "Minimum Distance";
-
-
-#pragma endregion
-
-#pragma region Menus
-enum class GenerateMenuItems
+enum class Generate
 {
-	Area,
+	Density,
 	Primitive,
-	Boundingbox,
+	BoundingBox,
 	Volume
 };
 
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	void	evalParms(const OP_Inputs*);
 
-	// Seed
-	static double		evalSeed(const OP_Inputs* input);
+	void    setupParms(OP_ParameterManager*);
 
-	// Generate
-	static GenerateMenuItems		evalGenerate(const OP_Inputs* input);
+	double		seed;
+	Generate	generate;
+	int			pointcount;
+	bool		forcedistance;
+	double		pointdistance;
 
-	// Point Count
-	static int		evalPointcount(const OP_Inputs* input);
-
-	// Separate Points
-	static bool		evalSeparatepoints(const OP_Inputs* input);
-
-	// Minimum Distance
-	static double		evalMinimumdistance(const OP_Inputs* input);
-
-
+	bool		changed;
 };
-#pragma endregion
+
+#endif

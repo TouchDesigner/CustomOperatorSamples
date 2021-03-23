@@ -16,7 +16,6 @@
 #define __GeneratorDAT__
 
 #include "DAT_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <random>
 
@@ -49,13 +48,19 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
 private:
-	Parameters myParms;
+	void			handleParameters(const OP_Inputs*);
 
-	void			fillTable(const OP_Inputs*, DAT_Output*);
+	void			fillTable(DAT_Output*);
 
-	std::string		generateString(const OP_Inputs*);
+	std::string		generateString();
 
 	std::mt19937	myRNG;
+
+	// Parameters
+	double		mySeed;
+	int			myRowsN;
+	int			myColsN;
+	int			myCharN;
 };
 
 #endif

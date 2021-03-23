@@ -22,34 +22,34 @@
 
 namespace
 {
-	int getMode(ModeMenuItems m)
+	int getMode(Mode m)
 	{
 		switch (m)
 		{
 		default:
-		case ModeMenuItems::External:
+		case Mode::External:
 			return cv::RETR_EXTERNAL;
-		case ModeMenuItems::List:
+		case Mode::List:
 			return cv::RETR_LIST;
-		case ModeMenuItems::Ccomp:
+		case Mode::Ccomp:
 			return cv::RETR_CCOMP;
-		case ModeMenuItems::Tree:
+		case Mode::Tree:
 			return cv::RETR_TREE;
 		}
 	}
 
-	int getMethod(MethodMenuItems m)
+	int getMethod(Method m)
 	{
 		switch (m)
 		{
 		default:
-		case MethodMenuItems::None:
+		case Method::None:
 			return cv::CHAIN_APPROX_NONE;
-		case MethodMenuItems::Simple:
+		case Method::Simple:
 			return cv::CHAIN_APPROX_SIMPLE;
-		case MethodMenuItems::Tcl1:
+		case Method::Tcl1:
 			return cv::CHAIN_APPROX_TC89_L1;
-		case MethodMenuItems::Tckcos:
+		case Method::Tckcos:
 			return cv::CHAIN_APPROX_TC89_KCOS;
 		}
 	}
@@ -111,7 +111,8 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 
 
 ContoursTOP::ContoursTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::Mat() }, mySecondInputFrame{ new cv::Mat() }
+	myFrame{ new cv::Mat() }, mySecondInputFrame{ new cv::Mat() }, 
+	myParms { new Parameters() }
 {
 }
 
@@ -119,6 +120,7 @@ ContoursTOP::~ContoursTOP()
 {
 	delete myFrame;
 	delete mySecondInputFrame;
+	delete myParms;
 }
 
 void
@@ -160,12 +162,14 @@ ContoursTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 {
 	using namespace cv;
 	
+	myParms->evalParms(inputs);
+
 	inputTopToMat(inputs);
 	if (myFrame->empty())
 		return;
 
-	int mode = getMode(myParms.evalMode(inputs));
-	int method = getMethod(myParms.evalMethod(inputs));
+	int mode = getMode(myParms->mode);
+	int method = getMethod(myParms->method);
 
 	std::vector<std::vector<Point>> contours;
 	findContours(*myFrame, contours, mode, method);
@@ -178,7 +182,7 @@ ContoursTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 		drawContours(*myFrame, contours, i, Scalar(i+1), -1);
 	}
 
-	if (myParms.evalWatershed(inputs))
+	if (myParms->applywatershed)
 	{
 		secondInputTopToMat(inputs);
 		if (!mySecondInputFrame->empty())
@@ -188,13 +192,13 @@ ContoursTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 		}
                 else
                 {
-                        inputs->enablePar(WatershedName, false);
+                        inputs->enablePar(APPLYWATERSHED_NAME, false);
                 }
 	}
 
-	if (myParms.evalSelectobject(inputs))
+	if (myParms->selectobject)
 	{
-		int obj = myParms.evalObject(inputs);
+		int obj = myParms->object;
 		for (int i = 0; i < myFrame->rows; i++)
 		{
 			for (int j = 0; j < myFrame->cols; j++)
@@ -216,7 +220,7 @@ ContoursTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 void
 ContoursTOP::setupParameters(OP_ParameterManager* in, void*)
 {
-	myParms.setup(in);
+	myParms->setupParms(in);
 }
 
 int32_t 
@@ -258,7 +262,7 @@ ContoursTOP::inputTopToMat(const OP_Inputs* in)
 
 	OP_TOPInputDownloadOptions	opts = {};
 	opts.verticalFlip = true;
-	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
+	opts.downloadType = myParms->downloadtype;
 	opts.cpuMemPixelType = OP_CPUMemPixelType::RGBA8Fixed;
 
 	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);
@@ -276,7 +280,7 @@ ContoursTOP::inputTopToMat(const OP_Inputs* in)
         for (int i = 0; i < height; i += 1) {
                 for (int j = 0; j < width; j += 1) {
                         int pixelN = i*width + j;
-                        int index = 4*pixelN + static_cast<int>(myParms.evalChannel(in));
+                        int index = 4*pixelN + static_cast<int>(myParms->channel);
                         data[pixelN] = pixel[index];
                 }
         }
@@ -294,14 +298,14 @@ ContoursTOP::secondInputTopToMat(const OP_Inputs* in)
 
 	OP_TOPInputDownloadOptions	opts = {};
 	opts.verticalFlip = true;
-	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
+	opts.downloadType = myParms->downloadtype;
 	opts.cpuMemPixelType = OP_CPUMemPixelType::BGRA8Fixed;
 
 	void*	pixel = in->getTOPDataInCPUMemory(top, &opts);
 	if (!pixel)
         {
                 *mySecondInputFrame = cv::Mat();
-                in->enablePar(WatershedName, false);
+                in->enablePar(APPLYWATERSHED_NAME, false);
 		return;
         }
 
@@ -312,11 +316,11 @@ ContoursTOP::secondInputTopToMat(const OP_Inputs* in)
         if (myFrame->size() != mySecondInputFrame->size())
         {
                 *mySecondInputFrame = cv::Mat();
-                in->enablePar(WatershedName, false);
+                in->enablePar(APPLYWATERSHED_NAME, false);
                 return;
         }
 
 	memcpy(mySecondInputFrame->data, pixel, height * width * 4);
-        in->enablePar(WatershedName, true);
+        in->enablePar(APPLYWATERSHED_NAME, true);
 }
 

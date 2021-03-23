@@ -13,7 +13,6 @@
 */
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include "Program.h"
 #include "Shape.h"
 
@@ -71,5 +70,4 @@ private:
     GLint				myModelViewUniform;
     GLint				myColorUniform;
 
-	Parameters			myParms;
 };

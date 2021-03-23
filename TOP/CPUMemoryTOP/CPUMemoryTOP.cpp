@@ -161,10 +161,10 @@ CPUMemoryTOP::execute(TOP_OutputFormatSpecs* output,
 	mySettingsLock.lock();
 #endif
 
-	double speed = myParms.evalSpeed(inputs);
+	double speed = inputs->getParDouble("Speed");
 	mySpeed = speed;
 
-	myBrightness = myParms.evalBrightness(inputs);
+	myBrightness = inputs->getParDouble("Brightness");
 
 	// See comments at the top of this file to information about the threading
 	// example mode for this project.
@@ -388,7 +388,52 @@ CPUMemoryTOP::getInfoDATEntries(int32_t index,
 void
 CPUMemoryTOP::setupParameters(OP_ParameterManager* manager, void *reserved1)
 {
-	myParms.setup(manager);
+	// brightness
+	{
+		OP_NumericParameter	np;
+
+		np.name = "Brightness";
+		np.label = "Brightness";
+		np.defaultValues[0] = 1.0;
+
+		np.minSliders[0] =  0.0;
+		np.maxSliders[0] =  1.0;
+
+		np.minValues[0] = 0.0;
+		np.maxValues[0] = 1.0;
+
+		np.clampMins[0] = true;
+		np.clampMaxes[0] = true;
+		
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// speed
+	{
+		OP_NumericParameter	np;
+
+		np.name = "Speed";
+		np.label = "Speed";
+		np.defaultValues[0] = 1.0;
+		np.minSliders[0] = -10.0;
+		np.maxSliders[0] =  10.0;
+		
+		OP_ParAppendResult res = manager->appendFloat(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// pulse
+	{
+		OP_NumericParameter	np;
+
+		np.name = "Reset";
+		np.label = "Reset";
+		
+		OP_ParAppendResult res = manager->appendPulse(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
 }
 
 void

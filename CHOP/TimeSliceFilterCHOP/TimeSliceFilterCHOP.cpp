@@ -13,10 +13,21 @@
 */
 
 #include "TimeSliceFilterCHOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
+
+// Names of the parameters
+constexpr static char OPERATION_NAME[]	= "Speed";
+constexpr static char RESET_NAME[]		= "Applyscale";
+
+enum class
+Operation
+{
+	Max = 0,
+	Min = 1,
+	Average = 2
+};
 
 class FilterValues
 {
@@ -52,19 +63,19 @@ public:
 	}
 
 	double 
-	get(OperationMenuItems	operation)
+	get(int op)
 	{
-		switch (operation)
+		switch (op)
 		{
-			case OperationMenuItems::Min:
+			case Operation::Min:
 			{
 				return myMin;
 			}
-			case OperationMenuItems::Max:
+			case Operation::Max:
 			{
 				return myMax;
 			}
-			case OperationMenuItems::Average:
+			case Operation::Average:
 			default:
 			{
 				return myAverage;
@@ -198,7 +209,7 @@ TimeSliceFilterCHOP::execute(CHOP_Output* output,
 							  const OP_Inputs* inputs,
 							  void*)
 {
-	OperationMenuItems operation = myParms.evalOperation(inputs);
+	int operation = inputs->getParInt(OPERATION_NAME);
 
 	int numInputs = inputs->getNumInputs();
 	// Since inputs connected might be out of order we need to loop until we get as many inputs as numInputs
@@ -232,13 +243,40 @@ TimeSliceFilterCHOP::execute(CHOP_Output* output,
 void
 TimeSliceFilterCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	// Operation
+	{
+		OP_StringParameter	sp;
+
+		sp.name = OPERATION_NAME;
+		sp.label = "Operation";
+		sp.page = "Filter";
+
+		sp.defaultValue = "Max";
+
+		const char* names[] = { "Max", "Min", "Average" };
+		const char* labels[] = { "Max", "Min", "Average" };
+
+		OP_ParAppendResult res = manager->appendMenu(sp, 3, names, labels);
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	// Reset
+	{
+		OP_NumericParameter	np;
+
+		np.name = RESET_NAME;
+		np.label = "Reset";
+		np.page = "Filter";
+
+		OP_ParAppendResult res = manager->appendPulse(np);
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 void
 TimeSliceFilterCHOP::pulsePressed(const char* name, void*)
 {
-	if (!strcmp(name, ResetName))
+	if (!strcmp(name, RESET_NAME))
 	{
 		for (FilterValues& value : myValues)
 		{

@@ -13,7 +13,6 @@
 */
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include "FrameQueue.h"
 #include <thread>
 #include <atomic>
@@ -78,6 +77,6 @@ private:
 	std::mutex			myConditionLock;
 	std::atomic<bool>	myStartWork;
 
-	Parameters	myParms;
+
 
 };

@@ -16,11 +16,11 @@
 #define __DistanceTransformTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
 
+struct Parameters;
 
 /*
 This example implements a TOP to calculate the distance transform using openCV's functionallity.
@@ -54,7 +54,7 @@ private:
 
 	void 				cvMatToOutput(TOP_OutputFormatSpecs*) const;
 
-	Parameters		myParms;
+	Parameters*		myParms;
 
 	cv::Mat*		myFrame;
 };

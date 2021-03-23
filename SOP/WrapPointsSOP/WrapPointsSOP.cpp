@@ -99,12 +99,13 @@ DestroySOPInstance(SOP_CPlusPlusBase* instance)
 
 };
 
-WrapPointsSOP::WrapPointsSOP(const OP_NodeInfo*)
+WrapPointsSOP::WrapPointsSOP(const OP_NodeInfo*) : myParms{ new Parameters() }
 {
 };
 
 WrapPointsSOP::~WrapPointsSOP()
 {
+	delete myParms;
 };
 
 void
@@ -125,28 +126,23 @@ WrapPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	if (!sop0 || !sop1)
 		return;
 
-	RaysMenuItems rays = myParms.evalRays(inputs);
-	bool reverse = myParms.evalReverse(inputs);
-	double scale = myParms.evalScale(inputs);
-	Color hitColor = myParms.evalHitcolor(inputs);
-	Color missColor = myParms.evalMisscolor(inputs);
+	myParms->evalParms(inputs);
 
-	switch (rays)
+	switch (myParms->rays)
 	{
 		default:
-		case RaysMenuItems::Parallel:
+		case Rays::Parallel:
 		{
-			std::array<double, 3> directionArray = myParms.evalDirection(inputs);
-			Vector direction = Vector((float)directionArray[0], (float)directionArray[1], (float)directionArray[2]);
-			castParallel(output, sop0, sop1, direction, reverse, scale, hitColor, missColor);
+			double* t = myParms->direction;
+			Vector direction = { static_cast<float>(t[0]), static_cast<float>(t[1]), static_cast<float>(t[2]) };
+			castParallel(output, sop0, sop1, direction);
 			break;
 		}
-		case RaysMenuItems::Radial:
+		case Rays::Radial:
 		{
-			std::array<double, 3> originArray = myParms.evalDestination(inputs);
-			Position origin = Position((float)originArray[0], (float)originArray[1], (float)originArray[2]);
-			bool reverse = myParms.evalReverse(inputs);
-			castRadial(output, sop0, sop1, origin, reverse, scale, hitColor, missColor);
+			double* t = myParms->origin;
+			Position origin = { static_cast<float>(t[0]), static_cast<float>(t[1]), static_cast<float>(t[2]) };
+			castRadial(output, sop0, sop1, origin);
 			break;
 		}
 	}
@@ -163,7 +159,7 @@ WrapPointsSOP::executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*)
 void
 WrapPointsSOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	myParms->setupParms(manager);
 }
 
 void
@@ -175,22 +171,22 @@ WrapPointsSOP::getWarningString(OP_String* warning, void*)
 }
 
 void 
-WrapPointsSOP::castParallel(SOP_Output* output, const OP_SOPInput* sop0, const OP_SOPInput* sop1, Vector dir, bool reverse, double scale, Color hitColor, Color missColor)
+WrapPointsSOP::castParallel(SOP_Output* output, const OP_SOPInput* sop0, const OP_SOPInput* sop1, Vector dir)
 {
 	const Position* pos = sop0->getPointPositions();
 	const Vector* norm0 = sop0->getNormals()->normals;
 
-	if (reverse)
+	if (myParms->reverse)
 		dir = dir * -1;
 
 	for (int i = 0; i < sop0->getNumPoints(); ++i)
 	{
-		castPoint(output, pos, norm0, i, sop1, dir, scale, hitColor, missColor);
+		castPoint(output, pos, norm0, i, sop1, dir);
 	}
 }
 
 void 
-WrapPointsSOP::castRadial(SOP_Output* output, const OP_SOPInput* sop0, const OP_SOPInput* sop1, Position destination, bool reverse, double scale, Color hitColor, Color missColor)
+WrapPointsSOP::castRadial(SOP_Output* output, const OP_SOPInput* sop0, const OP_SOPInput* sop1, Position destination)
 {
 	const Position* pos = sop0->getPointPositions();
 	const Vector* norm0 = sop0->getNormals()->normals;
@@ -198,11 +194,11 @@ WrapPointsSOP::castRadial(SOP_Output* output, const OP_SOPInput* sop0, const OP_
 	Vector direction;
 	for (int i = 0; i < sop0->getNumPoints(); ++i)
 	{
-		if (reverse)
+		if (myParms->reverse)
 			direction = getDirection(destination, pos[i]);
 		else
 			direction = getDirection(pos[i], destination);
-		castPoint(output, pos, norm0, i, sop1, direction, scale, hitColor, missColor);
+		castPoint(output, pos, norm0, i, sop1, direction);
 	}
 }
 
@@ -300,7 +296,7 @@ WrapPointsSOP::copyPrimitives(SOP_Output* out, const OP_SOPInput* in)
 }
 
 void
-WrapPointsSOP::castPoint(SOP_Output* output, const Position* pos, const Vector* normals, int index, const OP_SOPInput* geo, Vector dir, double scale, Color hitColor, Color missColor)
+WrapPointsSOP::castPoint(SOP_Output* output, const Position* pos, const Vector* normals, int index, const OP_SOPInput* geo, Vector dir)
 {
 	Position hitP{};
 	float hitLength{}, hitU{}, hitV{};
@@ -310,14 +306,14 @@ WrapPointsSOP::castPoint(SOP_Output* output, const Position* pos, const Vector* 
 
 	if (geo->sendRay(pt, dir, hitP, hitLength, hitNormal, hitU, hitV, hitPrimitiveIndex))
 	{
-		output->addPoint(pt + dir * static_cast<float>(hitLength * scale));
+		output->addPoint(pt + dir * static_cast<float>(hitLength * myParms->scale));
 		output->setNormal(hitNormal, index);
-		output->setColor(hitColor, index);
+		output->setColor(myParms->hitcolor, index);
 	}
 	else
 	{
 		output->addPoint(pt);
 		output->setNormal(normals[index], index);
-		output->setColor(missColor, index);
+		output->setColor(myParms->misscolor, index);
 	}
 }

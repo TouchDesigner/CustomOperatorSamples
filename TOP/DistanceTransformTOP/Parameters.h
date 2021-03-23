@@ -1,83 +1,58 @@
-#pragma once
+#ifndef __Parameters__
+#define __Parameters__
+
+#include <cstdint>
 
 class OP_Inputs;
 class OP_ParameterManager;
 
-#pragma region ParNames and ParLabels
-
 // Names of the parameters
+constexpr static char	DISTANCETYPE_NAME[] = "Distancetype";
+constexpr static char	MASKSIZE_NAME[] = "Masksize";
+constexpr static char	NORMALIZE_NAME[] = "Normalize";
+constexpr static char	DOWNLOADTYPE_NAME[] = "Downloadtype";
+constexpr static char   CHANNEL_NAME[] = "Channel";
 
-constexpr static char DistancetypeName[] = "Distancetype";
-constexpr static char DistancetypeLabel[] = "Distance Type";
-
-constexpr static char MasksizeName[] = "Masksize";
-constexpr static char MasksizeLabel[] = "Mask Size";
-
-constexpr static char NormalizeName[] = "Normalize";
-constexpr static char NormalizeLabel[] = "Normalize";
-
-constexpr static char DownloadtypeName[] = "Downloadtype";
-constexpr static char DownloadtypeLabel[] = "Download Type";
-
-constexpr static char ChannelName[] = "Channel";
-constexpr static char ChannelLabel[] = "Channel";
-
-
-#pragma endregion
-
-#pragma region Menus
-enum class DistancetypeMenuItems
+enum class
+	Distancetype
 {
 	L1,
 	L2,
 	C
 };
-
-enum class MasksizeMenuItems
+enum class
+	Masksize
 {
 	Three,
 	Five,
-	Precise
+	Precise,
 };
 
-enum class DownloadtypeMenuItems
-{
-	Delayed,
-	Instant
-};
-
-enum class ChannelMenuItems
+enum class Channel
 {
 	R,
+	Mono = R,
 	G,
+	Second = G,
 	B,
-	A
+	A,
+	Invalid
 };
+enum class OP_TOPInputDownloadType : int32_t;
 
-#pragma endregion
-
-
-#pragma region Parameters
-class Parameters
+struct Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	// Returns true if parameters have changed since last call
+	bool	        evalParms(const OP_Inputs*);
 
-	// Distance Type
-	static DistancetypeMenuItems		evalDistancetype(const OP_Inputs* input);
+	void	        setupParms(OP_ParameterManager*);
 
-	// Mask Size
-	static MasksizeMenuItems		evalMasksize(const OP_Inputs* input);
-
-	// Normalize
-	static bool		evalNormalize(const OP_Inputs* input);
-
-	// Download Type
-	static DownloadtypeMenuItems		evalDownloadtype(const OP_Inputs* input);
-
-	// Channel
-	static ChannelMenuItems		evalChannel(const OP_Inputs* input);
-
-
+	Distancetype	distancetype;
+	Masksize	masksize;
+	bool	        normalize;
+	OP_TOPInputDownloadType     downloadtype;
+        Channel         channel;
 };
-#pragma endregion
+
+#endif
