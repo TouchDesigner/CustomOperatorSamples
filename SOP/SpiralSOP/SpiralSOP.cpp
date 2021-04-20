@@ -86,8 +86,8 @@ DestroySOPInstance(SOP_CPlusPlusBase* instance)
 };
 
 SpiralSOP::SpiralSOP(const OP_NodeInfo*) :
-	myBoundingBox{Position(), Position()}, myOrientation{0}, myTopRad{0},
-	myBotRad{0}, myHeight{0}, myTurns{0}, myNumPoints{0}, myOutput{0},
+	myBoundingBox{Position(), Position()}, myOrientation{OrientationMenuItems::X}, myTopRad{0},
+	myBotRad{0}, myHeight{0}, myTurns{0}, myNumPoints{0}, myOutput{OutputgeometryMenuItems::Line},
 	myStripWidth{0}
 {
 };

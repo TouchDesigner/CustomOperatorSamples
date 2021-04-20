@@ -68,11 +68,11 @@ public:
 	virtual void		getErrorString(OP_String*, void* reserved) override;
 
 private:
-    void                inputTopToMat(const OP_TOPInput*);
+    void                inputTopToMat(const OP_TOPInput*, const OP_Inputs*);
 
 	void 				cvMatToOutput(const cv::cuda::GpuMat&, const OP_Inputs* input, TOP_OutputFormatSpecs*) const;
 
-	bool				checkInputTop(const OP_TOPInput*);
+	bool				checkInputTop(const OP_TOPInput*, const OP_Inputs*);
 
 	void				swapQuadrants(cv::cuda::GpuMat&);
 

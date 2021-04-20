@@ -158,7 +158,7 @@ OpticalFlowGPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 		*myFlow = cuda::GpuMat(outSize, CV_32FC2);
 	}
 	
-	myFlags = myParms.evalUsegaussianfilter(inputs) ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
+	int myFlags = myParms.evalUsegaussianfilter(inputs) ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
 	Ptr<cuda::FarnebackOpticalFlow> optFlow = cuda::FarnebackOpticalFlow::create(myParms.evalNumlevels(inputs), myParms.evalPyramidscale(inputs), myParms.evalFastpyramids(inputs), myParms.evalWindowsize(inputs), myParms.evalIterations(inputs),
 		myParms.evalPolyn(inputs), myParms.evalPolysigma(inputs), myFlags);
 

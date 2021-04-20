@@ -131,10 +131,10 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 	using namespace cv::cuda;
 
 	const OP_TOPInput* top = inputs->getInputTOP(0);
-	if (!top || !checkInputTop(top))
+	if (!top || !checkInputTop(top, inputs))
 		return;
 	
-	inputTopToMat(top);
+	inputTopToMat(top, inputs);
 	if (myFrame->empty())
 		return;
 
@@ -190,7 +190,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 		dft(*myFrame, *myResult, mySize, 0);
 	}
 
-	cvMatToOutput(*myResult, output);
+	cvMatToOutput(*myResult, inputs, output);
 }
 
 void
@@ -220,12 +220,12 @@ SpectrumTOP::cvMatToOutput(const cv::cuda::GpuMat& M, const OP_Inputs* input, TO
 }
 
 void 
-SpectrumTOP::inputTopToMat(const OP_TOPInput* top)
+SpectrumTOP::inputTopToMat(const OP_TOPInput* top, const OP_Inputs* input)
 {
 	*myFrame = cv::cuda::GpuMat(top->height, top->width, CV_32FC2);
-	if (myParms.evalMode(top) == ModeMenuItems::dft)
+	if (myParms.evalMode(input) == ModeMenuItems::dft)
 	{
-		GpuUtils::arrayToComplexMatGPU(top->width, top->height, top->cudaInput, *myFrame, myNumChan, static_cast<int>(myParms.evalChan(top)), myChanFormat);
+		GpuUtils::arrayToComplexMatGPU(top->width, top->height, top->cudaInput, *myFrame, myNumChan, static_cast<int>(myParms.evalChan(input)), myChanFormat);
 	}
 	else
 	{
@@ -258,16 +258,16 @@ SpectrumTOP::inputTopToMat(const OP_TOPInput* top)
 #define RA32F 0xF0008
 
 bool
-SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
+SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 {
-	ModeMenuItems myMode = myParms.evalMode(topInput);
+	ModeMenuItems myMode = myParms.evalMode(input);
 	if (myMode == ModeMenuItems::idft && topInput->pixelFormat != RG32F)
 	{
 		myError = "Inverse transform requires a 32-bit float RG texture.";
 		return false;
 	}
 
-	ChanMenuItems myChan = myParms.evalChan(topInput);
+	ChanMenuItems myChan = myParms.evalChan(input);
 	switch (topInput->pixelFormat)
 	{
 		case A8:
@@ -276,7 +276,7 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 		case A32F:
 			// Only A channel is valid, change to use channel as index
 			if (myChan == ChanMenuItems::a)
-				myChan == ChanMenuItems::r;
+				myChan = ChanMenuItems::r;
 			else
 				myChan = ChanMenuItems::r; // ::Invalid what is invalid here ?
 		case R8:
@@ -292,7 +292,7 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput)
 			// Only RA channels are valid, change to use channel as index
 			if (myChan == ChanMenuItems::a)
 				myChan = ChanMenuItems::r; // ::Second what is Second here ?
-			else if (myParms.evalChan(topInput) != ChanMenuItems::r)
+			else if (myParms.evalChan(input) != ChanMenuItems::r)
 				myChan = ChanMenuItems::r;  // ::Invalid what is Invalid here ?
 		case RG8:
 		case RG16:
