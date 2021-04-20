@@ -17,6 +17,7 @@ For discussions around this repository, please use our [forum](https://forum.der
   * [Prerequisites](#Prerequisites)
   * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
 * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
+* [Fixes for openCV or CUDA version updates](#Fixes-for-openCV-or-CUDA-version-updates)
 * [Loading Custom Operators in TouchDesigner](#Loading-Custom-Operators-in-TouchDesigner)
 
 ## Operators
@@ -174,3 +175,7 @@ There should be at least 2 sections in the file where this is referenecd, once u
 ### change the CUDA version
 
 open the `*.vcxproj` file in a texteditor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Here change the version to the one currently used by your TouchDesigner build. This will have to be done in 2 places.
+
+## Loading Custom Operators in TouchDesigner
+
+Please refer to the documentation [here](https://docs.derivative.ca/Custom_Operators#Using_Custom_OPs_-_Plugin_Folder_Locations)
