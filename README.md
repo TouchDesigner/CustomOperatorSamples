@@ -161,3 +161,16 @@ Projects in this repositroy are setup to support all previous and future gpu har
 *   For best performance, when omitting older architectures, specify _compute_xx,compute_xx_ for each omitted architecture. To support all future architecture, also add an additional _compute_xx,compute_xx_ entry for the newest architecture. Here _xx_ is referring to the 2 digit hardware architecture identifier.
 
 ![alt_text](images/image1.png "cuda architecture")
+
+## Fixes for openCV or CUDA version updates
+
+Some newer TouchDesigner Versions might be delivered with an updated openCV and/or require a newer CUDA Version. In this case it is easiest to edit the solutions `*.vcxproj` file. The files are XML strucutred.
+
+### change the openCV version
+
+open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example openCV version 4.5 would reference `opencv_world450.lib` while openCV version 4.5.1 would have to reference `opencv_world451.lib`.
+There should be at least 2 sections in the file where this is referenecd, once under `Debug` and once under `Release`.
+
+### change the CUDA version
+
+open the `*.vcxproj` file in a texteditor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Here change the version to the one currently used by your TouchDesigner build. This will have to be done in 2 places.
