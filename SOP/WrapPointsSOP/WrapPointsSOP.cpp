@@ -136,6 +136,8 @@ WrapPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 		default:
 		case RaysMenuItems::Parallel:
 		{
+			inputs->enablePar("Direction", true);
+			inputs->enablePar("Destination", false);
 			std::array<double, 3> directionArray = myParms.evalDirection(inputs);
 			Vector direction = Vector((float)directionArray[0], (float)directionArray[1], (float)directionArray[2]);
 			castParallel(output, sop0, sop1, direction, reverse, scale, hitColor, missColor);
@@ -143,6 +145,8 @@ WrapPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 		}
 		case RaysMenuItems::Radial:
 		{
+			inputs->enablePar("Direction", false);
+			inputs->enablePar("Destination", true);
 			std::array<double, 3> originArray = myParms.evalDestination(inputs);
 			Position origin = Position((float)originArray[0], (float)originArray[1], (float)originArray[2]);
 			bool reverse = myParms.evalReverse(inputs);

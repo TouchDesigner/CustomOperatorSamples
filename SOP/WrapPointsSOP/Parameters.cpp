@@ -92,7 +92,7 @@ Parameters::setup(OP_ParameterManager* manager)
 		
 		const int ArraySize = 3;
 
-		const std::array<double, ArraySize>  DefaultValues = { 0.0, 0.0, 0.0 };
+		const std::array<double, ArraySize>  DefaultValues = { 1.0, 0.0, 0.0 };
 		const std::array<double, ArraySize>  MinSliders = { 0.0, 0.0, 0.0 };
 		const std::array<double, ArraySize>  MaxSliders = { 1.0, 1.0, 1.0 };
 		const std::array<double, ArraySize>  MinValues = { 0.0, 0.0, 0.0 };

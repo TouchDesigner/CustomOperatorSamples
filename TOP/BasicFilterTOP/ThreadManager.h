@@ -6,7 +6,8 @@
 #include <condition_variable>
 #include <thread>
 
-struct Parameters;
+class Parameters;
+class OP_Inputs;
 
 enum class ThreadStatus
 {
@@ -22,7 +23,7 @@ public:
 
 	~ThreadManager();
 
-	void	syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight);
+	void	syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight, const OP_Inputs* inputs);
 
 	void	syncBuffer(uint32_t* inBuffer, uint32_t* outBuffer);
 
@@ -47,7 +48,8 @@ private:
 	int						myInHeight;
 	int						myOutWidth;
 	int						myOutHeight;
-	Parameters*				myParms;
+	bool					myDoDither;
+	int						myBitsPerColor;
 };
 
 #endif

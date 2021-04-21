@@ -90,7 +90,7 @@ namespace
 }
 
 
-void Filter::doFilterWork(uint32_t* inBuffer, int inWidth, int inHeight, uint32_t* outBuffer, int outWidth, int outHeight, Parameters parms)
+void Filter::doFilterWork(uint32_t* inBuffer, int inWidth, int inHeight, uint32_t* outBuffer, int outWidth, int outHeight, bool doDither, int bitsPerColor)
 {
 	bool	needsResize = inHeight != outHeight || inWidth != outWidth;
 
@@ -99,10 +99,10 @@ void Filter::doFilterWork(uint32_t* inBuffer, int inWidth, int inHeight, uint32_
 		inBuffer = resizeImage(inBuffer, inWidth, inHeight, outWidth, outHeight);
 	}
 	
-	if (parms.dither)
-		doDithering(inBuffer, outBuffer, outWidth, outHeight, parms.colorBits);
+	if (doDither)
+		doDithering(inBuffer, outBuffer, outWidth, outHeight, bitsPerColor);
 	else
-		limitColors(inBuffer, outBuffer, outWidth, outHeight, parms.colorBits);
+		limitColors(inBuffer, outBuffer, outWidth, outHeight, bitsPerColor);
 
 	if (needsResize)
 	{

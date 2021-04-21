@@ -12,7 +12,7 @@ ThreadManager::ThreadManager() :
 	myStatus{ ThreadStatus::Done }, myOutBuffer{}, myInBuffer{},
 	myThread{}, myBufferMutex{}, myParmsMutex{}, myBufferCV{}, 
 	myThreadShouldExit{false}, myInWidth{}, myInHeight{},
-	myOutWidth{}, myOutHeight{}, myParms{new Parameters()}
+	myOutWidth{}, myOutHeight{}, myDoDither{false}, myBitsPerColor{8}
 {
 	myThread = new std::thread([this] { threadFn(); });
 }
@@ -27,14 +27,14 @@ ThreadManager::~ThreadManager()
 		myThread->join();
 	}
 	delete myThread;
-	delete myParms;
 }
 
 void 
-ThreadManager::syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight)
+ThreadManager::syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight, const OP_Inputs* inputs)
 {
 	const std::lock_guard<std::mutex> lock(myParmsMutex);
-	*myParms = parms;
+	myDoDither = parms.evalDither(inputs);
+	myBitsPerColor = parms.evalBitspercolor(inputs);
 	myInWidth = inWidth;
 	myInHeight = inHeight;
 	myOutWidth = outWidth;
@@ -49,8 +49,8 @@ ThreadManager::syncBuffer(uint32_t* inBuffer, uint32_t* outBuffer)
 	myOutBuffer = outBuffer;
 	myInBuffer = new uint32_t[myInWidth * myInHeight];
 	memcpy(myInBuffer, inBuffer, myInWidth * myInHeight * sizeof(uint32_t));
-	myStatus = ThreadStatus::Ready;
 	lock.unlock();
+	myStatus = ThreadStatus::Ready;
 	myBufferCV.notify_all();
 }
 
@@ -72,14 +72,15 @@ ThreadManager::threadFn()
 		myStatus = ThreadStatus::Busy;
 
 		std::unique_lock<std::mutex>		parmsLock(myParmsMutex);
-		Parameters							parms = *myParms;
 		const int							outwidth = myOutWidth;
 		const int							outheight = myOutHeight;
 		const int							inwidth = myInWidth;
 		const int							inheight = myInHeight;
+		const bool							doDither = myDoDither;
+		const int							bitsPerColor = myBitsPerColor;
 		parmsLock.unlock();
 
-		Filter::doFilterWork(myInBuffer, inwidth, inheight, myOutBuffer, outwidth, outheight, parms);
+		Filter::doFilterWork(myInBuffer, inwidth, inheight, myOutBuffer, outwidth, outheight, doDither, bitsPerColor);
 		delete[] myInBuffer;
 		myInBuffer = nullptr;
 		myStatus = ThreadStatus::Done;

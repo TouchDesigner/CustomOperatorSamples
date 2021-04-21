@@ -146,7 +146,13 @@ CannyEdgeTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TO
 		split(*myFrame, chan);
 		*myFrame = chan[0];
 	}
-	auto cannyEdge = createCannyEdgeDetector(255 * myParms.evalLowthreshold(inputs), 255 * myParms.evalHighthreshold(inputs), myParms.evalApperturesize(inputs), myParms.evalL2gradient(inputs));
+	int kernel = myParms.evalApperturesize(inputs);
+	if (kernel % 2 == 0)		// make odd
+		kernel++;
+	if (kernel > 31)			// clamp at 31
+		kernel = 31;
+
+	auto cannyEdge = createCannyEdgeDetector(255 * myParms.evalLowthreshold(inputs), 255 * myParms.evalHighthreshold(inputs), kernel, myParms.evalL2gradient(inputs));
 	cannyEdge->detect(*myFrame, *myFrame);
 
 	cvMatToOutput(output);

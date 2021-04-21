@@ -77,12 +77,12 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.label = ApperturesizeLabel;
 		p.page = "Edge Detector";
 		p.defaultValues[0] = 3;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
+		p.minSliders[0] = 1.0;
+		p.maxSliders[0] = 31.0;
+		p.minValues[0] = 1.0;
+		p.maxValues[0] = 31.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
 		OP_ParAppendResult res = manager->appendInt(p);
 
 		assert(res == OP_ParAppendResult::Success);
