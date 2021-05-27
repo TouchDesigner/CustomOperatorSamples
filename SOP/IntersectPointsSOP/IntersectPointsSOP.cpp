@@ -105,7 +105,7 @@ IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	const Position* pos = sop0->getPointPositions();
 
 	Color inside = myParms.evalInsidecolor(inputs);
-	Color outside = myParms.evalInsidecolor(inputs);
+	Color outside = myParms.evalOutsidecolor(inputs);
 
 	std::vector<int> insideAttrib;
 	insideAttrib.reserve(sop0->getNumPoints());
