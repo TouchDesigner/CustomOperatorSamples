@@ -22,7 +22,7 @@
 #include <array>
 
 class ThreadManager;
-struct Parameters;
+class Parameters;
 
 /*
 This example implements a TOP to limit the number of colors from the input. This example
@@ -65,7 +65,7 @@ private:
 	// Threading variables
 	std::array<ThreadManager*, NumCPUPixelDatas>	myThreadManagers;
 	int												myExecuteCount;
-	bool											myMultiThreaded;	
+	bool											myMultiThreaded;
 };
 
 #endif

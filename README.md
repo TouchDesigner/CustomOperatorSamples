@@ -17,6 +17,7 @@ For discussions around this repository, please use our [forum](https://forum.der
   * [Prerequisites](#Prerequisites)
   * [Create openCV build files](#Generating-openCV-build-files-with-CMake)
 * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
+* [Fixes for openCV or CUDA version updates](#Fixes-for-openCV-or-CUDA-version-updates)
 * [Loading Custom Operators in TouchDesigner](#Loading-Custom-Operators-in-TouchDesigner)
 
 ## Operators
@@ -107,20 +108,22 @@ If you want to use a different openCV version, you can follow these instructions
 *   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
 
 ![alt_text](images/image5.png "additional dependencies")
-## Compiling openCV with CUDA support
+## Compiling openCV with CUDA support (Not necessary for building these examples.)
 
-_Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-5-0-on-windows-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-5-0-on-windows-build-with-cuda-and-python-bindings/)_
+**Note:** This is not necessary for compiling these operators - in fact TouchDesigner comes with all necessary binaries precompiled. We'll leave this guide here as the instructions were hard to find initialy.
+
+_Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
 
 ### Prerequisites
 
 *   Visual Studio (using _Visual Studio 2019_ in this example)
-*   The sources for o[penCV](https://github.com/opencv/opencv) and o[penCV Contrib](https://github.com/opencv/opencv_contrib)
+*   The sources for [openCV](https://github.com/opencv/opencv) and [openCV Contrib](https://github.com/opencv/opencv_contrib)
 *   [CMake](https://cmake.org/download/)
 *   [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
 *   _Optional:_ for video decoding on the gpu - [Nvidia Video Codec SDK](https://developer.nvidia.com/nvidia-video-codec-sdk)
-  *   Extract and copy the contents of the **Interface** to the **include** and the **Lib** to the **lib** directory inside your CUDA installation.
-*   Optional: for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
-  *   Extract and copy the **bin**, **include** and **Lib** directories to your CUDA installation
+*   Extract and copy the contents of the Interface to the include and the Lib to the lib directory inside your CUDA installation.
+*   _Optional:_ for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
+*   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
 
 ### Generating openCV build files with CMake
 
@@ -161,3 +164,20 @@ Projects in this repositroy are setup to support all previous and future gpu har
 *   For best performance, when omitting older architectures, specify _compute_xx,compute_xx_ for each omitted architecture. To support all future architecture, also add an additional _compute_xx,compute_xx_ entry for the newest architecture. Here _xx_ is referring to the 2 digit hardware architecture identifier.
 
 ![alt_text](images/image1.png "cuda architecture")
+
+## Fixes for openCV or CUDA version updates
+
+Some newer TouchDesigner Versions might be delivered with an updated openCV and/or require a newer CUDA Version. In this case it is easiest to edit the solutions `*.vcxproj` file. The files are XML strucutred.
+
+### change the openCV version
+
+open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example openCV version 4.5 would reference `opencv_world450.lib` while openCV version 4.5.1 would have to reference `opencv_world451.lib`.
+There should be at least 2 sections in the file where this is referenecd, once under `Debug` and once under `Release`.
+
+### change the CUDA version
+
+open the `*.vcxproj` file in a texteditor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Here change the version to the one currently used by your TouchDesigner build. This will have to be done in 2 places.
+
+## Loading Custom Operators in TouchDesigner
+
+Please refer to the documentation [here](https://docs.derivative.ca/Custom_Operators#Using_Custom_OPs_-_Plugin_Folder_Locations)

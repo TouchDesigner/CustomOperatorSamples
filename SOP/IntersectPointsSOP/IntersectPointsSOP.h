@@ -16,10 +16,9 @@
 #define __IntersectPointsSOP__
 
 #include "SOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <string>
-
-struct Parameters;
 
 /*
 This example implements a SOP outputs the point of the first input colored
@@ -73,8 +72,8 @@ private:
 	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
 
 	std::string	myWarningString;
-
-	Parameters*	myParms;
+	
+	Parameters myParms;
 };
 
 #endif // !__IntersectPointsSOP__

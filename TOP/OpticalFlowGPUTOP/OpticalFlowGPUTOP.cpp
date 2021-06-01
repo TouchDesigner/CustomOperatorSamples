@@ -13,6 +13,7 @@
 */
 
 #include "OpticalFlowGPUTOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
@@ -26,16 +27,6 @@
 
 extern void arrayToMatGPU8UC4(int width, int height, cudaArray* input, cv::cuda::GpuMat& output);
 extern void matGPUToArray32FC2(int width, int height, const cv::cuda::GpuMat& input, cudaArray* output);
-
-// Names of the parameters
-constexpr static char NUMLEVELS_NAME[] = "Numlevels";
-constexpr static char PYRSCALE_NAME[] = "Scale";
-constexpr static char FASTPYR_NAME[] = "Fastpyramids";
-constexpr static char WINSIZE_NAME[] = "Winsize";
-constexpr static char ITERATIONS_NAME[] = "Iterations";
-constexpr static char POLYN_NAME[] = "Polyn";
-constexpr static char POLYSIGMA_NAME[] = "Polysigma";
-constexpr static char USEGAUSSIAN_NAME[] = "Usegaussian";
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -143,7 +134,6 @@ OpticalFlowGPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 {
 	using namespace cv;
 
-	handleParameters(inputs);
 	const OP_TOPInput* top = inputs->getInputTOP(0);
 	if (!top || !checkInputTop(top))
 		return;
@@ -167,8 +157,10 @@ OpticalFlowGPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 	{
 		*myFlow = cuda::GpuMat(outSize, CV_32FC2);
 	}
-
-	Ptr<cuda::FarnebackOpticalFlow> optFlow = cuda::FarnebackOpticalFlow::create(myNumLevels, myPyrScale, myFastPyramids, myWinSize, myNumIter, myPolyN, myPolySigma, myFlags);
+	
+	int myFlags = myParms.evalUsegaussianfilter(inputs) ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
+	Ptr<cuda::FarnebackOpticalFlow> optFlow = cuda::FarnebackOpticalFlow::create(myParms.evalNumlevels(inputs), myParms.evalPyramidscale(inputs), myParms.evalFastpyramids(inputs), myParms.evalWindowsize(inputs), myParms.evalIterations(inputs),
+		myParms.evalPolyn(inputs), myParms.evalPolysigma(inputs), myFlags);
 
 	optFlow->calc(*myPrev, *myFrame, *myFlow);
 
@@ -180,147 +172,7 @@ OpticalFlowGPUTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* input
 void
 OpticalFlowGPUTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter	np;
-
-		np.name = NUMLEVELS_NAME;
-		np.label = "Num Levels";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 5;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 10;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = PYRSCALE_NAME;
-		np.label = "Pyramid Scale";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 0.5f;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 1;
-		np.maxValues[0] = 1;
-		np.clampMaxes[0] = true;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = FASTPYR_NAME;
-		np.label = "Fast Pyramids";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = WINSIZE_NAME;
-		np.label = "Window Size";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 13;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 100;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = ITERATIONS_NAME;
-		np.label = "Iterations";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 10;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 100;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = POLYN_NAME;
-		np.label = "Poly N";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 5;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 10;
-
-		OP_ParAppendResult res = manager->appendInt(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = POLYSIGMA_NAME;
-		np.label = "Poly Sigma";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = 1.1;
-
-		np.minSliders[0] = 0;
-		np.minValues[0] = 0;
-		np.clampMins[0] = true;
-
-		np.maxSliders[0] = 2;
-
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter	np;
-
-		np.name = USEGAUSSIAN_NAME;
-		np.label = "Use Gaussian Filter";
-		np.page = "Optical Flow";
-
-		np.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void 
@@ -328,21 +180,6 @@ OpticalFlowGPUTOP::getErrorString(OP_String* error, void*)
 {
 	error->setString(myError.c_str());
 	myError.clear();
-}
-
-void 
-OpticalFlowGPUTOP::handleParameters(const OP_Inputs* in)
-{
-	myNumLevels = in->getParInt(NUMLEVELS_NAME);
-	myPyrScale = in->getParDouble(PYRSCALE_NAME);
-	myFastPyramids = in->getParInt(FASTPYR_NAME) ? true : false;
-	myWinSize = in->getParInt(WINSIZE_NAME);
-	myNumIter = in->getParInt(ITERATIONS_NAME);
-	myPolyN = in->getParInt(POLYN_NAME);
-	myPolySigma = in->getParDouble(POLYSIGMA_NAME);
-
-	bool useGaussin = in->getParInt(USEGAUSSIAN_NAME) ? true : false;
-	myFlags = useGaussin ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
 }
 
 void 

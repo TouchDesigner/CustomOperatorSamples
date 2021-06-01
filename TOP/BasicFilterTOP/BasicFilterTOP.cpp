@@ -104,8 +104,6 @@ BasicFilterTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs*, void
 void
 BasicFilterTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Context *context, void*)
 {
-	myParms->updateParameters(inputs);
-
 	const OP_TOPInput*	top = inputs->getInputTOP(0);
 
 	if (!top)
@@ -116,7 +114,15 @@ BasicFilterTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, 
 
 	OP_TOPInputDownloadOptions	opts;
 	opts.cpuMemPixelType = OP_CPUMemPixelType::BGRA8Fixed;
-	opts.downloadType = myParms->downloadType;
+	switch (myParms->evalDownloadtype(inputs))
+	{
+	case DownloadtypeMenuItems::Delayed:
+		opts.downloadType = OP_TOPInputDownloadType::Delayed;
+		break;
+	case DownloadtypeMenuItems::Instant:
+		opts.downloadType = OP_TOPInputDownloadType::Instant;
+		break;
+	}
 	uint32_t*	inBuffer = static_cast<uint32_t*>(inputs->getTOPDataInCPUMemory(top, &opts));
 
 	if (!inBuffer)
@@ -126,7 +132,7 @@ BasicFilterTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, 
 	{
 		for (ThreadManager* tm : myThreadManagers)
 		{
-			tm->syncParms(*myParms, inWidth, inHeight, output->width, output->height);
+			tm->syncParms(*myParms, inWidth, inHeight, output->width, output->height, inputs);
 		}
 
 		int threadId = std::abs(myExecuteCount % 3);
@@ -138,22 +144,24 @@ BasicFilterTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, 
 	{
 		Filter::doFilterWork(
 			inBuffer, inWidth, inHeight, static_cast<uint32_t*>(output->cpuPixelData[0]), output->width, 
-			output->height, *myParms
+			output->height, myParms->evalDither(inputs), myParms->evalBitspercolor(inputs)
 		);
 		output->newCPUPixelDataLocation = 0;
 	}
 
-	if (myParms->multiThreaded & !myMultiThreaded)
+	bool threaded = myParms->evalMultithreaded(inputs);
+
+	if (threaded & !myMultiThreaded)
 		switchToMultiThreaded();
 
-	if (!myParms->multiThreaded & myMultiThreaded)
+	if (!threaded & myMultiThreaded)
 		switchToSingleThreaded();
 }
 
 void 
 BasicFilterTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms->setupParameters(manager);
+	myParms->setup(manager);
 }
 
 void 

@@ -1,92 +1,117 @@
-#include "Parameters.h"
+#include <string>
+#include <array>
 #include "CPlusPlus_Common.h"
+#include "Parameters.h"
 
-bool
-Parameters::evalParms(const OP_Inputs* input)
+#pragma region Evals
+
+ModeMenuItems
+Parameters::evalMode(const OP_Inputs* input)
 {
-	bool changed = false;
-	Mode	tmpmode = static_cast<Mode>(input->getParInt(MODE_NAME));
-	changed |= tmpmode != mode;
-	mode = tmpmode;
-
-	Method	tmpmethod = static_cast<Method>(input->getParInt(METHOD_NAME));
-	changed |= tmpmethod != method;
-	method = tmpmethod;
-
-        if (input->getNumInputs() == 2)
-        {
-                bool	tmpapplywatershed = input->getParInt(APPLYWATERSHED_NAME) ? true : false;
-                changed |= tmpapplywatershed != applywatershed;
-                applywatershed = tmpapplywatershed;
-                input->enablePar(APPLYWATERSHED_NAME, true);
-        }
-        else 
-        {
-                input->enablePar(APPLYWATERSHED_NAME, false);
-        }
-
-	bool	tmpselectobject = input->getParInt(SELECTOBJECT_NAME) ? true : false;
-	changed |= tmpselectobject != selectobject;
-	selectobject = tmpselectobject;
-
-	input->enablePar(OBJECT_NAME, selectobject);
-	if (selectobject)
-	{
-		int	tmpobject = input->getParInt(OBJECT_NAME);
-		changed |= tmpobject != object;
-		object = tmpobject;
-	}
-
-	OP_TOPInputDownloadType tmpdownloadtype = static_cast<OP_TOPInputDownloadType>(input->getParInt(DOWNLOADTYPE_NAME));
-	changed |= tmpdownloadtype != downloadtype;
-	downloadtype = tmpdownloadtype;
-
-        Channel tmpchannel = static_cast<Channel>(input->getParInt(CHANNEL_NAME));
-        changed |= tmpchannel != channel;
-        channel = tmpchannel;
-
-	return changed;
+	return static_cast<ModeMenuItems>(input->getParInt(ModeName));
 }
 
-void
-Parameters::setupParms(OP_ParameterManager* manager)
+MethodMenuItems
+Parameters::evalMethod(const OP_Inputs* input)
 {
+	return static_cast<MethodMenuItems>(input->getParInt(MethodName));
+}
 
+bool
+Parameters::evalWatershed(const OP_Inputs* input)
+{
+	return input->getParInt(WatershedName) ? true : false;
+}
+
+bool
+Parameters::evalSelectobject(const OP_Inputs* input)
+{
+	return input->getParInt(SelectobjectName) ? true : false;
+}
+
+int
+Parameters::evalObject(const OP_Inputs* input)
+{
+	return input->getParInt(ObjectName);
+}
+
+DownloadtypeMenuItems
+Parameters::evalDownloadtype(const OP_Inputs* input)
+{
+	return static_cast<DownloadtypeMenuItems>(input->getParInt(DownloadtypeName));
+}
+
+ChannelMenuItems
+Parameters::evalChannel(const OP_Inputs* input)
+{
+	return static_cast<ChannelMenuItems>(input->getParInt(ChannelName));
+}
+
+
+#pragma endregion
+
+#pragma region Setup
+
+void
+Parameters::setup(OP_ParameterManager* manager)
+{
 	{
 		OP_StringParameter p;
-		p.name = MODE_NAME;
-		p.label = "Mode";
+		p.name = ModeName;
+		p.label = ModeLabel;
 		p.page = "Contours";
 		p.defaultValue = "External";
-
-		const char*	names[] = { "External", "List", "Ccomp", "Tree" };
-		const char*	labels[] = { "External", "List", "CComp", "Tree" };
-		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+		std::array<const char*, 4> Names =
+		{
+			"External",
+			"List",
+			"Ccomp",
+			"Tree"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"External",
+			"List",
+			"Ccomp",
+			"Tree"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_StringParameter p;
-		p.name = METHOD_NAME;
-		p.label = "Method";
+		p.name = MethodName;
+		p.label = MethodLabel;
 		p.page = "Contours";
 		p.defaultValue = "None";
-
-		const char*	names[] = { "None", "Simple", "Tcl1", "Tckcos" };
-		const char*	labels[] = { "None", "Simple", "Teh-Chin L1", "Teh-Chin KCos" };
-		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+		std::array<const char*, 4> Names =
+		{
+			"None",
+			"Simple",
+			"Tcl1",
+			"Tckcos"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"None",
+			"Simple",
+			"Tcl1",
+			"Tckcos"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
 		OP_NumericParameter p;
-		p.name = APPLYWATERSHED_NAME;
-		p.label = "Watershed";
+		p.name = WatershedName;
+		p.label = WatershedLabel;
 		p.page = "Contours";
-
 		p.defaultValues[0] = false;
+
 		OP_ParAppendResult res = manager->appendToggle(p);
 
 		assert(res == OP_ParAppendResult::Success);
@@ -94,11 +119,11 @@ Parameters::setupParms(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = SELECTOBJECT_NAME;
-		p.label = "Select Object";
+		p.name = SelectobjectName;
+		p.label = SelectobjectLabel;
 		p.page = "Contours";
-
 		p.defaultValues[0] = false;
+
 		OP_ParAppendResult res = manager->appendToggle(p);
 
 		assert(res == OP_ParAppendResult::Success);
@@ -106,10 +131,9 @@ Parameters::setupParms(OP_ParameterManager* manager)
 
 	{
 		OP_NumericParameter p;
-		p.name = OBJECT_NAME;
-		p.label = "Object";
+		p.name = ObjectName;
+		p.label = ObjectLabel;
 		p.page = "Contours";
-
 		p.defaultValues[0] = 0;
 		p.minSliders[0] = -1.0;
 		p.maxSliders[0] = 100.0;
@@ -117,35 +141,58 @@ Parameters::setupParms(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = true;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendInt(p, 1);
+		OP_ParAppendResult res = manager->appendInt(p);
 
 		assert(res == OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_StringParameter sp;
-		sp.name = DOWNLOADTYPE_NAME;
-		sp.label = "Download Type";
-		sp.page = "Contours";
+		OP_StringParameter p;
+		p.name = DownloadtypeName;
+		p.label = DownloadtypeLabel;
+		p.page = "Contours";
+		p.defaultValue = "Delayed";
+		std::array<const char*, 2> Names =
+		{
+			"Delayed",
+			"Instant"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Delayed",
+			"Instant"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
-		const char* names[] = { "Delayed", "Instant" };
-		const char* labels[] = { "Delayed", "Instant" };
-
-		OP_ParAppendResult res = manager->appendMenu(sp, 2, names, labels);
 		assert(res == OP_ParAppendResult::Success);
 	}
 
-        {
+	{
 		OP_StringParameter p;
-		p.name = CHANNEL_NAME;
-		p.label = "Channel";
+		p.name = ChannelName;
+		p.label = ChannelLabel;
 		p.page = "Contours";
 		p.defaultValue = "R";
-
-		const char*	names[] = { "R", "G", "B", "A" };
-		const char*	labels[] = { "R", "G", "B", "A" };
-		OP_ParAppendResult res = manager->appendMenu(p, 4, names, labels);
+		std::array<const char*, 4> Names =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
 		assert(res == OP_ParAppendResult::Success);
 	}
+
+
 }
+
+#pragma endregion

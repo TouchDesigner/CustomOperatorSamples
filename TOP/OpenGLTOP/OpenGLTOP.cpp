@@ -13,6 +13,7 @@
 */
 
 #include "OpenGLTOP.h"
+#include "Parameters.h"
 
 #include <assert.h>
 #ifdef __APPLE__
@@ -171,13 +172,10 @@ OpenGLTOP::execute(TOP_OutputFormatSpecs* outputFormat ,
 
 	// These functions must be called before
 	// beginGLCommands()/endGLCommands() block
-	double speed = inputs->getParDouble("Speed");
+	double speed = myParms.evalSpeed(inputs);
 
-	double color1[3];
-	double color2[3];
-
-	inputs->getParDouble3("Color1", color1[0], color1[1], color1[2]);
-	inputs->getParDouble3("Color2", color2[0], color2[1], color2[2]);
+	Color color1 = myParms.evalColor1(inputs);
+	Color color2 = myParms.evalColor1(inputs);
 
     myRotation += speed;
 
@@ -203,7 +201,7 @@ OpenGLTOP::execute(TOP_OutputFormatSpecs* outputFormat ,
 
         // Draw the square
 
-        glUniform4f(myColorUniform, static_cast<GLfloat>(color1[0]), static_cast<GLfloat>(color1[1]), static_cast<GLfloat>(color1[2]), 1.0f);
+        glUniform4f(myColorUniform, static_cast<GLfloat>(color1.r), static_cast<GLfloat>(color1.g), static_cast<GLfloat>(color1.b), 1.0f);
 
         mySquare.setTranslate(0.5f, 0.5f);
         mySquare.setRotation(static_cast<GLfloat>(myRotation));
@@ -217,7 +215,7 @@ OpenGLTOP::execute(TOP_OutputFormatSpecs* outputFormat ,
 
         // Draw the chevron
 
-        glUniform4f(myColorUniform, static_cast<GLfloat>(color2[0]), static_cast<GLfloat>(color2[1]), static_cast<GLfloat>(color2[2]), 1.0f);
+        glUniform4f(myColorUniform, static_cast<GLfloat>(color2.r), static_cast<GLfloat>(color2.g), static_cast<GLfloat>(color2.b), 1.0f);
 
         myChevron.setScale(0.8f, 0.8f);
         myChevron.setTranslate(-0.5, -0.5);
@@ -333,81 +331,7 @@ OpenGLTOP::getErrorString(OP_String *error, void* reserved1)
 void
 OpenGLTOP::setupParameters(OP_ParameterManager* manager, void* reserved1)
 {
-	// color 1
-	{
-		OP_NumericParameter	np;
-
-		np.name = "Color1";
-		np.label = "Color 1";
-
-        np.defaultValues[0] = 1.0;
-        np.defaultValues[1] = 0.5;
-        np.defaultValues[2] = 0.8;
-
-		for (int i=0; i<3; i++)
-		{
-			np.minValues[i] = 0.0;
-			np.maxValues[i] = 1.0;
-			np.minSliders[i] = 0.0;
-			np.maxSliders[i] = 1.0;
-			np.clampMins[i] = true;
-			np.clampMaxes[i] = true;
-		}
-		
-		OP_ParAppendResult res = manager->appendRGB(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// color 2
-	{
-		OP_NumericParameter	np;
-
-		np.name = "Color2";
-		np.label = "Color 2";
-
-        np.defaultValues[0] = 1.0;
-        np.defaultValues[1] = 1.0;
-        np.defaultValues[2] = 0.25;
-
-		for (int i=0; i<3; i++)
-		{
-			np.minValues[i] = 0.0;
-			np.maxValues[i] = 1.0;
-			np.minSliders[i] = 0.0;
-			np.maxSliders[i] = 1.0;
-			np.clampMins[i] = true;
-			np.clampMaxes[i] = true;
-		}
-		
-		OP_ParAppendResult res = manager->appendRGB(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// speed
-	{
-		OP_NumericParameter	np;
-
-		np.name = "Speed";
-		np.label = "Speed";
-		np.defaultValues[0] = 1.0;
-		np.minSliders[0] = -10.0;
-		np.maxSliders[0] =  10.0;
-		
-		OP_ParAppendResult res = manager->appendFloat(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	// pulse
-	{
-		OP_NumericParameter	np;
-
-		np.name = "Reset";
-		np.label = "Reset";
-		
-		OP_ParAppendResult res = manager->appendPulse(np);
-		assert(res == OP_ParAppendResult::Success);
-	}
-
+	myParms.setup(manager);
 }
 
 void
