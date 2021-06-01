@@ -108,19 +108,21 @@ If you want to use a different openCV version, you can follow these instructions
 *   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
 
 ![alt_text](images/image5.png "additional dependencies")
-## Compiling openCV with CUDA support
+## Compiling openCV with CUDA support (Not necessary for building these examples.)
+
+**Note:** This is not necessary for compiling these operators - in fact TouchDesigner comes with all necessary binaries precompiled. We'll leave this guide here as the instructions were hard to find initialy.
 
 _Some other projects require the openCV windows libraries with CUDA modules included, yet as the available pre-built versions do not offer this support, openCV has to be recompiled with the required CUDA modules enabled. A good guide to follow can be found here: [https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/](https://jamesbowley.co.uk/accelerate-opencv-4-3-0-build-with-cuda-and-python-bindings/)_
 
 ### Prerequisites
 
 *   Visual Studio (using _Visual Studio 2019_ in this example)
-*   The sources for o[penCV](https://github.com/opencv/opencv) and o[penCV Contrib](https://github.com/opencv/opencv_contrib)
+*   The sources for [openCV](https://github.com/opencv/opencv) and [openCV Contrib](https://github.com/opencv/opencv_contrib)
 *   [CMake](https://cmake.org/download/)
 *   [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
 *   _Optional:_ for video decoding on the gpu - [Nvidia Video Codec SDK](https://developer.nvidia.com/nvidia-video-codec-sdk)
 *   Extract and copy the **include** and **Lib** directories to your CUDA installation
-*   Optional: for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
+*   _Optional:_ for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
 *   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
 
 ### Generating openCV build files with CMake
