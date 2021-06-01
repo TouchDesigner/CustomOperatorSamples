@@ -121,7 +121,7 @@ _Some other projects require the openCV windows libraries with CUDA modules incl
 *   [CMake](https://cmake.org/download/)
 *   [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
 *   _Optional:_ for video decoding on the gpu - [Nvidia Video Codec SDK](https://developer.nvidia.com/nvidia-video-codec-sdk)
-*   Extract and copy the **include** and **Lib** directories to your CUDA installation
+*   Extract and copy the contents of the Interface to the include and the Lib to the lib directory inside your CUDA installation.
 *   _Optional:_ for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
 *   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
 
