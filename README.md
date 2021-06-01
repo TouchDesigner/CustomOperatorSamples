@@ -108,6 +108,9 @@ If you want to use a different openCV version, you can follow these instructions
 *   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
 
 ![alt_text](images/image5.png "additional dependencies")
+
+**Note:** By default, the binaries and libs shipped with TouchDesigner are "Release" binaries. The examples of this repository might fail to compile in the Debug configuration of Visual Studio. If you wish to compile with debug features, you should manually compile OpenCV with CUDA.
+
 ## Compiling openCV with CUDA support (Not necessary for building these examples.)
 
 **Note:** This is not necessary for compiling these operators - in fact TouchDesigner comes with all necessary binaries precompiled. We'll leave this guide here as the instructions were hard to find initialy.
@@ -121,9 +124,9 @@ _Some other projects require the openCV windows libraries with CUDA modules incl
 *   [CMake](https://cmake.org/download/)
 *   [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
 *   _Optional:_ for video decoding on the gpu - [Nvidia Video Codec SDK](https://developer.nvidia.com/nvidia-video-codec-sdk)
-*   Extract and copy the contents of the Interface to the include and the Lib to the lib directory inside your CUDA installation.
+*   Extract and copy the contents of the **Interface** directory to the **include** directory and the **Lib** directory to the **lib** directory inside your CUDA installation.
 *   _Optional:_ for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
-*   Extract and copy the **bin**,** include** and **Lib** directories to your CUDA installation
+*   Extract and copy the **bin**, **include** and **Lib** directories to your CUDA installation
 
 ### Generating openCV build files with CMake
 
@@ -143,7 +146,7 @@ set "generator=Visual Studio 16 2019"
 *   run the bat file in a Terminal or Command Prompt
 *   make changes to the configuration as required using the CMake GUI
 *   open the OpenCV.sln in Visual Studio
-*   In the **Solution Explorer**, expand **CMakeTargets **and right click on **Install**, selecting **Build**
+*   In the **Solution Explorer**, expand **CMakeTargets** and right click on **Install**, selecting **Build**
 
 **Note:** During the process of generating the build files with CMake, an error can occur when running on a ExFAT filesystem: 
 
@@ -171,7 +174,7 @@ Some newer TouchDesigner Versions might be delivered with an updated openCV and/
 
 ### change the openCV version
 
-open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example openCV version 4.5 would reference `opencv_world450.lib` while openCV version 4.5.1 would have to reference `opencv_world451.lib`.
+Open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example openCV version 4.5 would reference `opencv_world450.lib` while openCV version 4.5.1 would have to reference `opencv_world451.lib`.
 There should be at least 2 sections in the file where this is referenecd, once under `Debug` and once under `Release`.
 
 ### change the CUDA version
@@ -181,3 +184,5 @@ open the `*.vcxproj` file in a texteditor and search for an xml node similar to 
 ## Loading Custom Operators in TouchDesigner
 
 Please refer to the documentation [here](https://docs.derivative.ca/Custom_Operators#Using_Custom_OPs_-_Plugin_Folder_Locations)
+
+**Note:** When compiling custom operators with a custom version of OpenCV (with or without CUDA) or other dependencies, you will need to place those dependencies next to your custom cpp operator .dlls
