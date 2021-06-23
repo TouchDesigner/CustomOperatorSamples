@@ -175,7 +175,7 @@ OpenGLTOP::execute(TOP_OutputFormatSpecs* outputFormat ,
 	double speed = myParms.evalSpeed(inputs);
 
 	Color color1 = myParms.evalColor1(inputs);
-	Color color2 = myParms.evalColor1(inputs);
+	Color color2 = myParms.evalColor2(inputs);
 
     myRotation += speed;
 

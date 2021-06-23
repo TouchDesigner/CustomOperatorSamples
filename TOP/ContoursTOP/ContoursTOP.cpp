@@ -186,10 +186,6 @@ ContoursTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			cvtColor(*mySecondInputFrame, *mySecondInputFrame, COLOR_BGRA2BGR);
 			watershed(*mySecondInputFrame, *myFrame);
 		}
-        else
-        {
-			inputs->enablePar(WatershedName, false);
-		}
 	}
 
 	if (myParms.evalSelectobject(inputs))
