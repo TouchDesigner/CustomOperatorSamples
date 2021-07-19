@@ -6,6 +6,8 @@ A collection of these operators can be found in the Samples/CPlusPlus folder of 
 
 For discussions around this repository, please use our [forum](https://forum.derivative.ca).
 
+> Tip: You can kick-start your custom operators projects by using the Cpp Pars Template Generator (cppParsTemplateGen) available in TouchDesigner's Palette to generate a Parameters class that will mimic the custom parameters of a reference COMP. For more informations, please [visit the wiki](https://docs.derivative.ca/Palette:cppParsTemplateGeni).
+
 * [List of Operators](#Operators)
 * [Compiling Custom Operators](#Compiling-Custom-Operators)
   * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
