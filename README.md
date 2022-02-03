@@ -82,9 +82,9 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ![alt_text](images/image6.png "$(CudaToolkitIncludeDir)")
 
-*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitIncludeDir), is present.
+*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitLibDir), is present.
 
-![alt_text](images/image9.png "$(CudaToolkitIncludeDir)")
+![alt_text](images/image9.png "$(CudaToolkitLibDir)")
 
 ### Referencing openCV libraries
 
