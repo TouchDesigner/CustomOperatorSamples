@@ -1,3 +1,24 @@
+Changes to the original TouchDesigner repo:
+* GeneratorSOP: added Voronoi shape generator
+* GeneratorSOP: added KDTree shape generator
+* GeneratorSOP: building Release is copying the DLL to TouchDesigner Plugins folder
+
+
+To be able to use these new generators add new 3 channel input to this sop, which will represent the coordinates of points that will be center cell point for Voronoi and division coordinate for KDTree.
+Optional parameter scale - to scale each resulting element of the final shape.
+
+Issues:
+* Voronoi shape normals are corrupt. Easy fix - use Attribute Create SOP to create new normals
+* Both Voronoi and KDTree do not have the VBO variant
+* Input CHOP data must be normalised from -1.0 to 1.0
+* Input CHOP data is not checked for 'same coordinates', which might cause strange behaviour
+
+Voro++ library is used to generate Voronoi shape
+https://math.lbl.gov/voro++/about.html
+
+
+Feel free to create pull requests or send feedback and ideas.
+----------------------------------------------------------------
 # Custom Operator Samples
 
 We hope these custom operators can be a starting point to developing for anybody including members of the community only beginning with c++ development.

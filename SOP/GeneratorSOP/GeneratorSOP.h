@@ -19,6 +19,8 @@
 #include "ShapeGenerator.h"
 #include "Parameters.h"
 
+#include <string>
+
 /*
 This example implements a SOP which takes the following parameters:
 	- Shape: One of [Point, Line, Square, Cube] which is the shape this SOP outputs.
@@ -46,9 +48,18 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
+	virtual void		getErrorString(OP_String*, void*) override;
+
+	virtual void		getWarningString(OP_String*, void*) override;
+
 private:
 	// Class to construct geometry
 	ShapeGenerator myShapeGenerator;
+
+
+	std::string myError;
+	std::string	myWarning;
+
 
 	Parameters myParms;
 };

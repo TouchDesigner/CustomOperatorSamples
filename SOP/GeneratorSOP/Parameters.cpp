@@ -25,6 +25,20 @@ Parameters::evalGpudirect(const OP_Inputs* input)
 	return input->getParInt(GpudirectName) ? true : false;
 }
 
+double
+Parameters::evalScale(const OP_Inputs* input)
+{
+	return input->getParDouble(ScaleName);
+}
+
+const OP_CHOPInput*
+Parameters::evalPointschop(const OP_Inputs* input)
+{
+	return input->getParCHOP(PointsChopName);
+}
+
+
+
 
 #pragma endregion
 
@@ -35,23 +49,39 @@ Parameters::setup(OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;
+		p.name = PointsChopName;
+		p.label = PointsChopLabel;
+		p.page = "Generator";
+		p.defaultValue = "";
+
+		OP_ParAppendResult res = manager->appendCHOP(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+	
+	{
+		OP_StringParameter p;
 		p.name = ShapeName;
 		p.label = ShapeLabel;
 		p.page = "Generator";
-		p.defaultValue = "Cube";
-		std::array<const char*, 4> Names =
+		p.defaultValue = "KDTree";
+		std::array<const char*, 6> Names =
 		{
 			"Point",
 			"Line",
 			"Square",
-			"Cube"
+			"Cube",
+			"Voronoi",
+			"KDTree"
 		};
-		std::array<const char*, 4> Labels =
+		std::array<const char*, 6> Labels =
 		{
 			"Point",
 			"Line",
 			"Square",
-			"Cube"
+			"Cube",
+			"Voronoi",
+			"KDTree"
 		};
 		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
 
@@ -96,6 +126,26 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.defaultValues[0] = false;
 
 		OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = ScaleName;
+		p.label = ScaleLabel;
+		p.page = "Generator";
+		p.defaultValues[0] = 1.0;
+
+		p.defaultValues[0] = 1.0;
+		p.minSliders[0] = 0.01;
+		p.maxSliders[0] = 1.0;
+		p.minValues[0] = 0.01;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
+
+		OP_ParAppendResult res = manager->appendFloat(p);
 
 		assert(res == OP_ParAppendResult::Success);
 	}

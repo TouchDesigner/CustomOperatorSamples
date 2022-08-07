@@ -39,9 +39,9 @@ FillSOPPluginInfo(SOP_PluginInfo *info)
 	OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
-	customInfo.opType->setString("Generator");
+	customInfo.opType->setString("Generator2");
 	// English readable name
-	customInfo.opLabel->setString("Generator");
+	customInfo.opLabel->setString("Generator2");
 	// Information of the author of the node
 	customInfo.authorName->setString("Gabriel Robels");
 	customInfo.authorEmail->setString("support@derivative.ca");
@@ -97,6 +97,9 @@ GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 {
 	ShapeMenuItems shape = myParms.evalShape(inputs);
 	Color color = myParms.evalColor(inputs);
+	float scale = myParms.evalScale(inputs);
+
+	const OP_CHOPInput* input = inputs->getParCHOP(PointsChopName);
 
 	switch (shape)
 	{
@@ -116,9 +119,53 @@ GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 			break;
 		}
 		case ShapeMenuItems::Cube:
-		default:
 		{
 			myShapeGenerator.outputCube(output);
+			break;
+		}
+		case ShapeMenuItems::Voronoi:
+		{
+			
+			if (!input) {
+				myError = "Missing CHOP input for Voronoi cell point positions.";
+				return;
+			}
+
+			if (input->numChannels < 3) {
+				myError = "To be used as 3D position data CHOP input needs to have 3 channels." + std::to_string(input->numChannels) + ".";
+				return;
+			}
+
+
+			// generate some data if there's no input...
+			if (input->numSamples < 2) {
+				myWarning = "Not enough input CHOP point positions. Need at least 2.";
+			}
+
+			myShapeGenerator.outputVoronoi(input, scale, output);
+			break;
+		}
+		case ShapeMenuItems::KDTree:
+		default:
+		{
+
+			if (!input) {
+				myError = "Missing CHOP input for KD-Tree cell point positions.";
+				return;
+			}
+
+			if (input->numChannels < 3) {
+				myError = "To be used as 3D position data CHOP input needs to have 3 channels." + std::to_string(input->numChannels) + ".";
+				return;
+			}
+
+
+			// generate some data if there's no input...
+			// if (input->numSamples < 2) {
+			//	myWarning = "Not enough point positions. Adding random.";
+			//}
+
+			myShapeGenerator.outputKDTree(input, scale, output);
 			break;
 		}
 	}
@@ -176,6 +223,22 @@ GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 
 	output->setBoundingBox(BoundingBox(-1, -1, -1, 1, 1, 1));
 	output->updateComplete();
+}
+
+void
+GeneratorSOP::getErrorString(OP_String* error, void*)
+{
+	error->setString(myError.c_str());
+	// Reset string after reporting it.
+	myError = "";
+}
+
+void
+GeneratorSOP::getWarningString(OP_String* warning, void*)
+{
+	warning->setString(myWarning.c_str());
+	// Reset string after reporting it.
+	myWarning = "";
 }
 
 void

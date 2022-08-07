@@ -16,6 +16,12 @@ constexpr static char ColorLabel[] = "Color";
 constexpr static char GpudirectName[] = "Gpudirect";
 constexpr static char GpudirectLabel[] = "GPU Direct";
 
+constexpr static char ScaleName[] = "Scale";
+constexpr static char ScaleLabel[] = "Cell scale";
+
+constexpr static char PointsChopName[] = "Inputpointschop";
+constexpr static char PointsChopLabel[] = "Input points CHOP";
+
 
 #pragma endregion
 
@@ -25,7 +31,9 @@ enum class ShapeMenuItems
 	Point,
 	Line,
 	Square,
-	Cube
+	Cube,
+	Voronoi,
+	KDTree
 };
 
 #pragma endregion
@@ -45,6 +53,13 @@ public:
 
 	// GPU Direct
 	static bool		evalGpudirect(const OP_Inputs* input);
+
+	// Voronoi cell scale
+	static double	   evalScale(const OP_Inputs* input);
+
+	// Input points CHOP for Voronoi & KDTree
+	static const OP_CHOPInput*
+								   evalPointschop(const OP_Inputs* input);
 
 
 };
