@@ -11,52 +11,54 @@
 * to endorse or promote products derived from this file without specific
 * prior written permission from Derivative.
 */
-#ifndef __CudaTOP__
-#define __CudaTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
-
-#include <string>
+#include "cuda_runtime.h"
 #include <array>
 
-/*
-This example implements a TOP to copy a texture or output a plain color using CUDA.
-It takes the following parameters:
-	- Color:	The color to output if no input is detected.
-*/
+using namespace TD;
 
-// Check methods [getNumInfoCHOPChans, getInfoCHOPChan, getInfoDATSize, getInfoDATEntries]
-// if you want to output values to the Info CHOP/DAT
-
-// To get more help about these functions, look at TOP_CPlusPlusBase.h
 class CudaTOP : public TOP_CPlusPlusBase
 {
 public:
-    CudaTOP(const OP_NodeInfo *info);
-    virtual ~CudaTOP();
+	CudaTOP(const OP_NodeInfo *info, TOP_Context *context);
+	virtual ~CudaTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+	virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved1) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
+	virtual void		execute(TOP_Output*, const OP_Inputs*, void* reserved) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
+	virtual int32_t		getNumInfoCHOPChans(void* reserved) override;
+	virtual void		getInfoCHOPChan(int32_t index,
+										OP_InfoCHOPChan *chan,
+										void* reserved) override;
 
-	virtual void		getErrorString(OP_String*, void* reserved) override;
+	virtual bool		getInfoDATSize(OP_InfoDATSize *infoSize, void* reserved) override;
+	virtual void		getInfoDATEntries(int32_t index,
+											int32_t nEntries,
+											OP_InfoDATEntries *entries,
+											void* reserved) override;
+
+	virtual void		getErrorString(OP_String *error, void* reserved) override;
+
+	virtual void		setupParameters(OP_ParameterManager *manager, void* reserved) override;
+	virtual void		pulsePressed(const char *name, void* reserved) override;
 
 private:
-	void		checkOutputFormat(const TOP_OutputFormatSpecs*);
+	// We don't need to store this pointer, but we do for the example.
+	// The OP_NodeInfo class store information about the node that's using
+	// this instance of the class (like its name).
+	const OP_NodeInfo*	myNodeInfo;
 
-	void		checkTopFormat(const OP_TOPInput*, const TOP_OutputFormatSpecs*);
+	// In this example this value will be incremented each time the execute()
+	// function is called, then passes back to the TOP 
+	int32_t				myExecuteCount;
 
-	std::string	myError;
+	cudaSurfaceObject_t	myInputSurface;
+	std::array<cudaSurfaceObject_t, 2>	myOutputSurfaces;
 
-	// Parameters
-	std::array<uint8_t, 4>	myRgba8;
-
-	Parameters myParms;
+	TOP_Context*		myContext;
+	const char*			myError;
+	cudaStream_t		myStream;
 };
-
-#endif

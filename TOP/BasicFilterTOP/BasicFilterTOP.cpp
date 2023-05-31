@@ -16,7 +16,6 @@
 
 #include "ThreadManager.h"
 #include "FilterWork.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <vector>
@@ -37,7 +36,7 @@ FillTOPPluginInfo(TOP_PluginInfo *info)
 	info->apiVersion = TOPCPlusPlusAPIVersion;
 
 	// Change this to change the executeMode behavior of this plugin.
-	info->executeMode = TOP_ExecuteMode::CPUMemWriteOnly;
+	info->executeMode = TOP_ExecuteMode::CPUMem;
 
 	// For more information on OP_CustomOPInfo see CPlusPlus_Common.h
 	OP_CustomOPInfo& customInfo = info->customOPInfo;
@@ -47,8 +46,8 @@ FillTOPPluginInfo(TOP_PluginInfo *info)
 	// English readable name
 	customInfo.opLabel->setString("Filter");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email.com");
 
 	// This TOP takes one input
 	customInfo.minInputs = 1;
@@ -61,7 +60,7 @@ CreateTOPInstance(const OP_NodeInfo* info, TOP_Context* context)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per TOP that is using the .dll
-	return new BasicFilterTOP(info);
+	return new BasicFilterTOP(info, context);
 }
 
 DLLEXPORT
@@ -76,92 +75,175 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 
 };
 
-BasicFilterTOP::BasicFilterTOP(const OP_NodeInfo* info) :
-	myThreadManagers{}, myExecuteCount{ 0 }, myMultiThreaded{ false }, myParms{ new Parameters() }
+BasicFilterTOP::BasicFilterTOP(const OP_NodeInfo* info, TOP_Context* context) :
+	myThreadManagers{}, myExecuteCount{ 0 }, myMultiThreaded{ false }, 
+	myContext{ context},
+	myPrevDownRes{nullptr}
 {
 }
 
 BasicFilterTOP::~BasicFilterTOP()
 {
-	delete myParms;
 }
 
 void
-BasicFilterTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
+BasicFilterTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const TD::OP_Inputs*, void*)
 {
 	ginfo->cookEveryFrameIfAsked = false;
-    ginfo->memPixelType = OP_CPUMemPixelType::BGRA8Fixed;
 	ginfo->inputSizeIndex = 0;
 }
 
-bool
-BasicFilterTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs*, void*)
-{
-	return false;
-}
 
 
 void
-BasicFilterTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Context *context, void*)
+BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* reserved)
 {
+
 	const OP_TOPInput*	top = inputs->getInputTOP(0);
 
 	if (!top)
 		return;
 
-	int inHeight = top->height;
-	int inWidth = top->width;
+	int inHeight = top->textureDesc.height;
+	int inWidth = top->textureDesc.width;
+
+
+	int outWidth = inWidth;
+	int outHeight = inHeight;
 
 	OP_TOPInputDownloadOptions	opts;
-	opts.cpuMemPixelType = OP_CPUMemPixelType::BGRA8Fixed;
-	switch (myParms->evalDownloadtype(inputs))
-	{
-	case DownloadtypeMenuItems::Delayed:
-		opts.downloadType = OP_TOPInputDownloadType::Delayed;
-		break;
-	case DownloadtypeMenuItems::Instant:
-		opts.downloadType = OP_TOPInputDownloadType::Instant;
-		break;
-	}
-	uint32_t*	inBuffer = static_cast<uint32_t*>(inputs->getTOPDataInCPUMemory(top, &opts));
+	opts.pixelFormat = top->textureDesc.pixelFormat;
 
-	if (!inBuffer)
+
+	OP_SmartRef<OP_TOPDownloadResult> downRes = top->downloadTexture(opts,nullptr);
+
+	if (!downRes)
 		return;
 
-	if (myMultiThreaded)
+
+	bool doDither = inputs->getParInt("Dither");
+	int bitsPerColor = inputs->getParInt("Bitspercolor");
+
+	if (myPrevDownRes)
 	{
-		for (ThreadManager* tm : myThreadManagers)
+		if (myMultiThreaded)
 		{
-			tm->syncParms(*myParms, inWidth, inHeight, output->width, output->height, inputs);
+			TOP_UploadInfo info;
+			info.textureDesc = myPrevDownRes->textureDesc;
+
+			outWidth = info.textureDesc.width;
+			outHeight = info.textureDesc.height;
+
+
+			for (ThreadManager* tm : myThreadManagers)
+			{
+				tm->syncParms(doDither, bitsPerColor, inWidth, inHeight, outWidth, outHeight, inputs);
+			}
+
+
+			int threadId = std::abs(myExecuteCount % 3);
+			info.colorBufferIndex = 0;
+
+			uint64_t byteSize = myPrevDownRes->size;
+			OP_SmartRef<TOP_Buffer> outBuf = myContext->createOutputBuffer(byteSize, TOP_BufferFlags::None, nullptr);
+
+			uint32_t* inBuffer = (uint32_t*)myPrevDownRes->getData();
+			uint32_t* outbuf = (uint32_t*)outBuf->data;
+
+
+			myThreadManagers.at(threadId)->syncBuffer(inBuffer, outbuf);
+
+			
+			if (myExecuteCount >= 0)
+				output->uploadBuffer(&outBuf, info, nullptr);
+			else
+				myContext->returnBuffer(&outBuf);
+
+			myExecuteCount++;
 		}
+		else
+		{
 
-		int threadId = std::abs(myExecuteCount % 3);
-		myThreadManagers.at(threadId)->syncBuffer(inBuffer, static_cast<uint32_t*>(output->cpuPixelData[threadId]));
-		myExecuteCount++;
-		output->newCPUPixelDataLocation = myExecuteCount >= 0 ? myExecuteCount % 3 : -1;
-	}
-	else
-	{
-		Filter::doFilterWork(
-			inBuffer, inWidth, inHeight, static_cast<uint32_t*>(output->cpuPixelData[0]), output->width, 
-			output->height, myParms->evalDither(inputs), myParms->evalBitspercolor(inputs)
-		);
-		output->newCPUPixelDataLocation = 0;
-	}
 
-	bool threaded = myParms->evalMultithreaded(inputs);
+			TOP_UploadInfo info;
+			info.textureDesc = myPrevDownRes->textureDesc;
+			info.colorBufferIndex = 0;
+
+			uint64_t byteSize = myPrevDownRes->size;
+			OP_SmartRef<TOP_Buffer> outbuf = myContext->createOutputBuffer(byteSize, TOP_BufferFlags::None, nullptr);
+
+
+			uint32_t* inBuffer = (uint32_t*)myPrevDownRes->getData();
+			uint32_t* outBuffer = (uint32_t*)outbuf->data;
+
+			outWidth = info.textureDesc.width;
+			outHeight = info.textureDesc.height;
+
+			Filter::doFilterWork(
+				inBuffer, inWidth, inHeight, outBuffer, outWidth,
+				outHeight, doDither, bitsPerColor
+			);
+
+			output->uploadBuffer(&outbuf, info, nullptr);
+		}
+	}
+	myPrevDownRes = std::move(downRes);
+
+	bool threaded = inputs->getParInt("Multithreaded");
 
 	if (threaded & !myMultiThreaded)
 		switchToMultiThreaded();
 
 	if (!threaded & myMultiThreaded)
 		switchToSingleThreaded();
+		
+	// switchToSingleThreaded();
 }
 
 void 
-BasicFilterTOP::setupParameters(OP_ParameterManager* manager, void*)
+BasicFilterTOP::setupParameters(OP_ParameterManager* manager, void* reserved)
 {
-	myParms->setup(manager);
+	{
+		OP_NumericParameter np;
+		np.name = "Bitspercolor";
+		np.label = "Bits per Color";
+		np.page = "Filter";
+		np.defaultValues[0] = 2;
+		np.minSliders[0] = 1.0;
+		np.maxSliders[0] = 8.0;
+		np.minValues[0] = 1.0;
+		np.maxValues[0] = 8.0;
+		np.clampMins[0] = true;
+		np.clampMaxes[0] = true;
+		OP_ParAppendResult res = manager->appendInt(np);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = "Dither";
+		np.label = "Dither";
+		np.page = "Filter";
+		np.defaultValues[0] = true;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter np;
+		np.name = "Multithreaded";
+		np.label = "Multithreaded";
+		np.page = "Filter";
+		np.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(np);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
 }
 
 void 

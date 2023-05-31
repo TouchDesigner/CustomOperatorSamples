@@ -12,72 +12,140 @@
 * prior written permission from Derivative.
 */
 
+#include "CPlusPlus_Common.h"
 #include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
-#include <cstdint>
-#include <array>
+#include <algorithm>
+#include <stdio.h>
 
-// Simple copy surface
-__global__ void 
-copySurface(cudaSurfaceObject_t inputSurfObj,
-	cudaSurfaceObject_t outputSurfObj,
-	int width, int height)
+__global__ void
+copyTextureRGBA82D(int width, int height, cudaSurfaceObject_t input, cudaSurfaceObject_t output)
 {
-	// Calculate surface coordinates
 	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
-	if (x < width && y < height) {
-		uchar4 data;
-		// Read from input surface
-		surf2Dread(&data, inputSurfObj, x * 4, y);
-		// Write to output surface
-		surf2Dwrite(data, outputSurfObj, x * 4, y);
-	}
+
+	if (x >= width || y >= height)
+		return;
+
+	uchar4 color;
+	surf2Dread(&color, input, x * 4, y, cudaBoundaryModeZero);
+	surf2Dwrite(color, output, x * 4, y, cudaBoundaryModeZero);
 }
 
 __global__ void
-makeColorSurface(cudaSurfaceObject_t outputSurfObj,
-	int width, int height, uchar4 color)
+copyTextureRGBA83D(int width, int height, cudaSurfaceObject_t input, cudaSurfaceObject_t output)
+{
+	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+	unsigned int z = blockIdx.z * blockDim.z + threadIdx.z;
+
+	if (x >= width || y >= height)
+		return;
+
+	uchar4 color;
+	surf3Dread(&color, input, x * 4, y, z, cudaBoundaryModeZero);
+	surf3Dwrite(color, output, x * 4, y, z, cudaBoundaryModeZero);
+}
+
+__global__ void
+copyTextureRGBA8Cube(int width, int height, cudaSurfaceObject_t input, cudaSurfaceObject_t output)
+{
+	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+	unsigned int z = blockIdx.z * blockDim.z + threadIdx.z;
+
+	if (x >= width || y >= height)
+		return;
+
+	uchar4 color;
+	surfCubemapread(&color, input, x * 4, y, z, cudaBoundaryModeZero);
+	surfCubemapwrite(color, output, x * 4, y, z, cudaBoundaryModeZero);
+}
+
+__global__ void
+copyTextureRGBA82DArray(int width, int height, cudaSurfaceObject_t input, cudaSurfaceObject_t output)
+{
+	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+	unsigned int z = blockIdx.z * blockDim.z + threadIdx.z;
+
+	if (x >= width || y >= height)
+		return;
+
+	uchar4 color;
+	surf2DLayeredread(&color, input, x * 4, y, z, cudaBoundaryModeZero);
+	surf2DLayeredwrite(color, output, x * 4, y, z, cudaBoundaryModeZero);
+}
+
+__global__ void
+fillOutput(int width, int height, uchar4 color, cudaSurfaceObject_t output)
 {
 	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-	if (x < width && y < height) {
-		// Write to output surface
-		surf2Dwrite(color, outputSurfObj, x * 4, y);
-	}
+	if (x >= width || y >= height)
+		return;
+
+	surf2Dwrite(color, output, x * 4, y, cudaBoundaryModeZero);
 }
 
-void createSurfaceObj(cudaSurfaceObject_t* sObj, cudaArray* arr)
+int
+divUp(int a, int b)
 {
-	cudaResourceDesc resDesc = {};
-	resDesc.res.array.array = arr;
-	resDesc.resType = cudaResourceTypeArray;
-	cudaCreateSurfaceObject(sObj, &resDesc);
+	return ((a % b) != 0) ? (a / b + 1) : (a / b);
 }
 
-void doCUDAOperation(int width, int height, cudaArray *input, cudaArray *output, std::array<uint8_t, 4> color)
+cudaError_t
+doCUDAOperation(int width, int height, int depth, TD::OP_TexDim dim, float4 color, cudaSurfaceObject_t input, cudaSurfaceObject_t output)
 {
-	// Create the output surface object
-	cudaSurfaceObject_t outputS{};
-	createSurfaceObj(&outputS, output);
+	cudaError_t cudaStatus;
 
-	dim3 blockSize(16, 16);
-	dim3 gridSize((width + blockSize.x - 1) / blockSize.x,
-		(height + blockSize.y - 1) / blockSize.y);
+	dim3 blockSize(16, 16, 1);
+	dim3 gridSize(divUp(width, blockSize.x), divUp(height, blockSize.y), depth);
 
 	if (input)
 	{
-		cudaSurfaceObject_t inputS{};
-		createSurfaceObj(&inputS, input);
-		copySurface<<<gridSize, blockSize>>>(inputS, outputS, width, height);
-		cudaDestroySurfaceObject(inputS);
+		switch (dim)
+		{
+			case TD::OP_TexDim::e2D:
+				copyTextureRGBA82D << <gridSize, blockSize >> > (width, height, input, output);
+				break;
+			case TD::OP_TexDim::e3D:
+				copyTextureRGBA83D << <gridSize, blockSize >> > (width, height, input, output);
+				break;
+			case TD::OP_TexDim::eCube:
+				gridSize.z = 6;
+				copyTextureRGBA8Cube << <gridSize, blockSize >> > (width, height, input, output);
+				break;
+			case TD::OP_TexDim::e2DArray:
+				copyTextureRGBA82DArray << <gridSize, blockSize >> > (width, height, input, output);
+				break;
+		}
 	}
 	else
 	{
-		uchar4 pixel = make_uchar4(color.at(0), color.at(1), color.at(2), color.at(3));
-		makeColorSurface<<<gridSize, blockSize>>> (outputS, width, height, pixel);
+		dim3 gridSize(divUp(width, blockSize.x), divUp(height, blockSize.y), 1);
+		uchar4 c8;
+		// Flip R and B since we are outputting to BGRA8
+		c8.z = (uint8_t)std::min(std::max(color.x * 255.0f, 0.0f), 255.0f);
+		c8.y = (uint8_t)std::min(std::max(color.y * 255.0f, 0.0f), 255.0f);
+		c8.x = (uint8_t)std::min(std::max(color.z * 255.0f, 0.0f), 255.0f);
+		c8.w = (uint8_t)std::min(std::max(color.w * 255.0f, 0.0f), 255.0f);
+		fillOutput<<<gridSize, blockSize>>> (width, height, c8, output);
 	}
 
-	cudaDestroySurfaceObject(outputS);
+
+#ifdef _DEBUG
+	// any errors encountered during the launch.
+	cudaStatus = cudaDeviceSynchronize();
+	if (cudaStatus != cudaSuccess)
+	{
+		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching kernel!\n", cudaStatus);
+	}
+#else
+	cudaStatus = cudaSuccess;
+#endif
+
+	return cudaStatus;
 }

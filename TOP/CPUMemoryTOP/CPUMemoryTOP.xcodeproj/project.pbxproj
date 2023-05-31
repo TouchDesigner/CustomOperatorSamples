@@ -250,6 +250,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = /;
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ca.derivative.cpp.CPUMemoryTOP;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = plugin;
@@ -262,6 +263,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = /;
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ca.derivative.cpp.CPUMemoryTOP;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = plugin;

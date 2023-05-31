@@ -15,7 +15,6 @@
 #define __OpticalFlowCPUTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 namespace cv
 {
@@ -42,30 +41,30 @@ This TOP takes one input where the optical flow of sequencial frames is calculat
 */
 
 // To get more help about these functions, look at TOP_CPlusPlusBase.h
-class OpticalFlowCPUTOP : public TOP_CPlusPlusBase
+class OpticalFlowCPUTOP : public TD::TOP_CPlusPlusBase
 {
 public:
-    OpticalFlowCPUTOP(const OP_NodeInfo *info);
+    OpticalFlowCPUTOP(const TD::OP_NodeInfo *info, TD::TOP_Context *context);
     virtual ~OpticalFlowCPUTOP();
 
-        virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+        virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-        virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
+        virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-        virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
-
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
 private:
-    void                            inputToMat(const OP_Inputs*) const;
+    void                            inputToMat(const TD::OP_Inputs*);
 
-	void 				cvMatToOutput(const cv::Mat&, TOP_OutputFormatSpecs*) const;
+	void 				cvMatToOutput(const cv::Mat&, TD::TOP_Output*, TD::TOP_UploadInfo) const;
 
 	cv::Mat*	myFrame;
 	cv::Mat*	myPrev;
 	cv::Mat*	myFlow;
 
-	Parameters myParms;
+	int					myExecuteCount;
+	TD::TOP_Context* myContext;
+	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
 };
 
 #endif

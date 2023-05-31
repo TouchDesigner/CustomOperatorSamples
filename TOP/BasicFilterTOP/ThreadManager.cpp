@@ -1,12 +1,14 @@
 #include "ThreadManager.h"
 
 #include "FilterWork.h"
-#include "Parameters.h"
+
 
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
 #include <thread>
+
+
 
 ThreadManager::ThreadManager() :
 	myStatus{ ThreadStatus::Done }, myOutBuffer{}, myInBuffer{},
@@ -30,20 +32,21 @@ ThreadManager::~ThreadManager()
 }
 
 void 
-ThreadManager::syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight, const OP_Inputs* inputs)
+ThreadManager::syncParms(bool doDither, int bitsPerColor, int inWidth, int inHeight, int outWidth, int outHeight, const TD::OP_Inputs* inputs)
 {
 	const std::lock_guard<std::mutex> lock(myParmsMutex);
-	myDoDither = parms.evalDither(inputs);
-	myBitsPerColor = parms.evalBitspercolor(inputs);
+	myDoDither = doDither;
+	myBitsPerColor = bitsPerColor;
 	myInWidth = inWidth;
 	myInHeight = inHeight;
 	myOutWidth = outWidth;
 	myOutHeight = outHeight;
 }
 
-void 
+void
 ThreadManager::syncBuffer(uint32_t* inBuffer, uint32_t* outBuffer)
 {
+
 	std::unique_lock<std::mutex>	lock(myBufferMutex);
 	myBufferCV.wait(lock, [this] { return myStatus == ThreadStatus::Done; });
 	myOutBuffer = outBuffer;

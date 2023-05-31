@@ -16,7 +16,6 @@
 #define __CannyEdgeTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
@@ -48,37 +47,37 @@ This TOP takes one input which must be 8 bit single channel.
 */
 
 // To get more help about these functions, look at TOP_CPlusPlusBase.h
-class CannyEdgeTOP : public TOP_CPlusPlusBase
+class CannyEdgeTOP : public TD::TOP_CPlusPlusBase
 {
 public:
-    CannyEdgeTOP(const OP_NodeInfo *info);
+    CannyEdgeTOP(const TD::OP_NodeInfo *info, TD::TOP_Context *context);
     virtual ~CannyEdgeTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+    virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
+    virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
-
-	virtual void		getErrorString(OP_String*, void* reserved) override;
+	virtual void		getErrorString(TD::OP_String*, void* reserved) override;
 
 private:
-    void                inputTopToMat(const OP_TOPInput*);
-
-	void 				cvMatToOutput(TOP_OutputFormatSpecs*) const;
-
-	bool				checkInputTop(const OP_TOPInput*);
+	bool				checkInputTop(const TD::OP_TOPInput*);
 
 	cv::cuda::GpuMat*	myFrame;
 
-	Parameters			myParms;
 	std::string			myError;
 
 	int					myNumChan;
 	int					myMatType;
 	int					myPixelSize;
+
+	TD::TOP_Context*	myContext;
+	cudaStream_t		myStream;
+
+	// In this example this value will be incremented each time the execute()
+// function is called, then passes back to the TOP 
+	int32_t				myExecuteCount;
 };
 
 #endif

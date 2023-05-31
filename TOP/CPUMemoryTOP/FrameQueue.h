@@ -20,46 +20,40 @@
 
 #include "TOP_CPlusPlusBase.h"
 
+class BufferInfo
+{
+public:
+	TD::OP_SmartRef<TD::TOP_Buffer>		buf;
+	TD::TOP_UploadInfo					uploadInfo;
+
+};
 class FrameQueue
 {
 public:
-
-	FrameQueue();
+	FrameQueue(TD::TOP_Context* context);
 	~FrameQueue();
 
-	// This will fill the class with buffers that can be updated. It should
-	// be called every frame to ensure the buffers this class have is in
-	// sync with what the TOP_OutputFormatSpecs is providing as output buffers.
-	void				sync(TOP_OutputFormatSpecs *output);
-
 	// Call this to get a buffer to fill with new buffer data.
-	// You MUST call either updateComplete() or updateCancelled() when done with the buffer.
+	// You should call either updateComplete() or updateCancelled() when done with the buffer.
+	// You can also call release() on the buffer to say you are done with it, but that won't
+	// allow it to be re-used for another operation later on (possibly avoiding an allocation).
 	// This may return nullptr if there is no buffer available for update.
-	// width and height will be filled in with the width/height of the buffer
-	void*				getBufferForUpdate(int *width, int *height);
+	TD::OP_SmartRef<TD::TOP_Buffer>		getBufferToUpdate(uint64_t byteSize, TD::TOP_BufferFlags flags);
 
-	// Call this to tell the class that the data from the last getBufferForUpdate()
-	// is ready to be used by the TOP
-	void				updateComplete();
+	// Takes ownership of the TOP_Buffer contained in BufferInfo, don't release it externally.
+	void				updateComplete(const BufferInfo &bufInfo);
 
 	// Call this to tell the class that the data from the last getBufferForUpdate()
 	// did not get filled so it should not be queued for upload to the TOP
-	void				updateCancelled();
+	void				updateCancelled(TD::OP_SmartRef<TD::TOP_Buffer> *buf);
 
-	// Call this from execute() to send a new buffer (if available) to the TOP to output.
-	void				sendBufferForUpload(TOP_OutputFormatSpecs *output);
+	// If there is a new buffer to upload, BufferInfo.buf will not be nullptr.
+	// You are the owner of BufferInfo.buf if this returns a non-nullptr
+	BufferInfo			getBufferToUpload();
 
 private:
+	std::mutex				myLock;
+	std::deque<BufferInfo>	myUpdatedBuffers;
 
-	void				startMoreWork();
-
-	std::mutex			myLock;
-	std::mutex			myUpdateBufferLock;
-	std::deque<void*>	myUnusedBuffers;
-	std::deque<void*>	myUpdatedBuffers;
-
-	int					myWidth;
-	int					myHeight;
-
-	void*				myUpdateBuffer;			
+	TD::TOP_Context*		myContext;
 };

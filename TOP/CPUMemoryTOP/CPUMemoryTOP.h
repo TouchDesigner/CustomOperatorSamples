@@ -13,35 +13,32 @@
 */
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include "FrameQueue.h"
 #include <thread>
 #include <atomic>
+using namespace TD;
 
 class CPUMemoryTOP : public TOP_CPlusPlusBase
 {
 public:
-    CPUMemoryTOP(const OP_NodeInfo *info);
-    virtual ~CPUMemoryTOP();
+	CPUMemoryTOP(const OP_NodeInfo *info, TOP_Context* context);
+	virtual ~CPUMemoryTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo *, const OP_Inputs*, void*) override;
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TOP_GeneralInfo *, const OP_Inputs*, void*) override;
 
-
-    virtual void		execute(TOP_OutputFormatSpecs*,
+	virtual void		execute(TOP_Output*,
 							const OP_Inputs*,
-							TOP_Context* context,
 							void* reserved1) override;
 
-	static void fillBuffer(float * mem, int width, int height, double step, double brightness);
+	static void			fillBuffer(OP_SmartRef<TOP_Buffer>& mem, uint64_t byteOffset, int width, int height, double step, double brightness);
 
 
-    virtual int32_t		getNumInfoCHOPChans(void *reserved1) override;
-    virtual void		getInfoCHOPChan(int32_t index,
+	virtual int32_t		getNumInfoCHOPChans(void *reserved1) override;
+	virtual void		getInfoCHOPChan(int32_t index,
 								OP_InfoCHOPChan *chan, void* reserved1) override;
 
-    virtual bool		getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) override;
-    virtual void		getInfoDATEntries(int32_t index,
+	virtual bool		getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) override;
+	virtual void		getInfoDATEntries(int32_t index,
 									int32_t nEntries,
 									OP_InfoDATEntries *entries,
 									void *reserved1) override;
@@ -53,15 +50,17 @@ public:
 
 private:
 
-	void				startMoreWork();
-    // We don't need to store this pointer, but we do for the example.
-    // The OP_NodeInfo class store information about the node that's using
-    // this instance of the class (like its name).
-    const OP_NodeInfo*	myNodeInfo;
+	void				fillAndUpload(TOP_Output* output, double speed, int width, int height, OP_TexDim texDim, int numLayers, int colorBufferIndex);
 
-    // In this example this value will be incremented each time the execute()
-    // function is called, then passes back to the TOP 
-    int					myExecuteCount;
+	void				startMoreWork();
+	// We don't need to store this pointer, but we do for the example.
+	// The OP_NodeInfo class store information about the node that's using
+	// this instance of the class (like its name).
+	const OP_NodeInfo*	myNodeInfo;
+
+	// In this example this value will be incremented each time the execute()
+	// function is called, then passes back to the TOP
+	int					myExecuteCount;
 
 	std::mutex			mySettingsLock;
 	double				myStep;
@@ -78,6 +77,6 @@ private:
 	std::mutex			myConditionLock;
 	std::atomic<bool>	myStartWork;
 
-	Parameters	myParms;
-
+	TOP_Context*		myContext;
+	OP_SmartRef<OP_TOPDownloadResult> myPrevDownRes;
 };

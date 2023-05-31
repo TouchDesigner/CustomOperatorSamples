@@ -1,13 +1,18 @@
 #ifndef __ThreadManager__
 #define __ThreadManager__
 
+#include "TOP_CPlusPlusBase.h"
+
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
 #include <thread>
 
-class Parameters;
+using namespace TD;
+
+// class Parameters;
 class OP_Inputs;
+
 
 enum class ThreadStatus
 {
@@ -23,7 +28,7 @@ public:
 
 	~ThreadManager();
 
-	void	syncParms(const Parameters& parms, int inWidth, int inHeight, int outWidth, int outHeight, const OP_Inputs* inputs);
+	void	syncParms(bool doDither, int bitsPerColor, int inWidth, int inHeight, int outWidth, int outHeight, const TD::OP_Inputs* inputs);
 
 	void	syncBuffer(uint32_t* inBuffer, uint32_t* outBuffer);
 

@@ -13,15 +13,12 @@
   <ItemGroup>
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="FilterWork.h" />
-    <ClInclude Include="GL_Extensions.h" />
-    <ClInclude Include="Parameters.h" />
     <ClInclude Include="ThreadManager.h" />
     <ClInclude Include="BasicFilterTOP.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FilterWork.cpp" />
-    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="ThreadManager.cpp" />
     <ClCompile Include="BasicFilterTOP.cpp" />
   </ItemGroup>

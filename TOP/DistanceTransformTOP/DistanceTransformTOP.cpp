@@ -13,11 +13,42 @@
 */
 
 #include "DistanceTransformTOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+
+
+#pragma region Menus
+enum class DistancetypeMenuItems
+{
+	L1,
+	L2,
+	C
+};
+
+enum class MasksizeMenuItems
+{
+	Three,
+	Five,
+	Precise
+};
+
+enum class DownloadtypeMenuItems
+{
+	Delayed,
+	Instant
+};
+
+enum class ChannelMenuItems
+{
+	R,
+	G,
+	B,
+	A
+};
+
+#pragma endregion
 
 namespace
 {
@@ -59,24 +90,24 @@ extern "C"
 
 DLLEXPORT
 void
-FillTOPPluginInfo(TOP_PluginInfo* info)
+FillTOPPluginInfo(TD::TOP_PluginInfo* info)
 {
 	// This must always be set to this constant
-	info->apiVersion = TOPCPlusPlusAPIVersion;
+	info->apiVersion = TD::TOPCPlusPlusAPIVersion;
 
 	// Change this to change the executeMode behavior of this plugin.
-	info->executeMode = TOP_ExecuteMode::CPUMemWriteOnly;
+	info->executeMode = TD::TOP_ExecuteMode::CPUMem;
 
 	// For more information on OP_CustomOPInfo see CPlusPlus_Common.h
-	OP_CustomOPInfo& customInfo = info->customOPInfo;
+	TD::OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
 	customInfo.opType->setString("Distancetransfrom");
 	// English readable name
 	customInfo.opLabel->setString("Distance Transform");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email.ca");
 
 	// This TOP takes one input
 	customInfo.minInputs = 1;
@@ -84,17 +115,17 @@ FillTOPPluginInfo(TOP_PluginInfo* info)
 }
 
 DLLEXPORT
-TOP_CPlusPlusBase*
-CreateTOPInstance(const OP_NodeInfo* info, TOP_Context* context)
+TD::TOP_CPlusPlusBase*
+CreateTOPInstance(const TD::OP_NodeInfo* info, TD::TOP_Context* context)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per TOP that is using the .dll
-	return new DistanceTransformTOP(info);
+	return new DistanceTransformTOP(info, context);
 }
 
 DLLEXPORT
 void
-DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
+DestroyTOPInstance(TD::TOP_CPlusPlusBase* instance, TD::TOP_Context *context)
 {
 	// Delete the instance here, this will be called when
 	// Touch is shutting down, when the TOP using that instance is deleted, or
@@ -105,8 +136,11 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 };
 
 
-DistanceTransformTOP::DistanceTransformTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::Mat() }
+DistanceTransformTOP::DistanceTransformTOP(const TD::OP_NodeInfo*, TD::TOP_Context *context) :
+	myFrame{ new cv::Mat() },
+	myExecuteCount{0},
+	myPrevDownRes{nullptr},
+	myContext{context}
 {
 }
 
@@ -116,41 +150,14 @@ DistanceTransformTOP::~DistanceTransformTOP()
 }
 
 void
-DistanceTransformTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
+DistanceTransformTOP::getGeneralInfo(TD::TOP_GeneralInfo* ginfo, const TD::OP_Inputs*, void*)
 {
     ginfo->cookEveryFrame = false;
 	ginfo->cookEveryFrameIfAsked = false;
-	ginfo->memPixelType = OP_CPUMemPixelType::R32Float;
-}
-
-bool
-DistanceTransformTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, void*)
-{
-	// In this function we could assign variable values to 'format' to specify
-	// the pixel format/resolution etc that we want to output to.
-	// If we did that, we'd want to return true to tell the TOP to use the settings we've
-	// specified.
-	format->bitsPerChannel = 32;
-	format->floatPrecision = true;
-	format->redChannel = true;
-	format->greenChannel = false;
-	format->blueChannel = false;
-	format->alphaChannel = false;
-
-	// Query size of top, otherwise if 'Common/Output Resolution' is different than 'Use Input'
-	// It scales the size twice
-	const OP_TOPInput* top = inputs->getInputTOP(0);
-	if (top)
-	{
-		format->width = top->width;
-		format->height = top->height;
-	}
-
-	return true;
 }
 
 void
-DistanceTransformTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Context*, void*)
+DistanceTransformTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	using namespace cv;
 	
@@ -158,67 +165,178 @@ DistanceTransformTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* in
 	if (myFrame->empty())
 		return;
 
-	int distanceType = getType(myParms.evalDistancetype(inputs));
-	int maskSize = getMask(myParms.evalMasksize(inputs));
+	if (!myPrevDownRes)
+		return;
+
+	TD::TOP_UploadInfo info;
+	info.textureDesc.width = myPrevDownRes->textureDesc.width;
+	info.textureDesc.height = myPrevDownRes->textureDesc.height;
+	info.textureDesc.texDim = TD::OP_TexDim::e2D;
+	info.textureDesc.pixelFormat = TD::OP_PixelFormat::Mono32Float;
+	info.colorBufferIndex = 0;
+
+	int distanceType = getType(static_cast<DistancetypeMenuItems>(inputs->getParInt("Distancetype")));
+	int maskSize = getMask(static_cast<MasksizeMenuItems>(inputs->getParInt("Masksize")));
 
 	distanceTransform(*myFrame, *myFrame, distanceType, maskSize);
 	
-	if (myParms.evalNormalize(inputs))
+	bool donormalize = inputs->getParInt("Normalize") ? true : false;
+
+	if (donormalize)
 		normalize(*myFrame, *myFrame, 0, 1.0, NORM_MINMAX);
 
-	cvMatToOutput(output);
+	cvMatToOutput(output, info);
 }
 
 void
-DistanceTransformTOP::setupParameters(OP_ParameterManager* in, void*)
+DistanceTransformTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	myParms.setup(in);
+	{
+		TD::OP_StringParameter p;
+		p.name = "Distancetype";
+		p.label = "Distance Type";
+		p.page = "Transform";
+		p.defaultValue = "L1";
+		std::array<const char*, 3> Names =
+		{
+			"L1",
+			"L2",
+			"C"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"L1",
+			"L2",
+			"C"
+		};
+		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_StringParameter p;
+		p.name = "Masksize";
+		p.label = "Mask Size";
+		p.page = "Transform";
+		p.defaultValue = "Three";
+		std::array<const char*, 3> Names =
+		{
+			"Three",
+			"Five",
+			"Precise"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"3x3",
+			"5x5",
+			"Precise"
+		};
+		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Normalize";
+		p.label = "Normalize";
+		p.page = "Transform";
+		p.defaultValues[0] = false;
+
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_StringParameter p;
+		p.name = "Channel";
+		p.label = "Channel";
+		p.page = "Transform";
+		p.defaultValue = "R";
+		std::array<const char*, 4> Names =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
 }
 
 void
-DistanceTransformTOP::cvMatToOutput(TOP_OutputFormatSpecs* out) const
+DistanceTransformTOP::cvMatToOutput(TD::TOP_Output* out, TD::TOP_UploadInfo info) const
 {
-	int	height = out->height;
-	int	width = out->width;
+	size_t	height = info.textureDesc.height;
+	size_t	width = info.textureDesc.width;
+	size_t imgsize = 1 * height * width * sizeof(float);
 
-	out->newCPUPixelDataLocation = 0;
+	TD::OP_SmartRef<TD::TOP_Buffer> buf = myContext->createOutputBuffer(imgsize, TD::TOP_BufferFlags::None, nullptr);
+	float* pixel = static_cast<float*>(buf->data);
 
 	cv::resize(*myFrame, *myFrame, cv::Size(width, height));
 	cv::flip(*myFrame, *myFrame, 0);
+	float* data = static_cast<float*>(static_cast<void*>(myFrame->data));
 
-	memcpy(out->cpuPixelData[0], myFrame->data, height * width * sizeof(float));
+	memcpy(pixel, data, imgsize);
+	out->uploadBuffer(&buf, info, nullptr);
 }
 
 void 
-DistanceTransformTOP::inputTopToMat(const OP_Inputs* in)
+DistanceTransformTOP::inputTopToMat(const TD::OP_Inputs* in)
 {
-	const OP_TOPInput*	top = in->getInputTOP(0);
+	const TD::OP_TOPInput*	top = in->getInputTOP(0);
 	if (!top) {
                 *myFrame = cv::Mat();
 		return;
         }
 
-	OP_TOPInputDownloadOptions	opts = {};
+	TD::OP_TOPInputDownloadOptions	opts;
 	opts.verticalFlip = true;
-	opts.downloadType = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
-	opts.cpuMemPixelType = OP_CPUMemPixelType::RGBA8Fixed;
+	opts.pixelFormat = TD::OP_PixelFormat::RGBA8Fixed;
 
-	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);
-	if (!pixel) {
-                *myFrame = cv::Mat();
+	TD::OP_SmartRef<TD::OP_TOPDownloadResult> downRes = top->downloadTexture(opts, nullptr);
+
+	if (!downRes)
+	{
+		*myFrame = cv::Mat();
 		return;
-        }
+	}
 
-	int	height = top->height;
-	int	width = top->width;
+	if (myPrevDownRes)
+	{
+		uint8_t* pixel = (uint8_t*)myPrevDownRes->getData();
 
-	*myFrame = cv::Mat(height, width, CV_8UC1);
-	uint8_t*	data = (uint8_t*)myFrame->data;
-        for (int i = 0; i < height; i += 1) {
-                for (int j = 0; j < width; j += 1) {
-                        int pixelN = i*width + j;
-                        int index = 4*pixelN + static_cast<int>(myParms.evalChannel(in));
-                        data[pixelN] = pixel[index];
-                }
-        }
+		if (!pixel)
+		{
+			*myFrame = cv::Mat();
+			return;
+		}
+
+		int	height = top->textureDesc.height;
+		int	width = top->textureDesc.width;
+
+		*myFrame = cv::Mat(height, width, CV_8UC1);
+		uint8_t* data = (uint8_t*)myFrame->data;
+		for (int i = 0; i < height; i += 1) {
+			for (int j = 0; j < width; j += 1) {
+				int pixelN = i * width + j;
+				int index = 4 * pixelN + (in->getParInt("Channel"));
+				data[pixelN] = pixel[index];
+			}
+		}
+	}
+	myPrevDownRes = std::move(downRes);
+	
 }

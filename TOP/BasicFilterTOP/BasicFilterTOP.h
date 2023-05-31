@@ -22,7 +22,11 @@
 #include <array>
 
 class ThreadManager;
-class Parameters;
+
+// for multithreading
+const int NumCPUPixelDatas = 3;
+
+using namespace TD;
 
 /*
 This example implements a TOP to limit the number of colors from the input. This example
@@ -33,8 +37,6 @@ It takes the following parameters:
 	- Dither:	If on, we apply a dithering algorithm to diffuse the error.
 	- Multithreaded: If on, we calculate the output for 3 frames at the same time, therefore 
 		it lags from the input by 3/4 frames depending on Download Type.
-	- Download Type: One of [ Instant, Delayed ]. Specifies if the data is downloaded to the CPUMem
-		this frame or next frame.
 */
 
 // Check methods [getNumInfoCHOPChans, getInfoCHOPChan, getInfoDATSize, getInfoDATEntries]
@@ -44,23 +46,22 @@ It takes the following parameters:
 class BasicFilterTOP : public TOP_CPlusPlusBase
 {
 public:
-    BasicFilterTOP(const OP_NodeInfo *info);
+    BasicFilterTOP(const OP_NodeInfo *info, TOP_Context* context);
     virtual ~BasicFilterTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+    virtual void		getGeneralInfo(TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
+    virtual void		execute(TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
-
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
 private:
 	void		switchToSingleThreaded();
 
 	void		switchToMultiThreaded();
 
-	Parameters*	myParms;
+	TOP_Context* myContext;
+	OP_SmartRef<OP_TOPDownloadResult> myPrevDownRes;
 
 	// Threading variables
 	std::array<ThreadManager*, NumCPUPixelDatas>	myThreadManagers;

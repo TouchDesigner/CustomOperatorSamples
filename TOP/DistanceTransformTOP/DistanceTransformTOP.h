@@ -16,14 +16,13 @@
 #define __DistanceTransformTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
 
 
 /*
-This example implements a TOP to calculate the distance transform using openCV's functionallity.
+This example implements a TOP to calculate the distance transform using openCV.
 
 It takes the following parameters:
 	- Distance Type:        One of [L1, L2, C], which determines how to calculate the distance.
@@ -35,28 +34,28 @@ This TOP takes one input which must be 8 bit single channel.
 */
 
 // To get more help about these functions, look at TOP_CPlusPlusBase.h
-class DistanceTransformTOP : public TOP_CPlusPlusBase
+class DistanceTransformTOP : public TD::TOP_CPlusPlusBase
 {
 public:
-    DistanceTransformTOP(const OP_NodeInfo *info);
+    DistanceTransformTOP(const TD::OP_NodeInfo *info, TD::TOP_Context *context);
     virtual ~DistanceTransformTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+    virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
+    virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
-
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
 private:
-	void                inputTopToMat(const OP_Inputs*);
+	void                inputTopToMat(const TD::OP_Inputs*);
 
-	void 				cvMatToOutput(TOP_OutputFormatSpecs*) const;
-
-	Parameters		myParms;
+	void 				cvMatToOutput(TD::TOP_Output*, TD::TOP_UploadInfo) const;
 
 	cv::Mat*		myFrame;
+
+	int					myExecuteCount;
+	TD::TOP_Context* myContext;
+	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
 };
 
 #endif

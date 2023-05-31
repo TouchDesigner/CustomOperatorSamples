@@ -16,10 +16,11 @@
 #define __SpectrumTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
+
+using namespace TD;
 
 namespace cv
 {
@@ -54,25 +55,19 @@ exactly 2 32-bit float channels.
 class SpectrumTOP : public TOP_CPlusPlusBase
 {
 public:
-    SpectrumTOP(const OP_NodeInfo *info);
+    SpectrumTOP(const OP_NodeInfo *info, TOP_Context *context);
     virtual ~SpectrumTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void* reserved) override;
+    virtual void		getGeneralInfo(TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void* reserved) override;
+    virtual void		execute(TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void* reserved) override;
-
-	virtual void		setupParameters(OP_ParameterManager*, void* reserved) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
 	virtual void		getErrorString(OP_String*, void* reserved) override;
 
 private:
-    void                inputTopToMat(const OP_TOPInput*, const OP_Inputs*);
-
-	void 				cvMatToOutput(const cv::cuda::GpuMat&, const OP_Inputs* input, TOP_OutputFormatSpecs*) const;
-
-	bool				checkInputTop(const OP_TOPInput*, const OP_Inputs*);
+	bool				checkInputTop(const OP_TOPInput*, const TD::OP_Inputs*);
 
 	void				swapQuadrants(cv::cuda::GpuMat&);
 
@@ -81,13 +76,19 @@ private:
 	cv::cuda::GpuMat*	myFrame;
 	cv::cuda::GpuMat*	myResult;
 
-	Parameters			myParms;
 	std::string			myError;
+
+	// In this example this value will be incremented each time the execute()
+	// function is called, then passes back to the TOP 
+	int32_t				myExecuteCount;
 
 	int						myNumChan;
 	GpuUtils::ChannelFormat	myChanFormat;
 
 	cv::Size			mySize;
+
+	TOP_Context*		myContext;
+	cudaStream_t		myStream;
 };
 
 #endif

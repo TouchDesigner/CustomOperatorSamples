@@ -15,7 +15,6 @@
 #define __ObjectDetectorTOP__
 
 #include "TOP_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <vector>
 #include <string>
@@ -56,39 +55,39 @@ detected objects. It outputs the following information to CHOPInfo and DATInfo:
 	- obj#:ty:  Y position of the bounding box.
 	- obj#:w:   Width of the bounding box.
 	- obj#:h:   Height of the bounding box.
+
+Note that it will take two cooks to get be able to see the output of an inputted frame - as the output is delayed by one frame
 */
 
 enum class OP_TOPInputDownloadType;
 
 // To get more help about these functions, look at TOP_CPlusPlusBase.h
-class ObjectDetectorTOP : public TOP_CPlusPlusBase
+class ObjectDetectorTOP : public TD::TOP_CPlusPlusBase
 {
 public:
-    ObjectDetectorTOP(const OP_NodeInfo *info);
+    ObjectDetectorTOP(const TD::OP_NodeInfo *info, TD::TOP_Context* context);
     virtual ~ObjectDetectorTOP();
 
-    virtual void		getGeneralInfo(TOP_GeneralInfo*, const OP_Inputs*, void*) override;
+    virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved1) override;
 
-    virtual bool		getOutputFormat(TOP_OutputFormat*, const OP_Inputs*, void*) override;
+    virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TOP_OutputFormatSpecs*, const OP_Inputs*, TOP_Context*, void*) override;
-
-	virtual void		setupParameters(OP_ParameterManager *manager, void *reserved1) override;
+	virtual void		setupParameters(TD::OP_ParameterManager *manager, void *reserved1) override;
 
     virtual int32_t     getNumInfoCHOPChans(void*) override;
 
-    virtual void        getInfoCHOPChan(int32_t, OP_InfoCHOPChan*, void*) override;
+    virtual void        getInfoCHOPChan(int32_t, TD::OP_InfoCHOPChan*, void*) override;
 
-    virtual bool        getInfoDATSize(OP_InfoDATSize*, void*) override;
+    virtual bool        getInfoDATSize(TD::OP_InfoDATSize*, void*) override;
 
-    virtual void        getInfoDATEntries(int32_t, int32_t, OP_InfoDATEntries*, void*) override;
+    virtual void        getInfoDATEntries(int32_t, int32_t, TD::OP_InfoDATEntries*, void*) override;
 
 private:
-    void                handleParameters(const OP_Inputs*);
+    void                handleParameters(const TD::OP_Inputs*);
 
-    void                cvMatToOutput(const cv::Mat&, TOP_OutputFormatSpecs*) const;
+    void                cvMatToOutput(const cv::Mat&, TD::TOP_Output*, TD::TOP_UploadInfo info) const;
 
-    void                inputToMat(const OP_Inputs*) const;
+    void                inputToMat(const TD::OP_Inputs*);
 
     void                drawBoundingBoxes() const;
 
@@ -108,9 +107,10 @@ private:
     bool        myDrawBoundingBox;
     bool        myLimitObjs;
     int         myMaxObjs;
-    OP_TOPInputDownloadType myDownloadtype;
 
-    Parameters myParms;
+	int					myExecuteCount;
+	TD::TOP_Context* myContext;
+	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
 };
 
 #endif

@@ -13,7 +13,6 @@
 */
 
 #include "SpectrumTOP.h"
-#include "Parameters.h"
 #include "GpuUtils.cuh"
 
 #include <cassert>
@@ -25,6 +24,31 @@
 #include <opencv2/video/tracking.hpp>
 
 #include "cuda_runtime.h"
+
+
+
+#pragma region Menus
+enum class ModeMenuItems
+{
+	dft,
+	idft
+};
+
+enum class CoordMenuItems
+{
+	polar,
+	cartesian
+};
+
+enum class ChanMenuItems
+{
+	r,
+	g,
+	b,
+	a
+};
+
+#pragma endregion
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -51,8 +75,8 @@ FillTOPPluginInfo(TOP_PluginInfo* info)
 	// English readable name
 	customInfo.opLabel->setString("Spectrum TOP");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email");
 
 	// This TOP takes one input
 	customInfo.minInputs = 1;
@@ -65,7 +89,7 @@ CreateTOPInstance(const OP_NodeInfo* info, TOP_Context* context)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per TOP that is using the .dll
-	return new SpectrumTOP(info);
+	return new SpectrumTOP(info, context);
 }
 
 DLLEXPORT
@@ -81,15 +105,23 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 };
 
 
-SpectrumTOP::SpectrumTOP(const OP_NodeInfo*) :
-	myFrame{ new cv::cuda::GpuMat() }, myResult{ new cv::cuda::GpuMat() }
+SpectrumTOP::SpectrumTOP(const OP_NodeInfo*, TOP_Context *context) :
+	myFrame( new cv::cuda::GpuMat() ), 
+	myResult( new cv::cuda::GpuMat() ), 
+	myExecuteCount(0),
+	myError(""),
+	myNumChan(-1),
+	myContext(context),
+	myChanFormat(GpuUtils::ChannelFormat::U16)
 {
+	cudaStreamCreate(&myStream);
 }
 
 SpectrumTOP::~SpectrumTOP()
 {
 	delete myFrame;
 	delete myResult;
+	cudaStreamDestroy(myStream);
 }
 
 void
@@ -98,51 +130,74 @@ SpectrumTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
 	ginfo->cookEveryFrameIfAsked = false;
 }
 
-bool
-SpectrumTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, void*)
-{
-	// In this function we could assign variable values to 'format' to specify
-	// the pixel format/resolution etc that we want to output to.
-	// If we did that, we'd want to return true to tell the TOP to use the settings we've
-	// specified.
-	// In this example we want a single channel
-	format->bitsPerChannel = 32;
-	format->floatPrecision = true;
-	format->redChannel = true;
-	format->greenChannel = myParms.evalMode(inputs) == ModeMenuItems::dft;
-	format->blueChannel = false;
-	format->alphaChannel = false;
-
-	// Query size of top, otherwise if 'Common/Output Resolution' is different than 'Use Input'
-	// It scales the size twice
-	const OP_TOPInput* top = inputs->getInputTOP(0);
-	if (top)
-	{
-		format->width = mySize.width = top->width;
-		format->height = mySize.height = top->height;
-	}
-
-	return true;
-}
-
 void
-SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP_Context*, void*)
+SpectrumTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void*)
 {
 	using namespace cv::cuda;
+
+	myError = "";
+	myExecuteCount++;
 
 	const OP_TOPInput* top = inputs->getInputTOP(0);
 	if (!top || !checkInputTop(top, inputs))
 		return;
-	
-	inputTopToMat(top, inputs);
-	if (myFrame->empty())
+
+	ModeMenuItems mode = static_cast<ModeMenuItems>(inputs->getParInt("Mode"));
+	int channame = inputs->getParInt("Chan");
+	bool transrows = inputs->getParInt("Transrows");
+	CoordMenuItems coord = static_cast<CoordMenuItems>(inputs->getParInt("Coord"));
+
+	mySize.width = top->textureDesc.width;
+	mySize.height = top->textureDesc.height;
+
+	OP_CUDAAcquireInfo acquireInfo;
+
+	acquireInfo.stream = myStream;
+	const OP_CUDAArrayInfo* inputArray = top->getCUDAArray(acquireInfo, nullptr);
+
+
+	TOP_CUDAOutputInfo info;
+	info.textureDesc.width = top->textureDesc.width;
+	info.textureDesc.height = top->textureDesc.height;
+	info.textureDesc.texDim = top->textureDesc.texDim;
+	info.textureDesc.pixelFormat = (mode == ModeMenuItems::dft) ? OP_PixelFormat::RG32Float : OP_PixelFormat::Mono32Float;
+	info.stream = myStream;
+
+	const OP_CUDAArrayInfo* outputInfo = output->createCUDAArray(info, nullptr);
+	if (!outputInfo)
 		return;
 
-	if (myParms.evalMode(inputs) == ModeMenuItems::dft)
+	// Now that we have gotten all of the pointers to the OP_CUDAArrayInfos that we may want, we can tell the context
+	// that we are going to start doing CUDA operations. This will cause the cudaArray members of the OP_CUDAArrayInfo
+	// to get filled in with valid addresses.
+	if (!myContext->beginCUDAOperations(nullptr))
+		return;
+
+	if (inputArray->cudaArray == nullptr)
+	{
+		myError = "CUDA memory for input TOP was not mapped correctly.";
+		return;
+	}
+
+	*myFrame = cv::cuda::GpuMat(info.textureDesc.height, info.textureDesc.width, CV_32FC2);
+	if (mode == ModeMenuItems::dft)
+	{
+		GpuUtils::arrayToComplexMatGPU(info.textureDesc.width, info.textureDesc.height, inputArray->cudaArray, *myFrame, myNumChan, channame, myChanFormat);
+	}
+	else
+	{
+		GpuUtils::arrayToMatGPU(info.textureDesc.width, info.textureDesc.height, inputArray->cudaArray, *myFrame, 2 * sizeof(float));
+	}
+
+	if (myFrame->empty())
+		return;
+	
+
+	if (mode == ModeMenuItems::dft)
 	{
 		dft(*myFrame, *myResult, mySize, 0);
 
-		if (!myParms.evalTransrows(inputs))
+		if (!transrows)
 		{
 			swapQuadrants(*myResult);
 		}
@@ -151,7 +206,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			swapSides(*myResult);
 		}
 
-		if (myParms.evalCoord(inputs) == CoordMenuItems::polar)
+		if (coord == CoordMenuItems::polar)
 		{
 			GpuMat channels[2];
 			split(*myResult, channels);
@@ -166,7 +221,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 	}
 	else
 	{
-		if (myParms.evalCoord(inputs) == CoordMenuItems::polar)
+		if (coord == CoordMenuItems::polar)
 		{
 			GpuMat channels[2];
 			split(*myFrame, channels);
@@ -178,7 +233,7 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 			merge(channels, 2, *myFrame);
 		}
 
-		if (!myParms.evalTransrows(inputs))
+		if (!transrows)
 		{
 			swapQuadrants(*myFrame);
 		}
@@ -190,13 +245,101 @@ SpectrumTOP::execute(TOP_OutputFormatSpecs* output, const OP_Inputs* inputs, TOP
 		dft(*myFrame, *myResult, mySize, 0);
 	}
 
-	cvMatToOutput(*myResult, inputs, output);
+	
+
+	if (mode == ModeMenuItems::dft)
+	{
+		GpuUtils::matGPUToArray(info.textureDesc.width, info.textureDesc.height, *myResult, outputInfo->cudaArray, 2 * sizeof(float));
+	}
+	else
+	{
+		GpuUtils::complexMatGPUToArray(info.textureDesc.width, info.textureDesc.height, *myResult, outputInfo->cudaArray);
+	}
+
+	myContext->endCUDAOperations(nullptr);
 }
 
 void
 SpectrumTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter p;
+		p.name = "Mode";
+		p.label = "Mode";
+		p.page = "Spectrum";
+		p.defaultValue = "dft";
+		std::array<const char*, 2> Names =
+		{
+			"dft",
+			"idft"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Discrete Fourier Transform",
+			"Inverse Discrete Fourier Transform"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_StringParameter p;
+		p.name = "Coord";
+		p.label = "Coordinate System";
+		p.page = "Spectrum";
+		p.defaultValue = "polar";
+		std::array<const char*, 2> Names =
+		{
+			"polar",
+			"cartesian"
+		};
+		std::array<const char*, 2> Labels =
+		{
+			"Polar (Magnitude, Phase)",
+			"Cartesian (Real, Imaginary)"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_StringParameter p;
+		p.name = "Chan";
+		p.label = "Channel";
+		p.page = "Spectrum";
+		p.defaultValue = "r";
+		std::array<const char*, 4> Names =
+		{
+			"r",
+			"g",
+			"b",
+			"a"
+		};
+		std::array<const char*, 4> Labels =
+		{
+			"R",
+			"G",
+			"B",
+			"A"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Transrows";
+		p.label = "Transform Rows";
+		p.page = "Spectrum";
+		p.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 void 
@@ -206,109 +349,60 @@ SpectrumTOP::getErrorString(OP_String* error, void*)
 	myError.clear();
 }
 
-void 
-SpectrumTOP::cvMatToOutput(const cv::cuda::GpuMat& M, const OP_Inputs* input, TOP_OutputFormatSpecs* out) const
-{
-	if (myParms.evalMode(input) == ModeMenuItems::dft)
-	{
-		GpuUtils::matGPUToArray(out->width, out->height, M, out->cudaOutput[0], 2 * sizeof(float));
-	}
-	else
-	{
-		GpuUtils::complexMatGPUToArray(out->width, out->height, M, out->cudaOutput[0]);
-	}
-}
-
-void 
-SpectrumTOP::inputTopToMat(const OP_TOPInput* top, const OP_Inputs* input)
-{
-	*myFrame = cv::cuda::GpuMat(top->height, top->width, CV_32FC2);
-	if (myParms.evalMode(input) == ModeMenuItems::dft)
-	{
-		GpuUtils::arrayToComplexMatGPU(top->width, top->height, top->cudaInput, *myFrame, myNumChan, static_cast<int>(myParms.evalChan(input)), myChanFormat);
-	}
-	else
-	{
-		GpuUtils::arrayToMatGPU(top->width, top->height, top->cudaInput, *myFrame, 2 * sizeof(float));
-	}
-}
-
-// Definitions for pixel formats
-#define RGBA8 0x8058
-#define RGBA16F 0x881A
-#define RGBA32F 0x8814
-#define RGBA16 0x805B
-#define RGB16F 0xF000E
-#define RGB32F 0xF000F
-#define R8 0x8229
-#define R16 0x822A
-#define R16F 0x822D
-#define R32F 0x822E
-#define RG8 0x822B
-#define RG16 0x822C
-#define RG16F 0x822F
-#define RG32F 0x8230
-#define A8 0xF0001
-#define A16 0xF0002
-#define A16F 0xF0003
-#define A32F 0xF0004
-#define RA8 0xF0005
-#define RA16 0xF0006
-#define RA16F 0xF0007
-#define RA32F 0xF0008
 
 bool
 SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 {
-	ModeMenuItems myMode = myParms.evalMode(input);
-	if (myMode == ModeMenuItems::idft && topInput->pixelFormat != RG32F)
+	ModeMenuItems myMode = static_cast<ModeMenuItems>(input->getParInt("Mode"));
+	if (myMode == ModeMenuItems::idft && topInput->textureDesc.pixelFormat != OP_PixelFormat::RG32Float)
 	{
 		myError = "Inverse transform requires a 32-bit float RG texture.";
 		return false;
 	}
 
-	ChanMenuItems myChan = myParms.evalChan(input);
-	switch (topInput->pixelFormat)
+	ChanMenuItems myChan = static_cast<ChanMenuItems>(input->getParInt("Chan"));
+	switch (topInput->textureDesc.pixelFormat)
 	{
-		case A8:
-		case A16:
-		case A16F:
-		case A32F:
+		case OP_PixelFormat::A8Fixed:
+		case OP_PixelFormat::A16Fixed:
+		case OP_PixelFormat::A16Float:
+		case OP_PixelFormat::A32Float:
 			// Only A channel is valid, change to use channel as index
 			if (myChan == ChanMenuItems::a)
 				myChan = ChanMenuItems::r;
 			else
 				myChan = ChanMenuItems::r; // ::Invalid what is invalid here ?
-		case R8:
-		case R16:
-		case R16F:
-		case R32F:
+		case OP_PixelFormat::Mono8Fixed:
+		case OP_PixelFormat::Mono16Fixed:
+		case OP_PixelFormat::Mono16Float:
+		case OP_PixelFormat::Mono32Float:
 			myNumChan = 1;
 			break;
-		case RA8:
-		case RA16:
-		case RA16F:
-		case RA32F:
+		case OP_PixelFormat::MonoA8Fixed:
+		case OP_PixelFormat::MonoA16Fixed:
+		case OP_PixelFormat::MonoA16Float:
+		case OP_PixelFormat::MonoA32Float:
 			// Only RA channels are valid, change to use channel as index
 			if (myChan == ChanMenuItems::a)
 				myChan = ChanMenuItems::r; // ::Second what is Second here ?
-			else if (myParms.evalChan(input) != ChanMenuItems::r)
+			else if (myChan != ChanMenuItems::r)
 				myChan = ChanMenuItems::r;  // ::Invalid what is Invalid here ?
-		case RG8:
-		case RG16:
-		case RG16F:
-		case RG32F:
+		case OP_PixelFormat::RG8Fixed:
+		case OP_PixelFormat::RG16Fixed:
+		case OP_PixelFormat::RG16Float:
+		case OP_PixelFormat::RG32Float:
 			myNumChan = 2;
 			break;
 		// RGB has alpha on its channels
-		case RGB16F:
-		case RGB32F:
+		case OP_PixelFormat::RGBX16Float:
+		case OP_PixelFormat::RGBX32Float:
 			if (myChan == ChanMenuItems::a)
 				myChan = ChanMenuItems::r; // ::Invalid what is Invalid here ?
-		case RGBA8:
-		case RGBA16:
-		case RGBA16F:
-		case RGBA32F:
+		case OP_PixelFormat::BGRA8Fixed:
+		case OP_PixelFormat::RGBA8Fixed:
+		case OP_PixelFormat::RGBA16Fixed:
+		case OP_PixelFormat::RGBA16Float:
+		case OP_PixelFormat::RGBA32Float:
 			myNumChan = 4;
 			break;
 		default:
@@ -317,36 +411,37 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 			return false;
 	}
 
-	switch (topInput->pixelFormat)
+	switch (topInput->textureDesc.pixelFormat)
 	{
-		case A8:
-		case R8:
-		case RA8:
-		case RG8:
-		case RGBA8:
+		case OP_PixelFormat::A8Fixed:
+		case OP_PixelFormat::Mono8Fixed:
+		case OP_PixelFormat::MonoA8Fixed:
+		case OP_PixelFormat::RG8Fixed:
+		case OP_PixelFormat::RGBA8Fixed:
+		case OP_PixelFormat::BGRA8Fixed:
 			myChanFormat = GpuUtils::ChannelFormat::U8;
 			break;
-		case A16F:
-		case R16F:
-		case RA16F:
-		case RG16F:
-		case RGB16F:
-		case RGBA16F:
+		case OP_PixelFormat::A16Float:
+		case OP_PixelFormat::Mono16Float:
+		case OP_PixelFormat::MonoA16Float:
+		case OP_PixelFormat::RG16Float:
+		case OP_PixelFormat::RGBX16Float:
+		case OP_PixelFormat::RGBA16Float:
 			myChanFormat = GpuUtils::ChannelFormat::F16;
 			break;
-		case A16:
-		case R16:
-		case RA16:
-		case RG16:
-		case RGBA16:
+		case OP_PixelFormat::A16Fixed:
+		case OP_PixelFormat::Mono16Fixed:
+		case OP_PixelFormat::MonoA16Fixed:
+		case OP_PixelFormat::RG16Fixed:
+		case OP_PixelFormat::RGBA16Fixed:
 			myChanFormat = GpuUtils::ChannelFormat::U16;
 			break;
-		case A32F:
-		case R32F:
-		case RA32F:
-		case RG32F:
-		case RGB32F:
-		case RGBA32F:
+		case OP_PixelFormat::A32Float:
+		case OP_PixelFormat:: Mono32Float:
+		case OP_PixelFormat::MonoA32Float:
+		case OP_PixelFormat::RG32Float:
+		case OP_PixelFormat::RGBX32Float:
+		case OP_PixelFormat::RGBA32Float:
 			myChanFormat = GpuUtils::ChannelFormat::F32;
 			break;
 	}
@@ -357,11 +452,6 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 		return false;
 	}
 
-	if (topInput->cudaInput == nullptr)
-	{
-		myError = "CUDA memory for input TOP was not mapped correctly.";
-		return false;
-	}
 	return true;
 }
 

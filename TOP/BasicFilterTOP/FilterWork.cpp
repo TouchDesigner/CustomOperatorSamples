@@ -1,5 +1,5 @@
 #include "FilterWork.h"
-#include "Parameters.h"
+// #include "Parameters.h"
 
 namespace
 {

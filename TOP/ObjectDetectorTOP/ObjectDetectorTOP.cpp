@@ -13,7 +13,6 @@
 */
 
 #include "ObjectDetectorTOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
@@ -44,24 +43,24 @@ extern "C"
 
 DLLEXPORT
 void
-FillTOPPluginInfo(TOP_PluginInfo *info)
+FillTOPPluginInfo(TD::TOP_PluginInfo *info)
 {
 	// This must always be set to this constant
-	info->apiVersion = TOPCPlusPlusAPIVersion;
+	info->apiVersion = TD::TOPCPlusPlusAPIVersion;
 
 	// Change this to change the executeMode behavior of this plugin.
-	info->executeMode = TOP_ExecuteMode::CPUMemWriteOnly;
+	info->executeMode = TD::TOP_ExecuteMode::CPUMem;
 
 	// For more information on OP_CustomOPInfo see CPlusPlus_Common.h
-	OP_CustomOPInfo& customInfo = info->customOPInfo;
+	TD::OP_CustomOPInfo& customInfo = info->customOPInfo;
 
 	// Unique name of the node which starts with an upper case letter, followed by lower case letters or numbers
 	customInfo.opType->setString("Objectdetector");
 	// English readable name
 	customInfo.opLabel->setString("Object Detector");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email.ca");
 
 	// This TOP takes one input
 	customInfo.minInputs = 1;
@@ -69,17 +68,17 @@ FillTOPPluginInfo(TOP_PluginInfo *info)
 }
 
 DLLEXPORT
-TOP_CPlusPlusBase*
-CreateTOPInstance(const OP_NodeInfo* info, TOP_Context* context)
+TD::TOP_CPlusPlusBase*
+CreateTOPInstance(const TD::OP_NodeInfo* info, TD::TOP_Context* context)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per TOP that is using the .dll
-	return new ObjectDetectorTOP(info);
+	return new ObjectDetectorTOP(info, context);
 }
 
 DLLEXPORT
 void
-DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
+DestroyTOPInstance(TD::TOP_CPlusPlusBase* instance, TD::TOP_Context *context)
 {
 	// Delete the instance here, this will be called when
 	// Touch is shutting down, when the TOP using that instance is deleted, or
@@ -90,11 +89,14 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 };
 
 
-ObjectDetectorTOP::ObjectDetectorTOP(const OP_NodeInfo* info) : 
+ObjectDetectorTOP::ObjectDetectorTOP(const TD::OP_NodeInfo* info, TD::TOP_Context* context ) : 
 	myFrame{ new cv::Mat() }, myClassifier{ new cv::CascadeClassifier() }, 
 	myObjects{}, myLevelWeights{}, myRejectLevels{}, myPath{}, myScale{}, 
 	myMinNeighbors{}, myLimitSize{}, myMinSize{}, myMaxSize{}, myDrawBoundingBox{}, 
-	myLimitObjs{}, myMaxObjs{}
+	myLimitObjs{}, myMaxObjs{},
+	myContext(context),
+	myExecuteCount(0),
+	myPrevDownRes(nullptr)
 {
 }
 
@@ -105,38 +107,37 @@ ObjectDetectorTOP::~ObjectDetectorTOP()
 }
 
 void
-ObjectDetectorTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
+ObjectDetectorTOP::getGeneralInfo(TD::TOP_GeneralInfo* ginfo, const TD::OP_Inputs*, void*)
 {
 	ginfo->cookEveryFrameIfAsked = false;
-    ginfo->memPixelType = OP_CPUMemPixelType::BGRA8Fixed;
-}
-
-bool
-ObjectDetectorTOP::getOutputFormat(TOP_OutputFormat* format, const OP_Inputs* inputs, void* reserved1)
-{
-	// In this function we could assign variable values to 'format' to specify
-	// the pixel format/resolution etc that we want to output to.
-	// If we did that, we'd want to return true to tell the TOP to use the settings we've
-	// specified.
-	// In this example we'll return false and use the input TOP's settings
-	return false;
 }
 
 
 void
-ObjectDetectorTOP::execute(TOP_OutputFormatSpecs* output,
-						const OP_Inputs* inputs,
-						TOP_Context *context,
+ObjectDetectorTOP::execute(TD::TOP_Output* output,
+						const TD::OP_Inputs* inputs,
 						void* reserved1)
 {
+	myExecuteCount++;
+
 	using namespace cv;
-	handleParameters(inputs);
 
 	inputToMat(inputs);
 	if (myFrame->empty())
 		return;
 
-	resize(*myFrame, *myFrame, cv::Size(output->width, output->height));
+	if (!myPrevDownRes)
+		return;
+
+	handleParameters(inputs);
+
+
+
+	TD::TOP_UploadInfo info;
+	info.textureDesc = myPrevDownRes->textureDesc;
+	info.colorBufferIndex = 0;
+
+	resize(*myFrame, *myFrame, cv::Size(info.textureDesc.width, info.textureDesc.height));
 
 	Mat	frameGray;
 	cvtColor(*myFrame, frameGray, COLOR_BGRA2GRAY);
@@ -158,13 +159,177 @@ ObjectDetectorTOP::execute(TOP_OutputFormatSpecs* output,
 	if (myDrawBoundingBox)
 		drawBoundingBoxes();
 
-	cvMatToOutput(*myFrame, output);
+	cvMatToOutput(*myFrame, output, info);
 }
 
 void
-ObjectDetectorTOP::setupParameters(OP_ParameterManager* manager, void*)
+ObjectDetectorTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		TD::OP_StringParameter p;
+		p.name = "Classifier";
+		p.label = "Classifier";
+		p.page = "Object Detector";
+		p.defaultValue = "";
+		TD::OP_ParAppendResult res = manager->appendFile(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Scalefactor";
+		p.label = "Scale Factor";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 1.05;
+		p.minSliders[0] = 1.0;
+		p.maxSliders[0] = 5.0;
+		p.minValues[0] = 1.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = false;
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Minneighbors";
+		p.label = "Min Neighbors";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 3;
+		p.minSliders[0] = 1.0;
+		p.maxSliders[0] = 10.0;
+		p.minValues[0] = 1.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = false;
+		TD::OP_ParAppendResult res = manager->appendInt(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Limitobjectsize";
+		p.label = "Limit Object Size";
+		p.page = "Object Detector";
+		p.defaultValues[0] = true;
+
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Minobjectwidth";
+		p.label = "Min Object Width";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 0.1;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 1.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Minobjectheight";
+		p.label = "Min Object Height";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 0.1;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 1.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Maxobjectwidth";
+		p.label = "Max Object Width";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 0.9;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 1.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Maxobjectheight";
+		p.label = "Max Object Height";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 0.9;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 1.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = true;
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Drawboundingbox";
+		p.label = "Draw Bounding Box";
+		p.page = "Object Detector";
+		p.defaultValues[0] = true;
+
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Limitobjectsdetected";
+		p.label = "Limit Objects Detected";
+		p.page = "Object Detector";
+		p.defaultValues[0] = false;
+
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
+
+	{
+		TD::OP_NumericParameter p;
+		p.name = "Maximumobjects";
+		p.label = "Maximum Objects";
+		p.page = "Object Detector";
+		p.defaultValues[0] = 10;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 20.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = false;
+		p.clampMaxes[0] = false;
+		TD::OP_ParAppendResult res = manager->appendInt(p);
+
+		assert(res == TD::OP_ParAppendResult::Success);
+	}
 }
 
 int32_t 
@@ -177,7 +342,7 @@ ObjectDetectorTOP::getNumInfoCHOPChans(void*)
 }
 
 void 
-ObjectDetectorTOP::getInfoCHOPChan(int32_t index, OP_InfoCHOPChan* chop, void*)
+ObjectDetectorTOP::getInfoCHOPChan(int32_t index, TD::OP_InfoCHOPChan* chop, void*)
 {
 	if (index == 0)
 	{
@@ -249,7 +414,7 @@ ObjectDetectorTOP::getInfoCHOPChan(int32_t index, OP_InfoCHOPChan* chop, void*)
 }
 
 bool 
-ObjectDetectorTOP::getInfoDATSize(OP_InfoDATSize* info, void*)
+ObjectDetectorTOP::getInfoDATSize(TD::OP_InfoDATSize* info, void*)
 {
 	info->byColumn = false;
 	info->cols = static_cast<int>(InfoChopChan::Size) + 1;
@@ -258,7 +423,7 @@ ObjectDetectorTOP::getInfoDATSize(OP_InfoDATSize* info, void*)
 }
 
 void 
-ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, OP_InfoDATEntries* entries, void*)
+ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, TD::OP_InfoDATEntries* entries, void*)
 {
 	if (index == 0)
 	{
@@ -305,30 +470,30 @@ ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, OP_InfoDAT
 }
 
 void 
-ObjectDetectorTOP::handleParameters(const OP_Inputs* in)
+ObjectDetectorTOP::handleParameters(const TD::OP_Inputs* in)
 {
-	myPath = myParms.evalClassifier(in);
-	myScale = myParms.evalScalefactor(in);
-	myMinNeighbors = myParms.evalMinneighbors(in);
+	myPath = in->getParFilePath("Classifier");
+	myScale = in->getParDouble("Scalefactor");
+	myMinNeighbors = in->getParDouble("Minneighbors");
 
-	myLimitSize = myParms.evalLimitobjectsize(in);
-	in->enablePar(MaxobjectwidthName, myLimitSize);
-	in->enablePar(MaxobjectheightName, myLimitSize);
-	in->enablePar(MinobjectwidthName, myLimitSize);
-	in->enablePar(MinobjectheightName, myLimitSize);
+	myLimitSize = in->getParDouble("Limitobjectsize");
+	in->enablePar("Minobjectwidth", myLimitSize);
+	in->enablePar("Minobjectheight", myLimitSize);
+	in->enablePar("Maxobjectwidth", myLimitSize);
+	in->enablePar("Maxobjectheight", myLimitSize);
 
 	if (myLimitSize)
 	{
-		const OP_TOPInput* top = in->getInputTOP(0);
-		int32_t totalH = top->height;
-		int32_t totalW = top->width;
+		const TD::OP_TOPInput* top = in->getInputTOP(0);
+		int32_t totalH = myPrevDownRes->textureDesc.height;
+		int32_t totalW = myPrevDownRes->textureDesc.width;
 
 		double	w, h;
-		w = myParms.evalMinobjectwidth(in);
-		h = myParms.evalMinobjectheight(in);
+		w = in->getParDouble("Minobjectwidth");
+		h = in->getParDouble("Minobjectheight");
 		myMinSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
-		w = myParms.evalMaxobjectwidth(in);
-		h = myParms.evalMaxobjectheight(in);
+		w = in->getParDouble("Maxobjectwidth");
+		h = in->getParDouble("Maxobjectheight");
 		myMaxSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
 	}
 	else
@@ -337,50 +502,55 @@ ObjectDetectorTOP::handleParameters(const OP_Inputs* in)
 		myMaxSize = cv::Size();
 	}
 
-	myDrawBoundingBox = myParms.evalDrawboundingbox(in);
-	myLimitObjs = myParms.evalLimitobjectsdetected(in);
-	in->enablePar(MaximumobjectsName, myLimitObjs);
-	myMaxObjs = myLimitObjs ? myParms.evalMaximumobjects(in) : 0;
-        myDownloadtype = static_cast<OP_TOPInputDownloadType>(myParms.evalDownloadtype(in));
+	myDrawBoundingBox =in->getParInt("Drawboundingbox");
+	myLimitObjs = in->getParInt("Limitobjectsdetected");
+	in->enablePar("Maximumobjects", myLimitObjs);
+	myMaxObjs = myLimitObjs ? in->getParInt("Maximumobjects") : 0;
 }
 
 void 
-ObjectDetectorTOP::cvMatToOutput(const cv::Mat& M, TOP_OutputFormatSpecs* out) const
+ObjectDetectorTOP::cvMatToOutput(const cv::Mat& M, TD::TOP_Output* out, TD::TOP_UploadInfo info) const
 {
-	size_t		height = out->height;
-	size_t		width = out->width;
+	size_t		height = info.textureDesc.height;
+	size_t		width = info.textureDesc.width;
+	size_t		imgsize = myPrevDownRes->size;
 
-	out->newCPUPixelDataLocation = 0;
-	uint8_t*	pixel = static_cast<uint8_t*>(out->cpuPixelData[0]);
-	
+	TD::OP_SmartRef<TD::TOP_Buffer> buf = myContext->createOutputBuffer(imgsize, TD::TOP_BufferFlags::None, nullptr);
+
 	cv::flip(M, M, 0);
-	uint8_t*	data = static_cast<uint8_t*>(M.data);
+	uint8_t* data = static_cast<uint8_t*>(M.data);
 
-	memcpy(pixel, data, 4 * height * width * sizeof(uint8_t));
+	memcpy(buf->data, data, imgsize);
+
+	out->uploadBuffer(&buf, info, nullptr);
 }
 
 void 
-ObjectDetectorTOP::inputToMat(const OP_Inputs* in) const
+ObjectDetectorTOP::inputToMat(const TD::OP_Inputs* in)
 {
-	const OP_TOPInput*	top = in->getInputTOP(0);
+	const TD::OP_TOPInput*	top = in->getInputTOP(0);
 	if (!top)
 		return;
 
-	OP_TOPInputDownloadOptions	opts = {};
+	TD::OP_TOPInputDownloadOptions	opts;
 	opts.verticalFlip = true;
-        opts.downloadType = myDownloadtype;
+	opts.pixelFormat = TD::OP_PixelFormat::BGRA8Fixed;
 
-	uint8_t*	pixel = (uint8_t*)in->getTOPDataInCPUMemory(top, &opts);
-	if (!pixel)
-		return;
+	TD::OP_SmartRef<TD::OP_TOPDownloadResult> downRes = top->downloadTexture(opts, nullptr);
 
-	int	height = top->height;
-	int	width = top->width;
+	// myPrevDownRes does the job of delaying reading the texture by one frame - replace with downRes to read texture instantly
+	if (myPrevDownRes)
+	{
+		int height = downRes->textureDesc.height;
+		int	width = downRes->textureDesc.width;
 
-	*myFrame = cv::Mat(height, width, CV_8UC4);
-	uint8_t*	data = (uint8_t*)myFrame->data;
+		*myFrame = cv::Mat(height, width, CV_8UC4);
+		uint8_t* data = (uint8_t*)myFrame->data;
 
-	memcpy(data, pixel, 4 * height * width * sizeof(uint8_t));
+		memcpy(data, myPrevDownRes->getData(), 4 * height * width * sizeof(uint8_t));
+	}
+	myPrevDownRes = std::move(downRes);
+	
 }
 
 void

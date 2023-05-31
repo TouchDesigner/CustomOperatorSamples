@@ -1,8 +1,7 @@
-# Cuda TOP
-A simple color generator that demonstrates how to use CUDA in the context of a Custom C++ TOP.
-
-## Prerequisites
-Requires the CUDA Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit).
+# CPU Memory TOP
+The CPU Memory TOP is a generator that demonstrate how to use CPU memory.
 
 ## Parameters
-* **Color** - Set the color of the TOP.
+* **Brightness** - Set the brightness of the generated pattern.
+* **Speed** - Set the speed at which the generated pattern translates on X and Y.
+* **Reset** - Reset to original position and state.
