@@ -15,10 +15,11 @@
 #define __OneEuroCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
-#include "Parameters.h"
 #include <vector>
 
 class OneEuroImpl;
+
+using namespace TD;
 
 /*
 This example implements a CHOP that filters noice out of a signl. 
@@ -47,19 +48,17 @@ public:
 	OneEuroCHOP(const OP_NodeInfo* info);
 	virtual ~OneEuroCHOP();
 
-	virtual void		getGeneralInfo(CHOP_GeneralInfo*, const OP_Inputs*, void*) override;
-	virtual bool		getOutputInfo(CHOP_OutputInfo*, const OP_Inputs*, void*) override;
-	virtual void		getChannelName(int32_t index, OP_String *name, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(CHOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
+	virtual bool		getOutputInfo(CHOP_OutputInfo*, const TD::OP_Inputs*, void*) override;
+	virtual void		getChannelName(int32_t index, OP_String *name, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(CHOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(CHOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager* manager, void*) override;
 
 
 private:
-	void				handleParameters(const OP_Inputs*, const OP_CHOPInput*);
-	
-	Parameters myParms;
+	void				handleParameters(const TD::OP_Inputs*, const OP_CHOPInput*);
 
 	std::vector<OneEuroImpl*>	myFiltersPerChannel;
 };

@@ -13,10 +13,17 @@
 */
 
 #include "TimeSliceFilterCHOP.h"
-#include "Parameters.h"
 
 #include <cassert>
 #include <string>
+#include <array>
+
+enum class OperationMenuItems
+{
+	Max,
+	Min,
+	Average
+};
 
 class FilterValues
 {
@@ -146,7 +153,7 @@ TimeSliceFilterCHOP::~TimeSliceFilterCHOP()
 }
 
 void
-TimeSliceFilterCHOP::getGeneralInfo(CHOP_GeneralInfo* ginfo, const OP_Inputs*, void*)
+TimeSliceFilterCHOP::getGeneralInfo(CHOP_GeneralInfo* ginfo, const TD::OP_Inputs*, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	ginfo->cookEveryFrame = true;
@@ -159,7 +166,7 @@ TimeSliceFilterCHOP::getGeneralInfo(CHOP_GeneralInfo* ginfo, const OP_Inputs*, v
 }
 
 bool
-TimeSliceFilterCHOP::getOutputInfo(CHOP_OutputInfo* info, const OP_Inputs* inputs, void*)
+TimeSliceFilterCHOP::getOutputInfo(CHOP_OutputInfo* info, const TD::OP_Inputs* inputs, void*)
 {
 	// This CHOP is time sliced so we do not specify sample info
 
@@ -187,7 +194,7 @@ TimeSliceFilterCHOP::getOutputInfo(CHOP_OutputInfo* info, const OP_Inputs* input
 }
 
 void
-TimeSliceFilterCHOP::getChannelName(int32_t index, OP_String *name, const OP_Inputs*, void*)
+TimeSliceFilterCHOP::getChannelName(int32_t index, OP_String *name, const TD::OP_Inputs*, void*)
 {
 	std::string channelName = "chan" + std::to_string(index + 1);
 	name->setString(channelName.c_str());
@@ -195,10 +202,10 @@ TimeSliceFilterCHOP::getChannelName(int32_t index, OP_String *name, const OP_Inp
 
 void
 TimeSliceFilterCHOP::execute(CHOP_Output* output,
-							  const OP_Inputs* inputs,
+							  const TD::OP_Inputs* inputs,
 							  void*)
 {
-	OperationMenuItems operation = myParms.evalOperation(inputs);
+	OperationMenuItems operation = static_cast<OperationMenuItems>(inputs->getParInt("Operation"));
 
 	int numInputs = inputs->getNumInputs();
 	// Since inputs connected might be out of order we need to loop until we get as many inputs as numInputs
@@ -230,15 +237,46 @@ TimeSliceFilterCHOP::execute(CHOP_Output* output,
 }
 
 void
-TimeSliceFilterCHOP::setupParameters(OP_ParameterManager* manager, void*)
+TimeSliceFilterCHOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter p;
+		p.name = "Operation";
+		p.label = "Operation";
+		p.page = "Filter";
+		p.defaultValue = "Max";
+		std::array<const char*, 3> Names =
+		{
+			"Max",
+			"Min",
+			"Average"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"Max",
+			"Min",
+			"Average"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Reset";
+		p.label = "Reset";
+		p.page = "Filter";
+		OP_ParAppendResult res = manager->appendPulse(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
 
 void
 TimeSliceFilterCHOP::pulsePressed(const char* name, void*)
 {
-	if (!strcmp(name, ResetName))
+	if (!strcmp(name, "Reset"))
 	{
 		for (FilterValues& value : myValues)
 		{

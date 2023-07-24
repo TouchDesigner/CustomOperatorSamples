@@ -3,16 +3,17 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
+
 #pragma region Evals
 
 OperationMenuItems
-Parameters::evalOperation(const OP_Inputs* input)
+Parameters::evalOperation(const TD::OP_Inputs* input)
 {
 	return static_cast<OperationMenuItems>(input->getParInt(OperationName));
 }
 
 int
-Parameters::evalReset(const OP_Inputs* input)
+Parameters::evalReset(const TD::OP_Inputs* input)
 {
 	return input->getParInt(ResetName);
 }
@@ -23,7 +24,7 @@ Parameters::evalReset(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;

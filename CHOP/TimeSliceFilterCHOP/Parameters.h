@@ -3,6 +3,8 @@
 class OP_Inputs;
 class OP_ParameterManager;
 
+using namespace TD;
+
 #pragma region ParNames and ParLabels
 
 // Names of the parameters
@@ -31,13 +33,13 @@ enum class OperationMenuItems
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Operation
-	static OperationMenuItems		evalOperation(const OP_Inputs* input);
+	static OperationMenuItems		evalOperation(const TD::OP_Inputs* input);
 
 	// Reset
-	static int		evalReset(const OP_Inputs* input);
+	static int		evalReset(const TD::OP_Inputs* input);
 
 
 };

@@ -13,11 +13,19 @@
 */
 
 #include "TimeSliceGeneratorCHOP.h"
-#include "Parameters.h"
 
 #include <cassert>
+#include <array>
+#include <string>
 
 static constexpr double PI = 3.141592653589793238463;
+
+enum class TypeMenuItems
+{
+	Sine,
+	Square,
+	Ramp
+};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -43,8 +51,8 @@ FillCHOPPluginInfo(CHOP_PluginInfo *info)
 	// English readable name
 	customInfo.opLabel->setString("Time Slice Generator");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email");
 
 	// This CHOP takes no inputs
 	customInfo.minInputs = 0;
@@ -116,14 +124,14 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = myParms.evalApplyscale(inputs);
-	double	scale = myParms.evalScale(inputs);
-	double	speed = myParms.evalFrequency(inputs);
+	bool	applyScale = inputs->getParInt("Applyscale") ? true : false;
+	double	scale = inputs->getParDouble("Scale");
+	double	speed = inputs->getParDouble("Frequency");
 
-	inputs->enablePar(ScaleName, applyScale);
+	inputs->enablePar("Scale", applyScale);
 
 	// Menu items can be evaluated as either an integer menu position, or a string
-	TypeMenuItems		shape = myParms.evalType(inputs);
+	TypeMenuItems		shape = static_cast<TypeMenuItems>(inputs->getParInt("Type"));
 	
 	double	step = speed / output->sampleRate;
 	double	value = 0;
@@ -164,5 +172,72 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 void
 TimeSliceGeneratorCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_StringParameter p;
+		p.name = "Type";
+		p.label = "Type";
+		p.page = "Generator";
+		p.defaultValue = "Sine";
+		std::array<const char*, 3> Names =
+		{
+			"Sine",
+			"Square",
+			"Ramp"
+		};
+		std::array<const char*, 3> Labels =
+		{
+			"Sine",
+			"Square",
+			"Ramp"
+		};
+		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Frequency";
+		p.label = "Frequency";
+		p.page = "Generator";
+		p.defaultValues[0] = 1.0;
+		p.minSliders[0] = -10.0;
+		p.maxSliders[0] = 10.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = false;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Applyscale";
+		p.label = "Apply Scale";
+		p.page = "Generator";
+		p.defaultValues[0] = false;
+
+		OP_ParAppendResult res = manager->appendToggle(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Scale";
+		p.label = "Scale";
+		p.page = "Generator";
+		p.defaultValues[0] = 1.0;
+		p.minSliders[0] = -10.0;
+		p.maxSliders[0] = 10.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = false;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
 }
