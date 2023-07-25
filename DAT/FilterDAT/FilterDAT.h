@@ -16,8 +16,8 @@
 #define __FilterDAT__
 
 #include "DAT_CPlusPlusBase.h"
-#include "Parameters.h"
 
+using namespace TD;
 /*
 This example implements a DAT that takes one input and changes the content's case.
 
@@ -46,7 +46,6 @@ public:
 
 
 private:
-	Parameters myParms;
 	void				fillTable(const OP_Inputs*, DAT_Output*, const OP_DATInput*);
 };
 

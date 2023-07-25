@@ -16,9 +16,10 @@
 #define __GeneratorDAT__
 
 #include "DAT_CPlusPlusBase.h"
-#include "Parameters.h"
 
 #include <random>
+
+using namespace TD;
 
 /*
 This example implements a DAT that generates random text. This DAT is a generator so it takes
@@ -49,7 +50,6 @@ public:
 	virtual void		setupParameters(OP_ParameterManager*, void*) override;
 
 private:
-	Parameters myParms;
 
 	void			fillTable(const OP_Inputs*, DAT_Output*);
 

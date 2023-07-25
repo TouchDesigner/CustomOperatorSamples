@@ -13,7 +13,6 @@
 */
 
 #include "GeneratorDAT.h"
-#include "Parameters.h"
 
 #include <string>
 #include <random>
@@ -48,8 +47,8 @@ FillDATPluginInfo(DAT_PluginInfo *info)
 	// English readable name
 	customInfo.opLabel->setString("Generator");
 	// Information of the author of the node
-	customInfo.authorName->setString("Gabriel Robels");
-	customInfo.authorEmail->setString("support@derivative.ca");
+	customInfo.authorName->setString("Author Name");
+	customInfo.authorEmail->setString("email@email");
 
 	// This Dat takes no input
 	customInfo.minInputs = 0;
@@ -96,12 +95,12 @@ GeneratorDAT::getGeneralInfo(DAT_GeneralInfo* ginfo, const OP_Inputs*, void*)
 void
 GeneratorDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 {
-	double mySeed = myParms.evalSeed(inputs);
+	double mySeed = inputs->getParDouble("Seed");
 	unsigned int* tmp = reinterpret_cast<unsigned int*>(&mySeed);
 	myRNG.seed(*tmp);
 
 	output->setOutputDataType(DAT_OutDataType::Table);
-	output->setTableSize(myParms.evalRows(inputs), myParms.evalColumns(inputs));
+	output->setTableSize(inputs->getParInt("Rows"),inputs->getParInt("Columns"));
 
 	fillTable(inputs, output);
 }
@@ -109,16 +108,83 @@ GeneratorDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 void
 GeneratorDAT::setupParameters(OP_ParameterManager* manager, void*)
 {
-	myParms.setup(manager);
+	{
+		OP_NumericParameter p;
+		p.name = "Seed";
+		p.label = "Seed";
+		p.page = "Generator";
+		p.defaultValues[0] = 1.0;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 10.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = false;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendFloat(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Rows";
+		p.label = "Rows";
+		p.page = "Generator";
+		p.defaultValues[0] = 3;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 100.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendInt(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Columns";
+		p.label = "Columns";
+		p.page = "Generator";
+		p.defaultValues[0] = 4;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 100.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendInt(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
+	{
+		OP_NumericParameter p;
+		p.name = "Length";
+		p.label = "Length";
+		p.page = "Generator";
+		p.defaultValues[0] = 5;
+		p.minSliders[0] = 0.0;
+		p.maxSliders[0] = 100.0;
+		p.minValues[0] = 0.0;
+		p.maxValues[0] = 1.0;
+		p.clampMins[0] = true;
+		p.clampMaxes[0] = false;
+		OP_ParAppendResult res = manager->appendInt(p);
+
+		assert(res == OP_ParAppendResult::Success);
+	}
+
 }
 
 void
 GeneratorDAT::fillTable(const OP_Inputs* inputs, DAT_Output* out)
 {
 
-	for (int i = 0; i < myParms.evalRows(inputs); ++i)
+	for (int i = 0; i <inputs->getParInt("Rows"); ++i)
 	{
-		for (int j = 0; j < myParms.evalColumns(inputs); ++j)
+		for (int j = 0; j < inputs->getParInt("Columns"); ++j)
 		{
 			out->setCellString(i, j, generateString(inputs).c_str());
 		}
@@ -130,7 +196,7 @@ GeneratorDAT::generateString(const OP_Inputs* inputs)
 {
 	std::uniform_int_distribution<> dis(0, sizeof(ALPHANUM) - 2);
 	std::string ret{};
-	for (int i = 0; i < myParms.evalLength(inputs); ++i)
+	for (int i = 0; i <inputs->getParInt("Length"); ++i)
 	{
 		ret.push_back(ALPHANUM[dis(myRNG)]);
 	}

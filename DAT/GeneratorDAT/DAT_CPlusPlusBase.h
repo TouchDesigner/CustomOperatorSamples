@@ -39,16 +39,10 @@
 #include <assert.h>
 #include "CPlusPlus_Common.h"
 
+namespace TD
+{
 
-class DAT_CPlusPlusBase;
-struct DAT_PluginInfo;
-
-
-// These are the definitions for the C-functions that are used to
-// load the library and create instances of the object you define
-typedef void(__cdecl *FILLDATPLUGININFO)(DAT_PluginInfo *info);
-typedef DAT_CPlusPlusBase* (__cdecl *CREATEDATINSTANCE)(const OP_NodeInfo*);
-typedef void(__cdecl *DESTROYDATINSTANCE)(DAT_CPlusPlusBase*);
+#pragma pack(push, 8)
 
 // Define for the current API version that this sample code is made for.
 // To upgrade to a newer version, replace the files
@@ -57,40 +51,45 @@ typedef void(__cdecl *DESTROYDATINSTANCE)(DAT_CPlusPlusBase*);
 // from the samples folder in a newer TouchDesigner installation.
 // You may need to upgrade your plugin code in that case, to match
 // the new API requirements
-const int DATCPlusPlusAPIVersion = 2;
+const int DATCPlusPlusAPIVersion = 3;
 
-struct DAT_PluginInfo
+class DAT_PluginInfo
 {
 public:
 	int32_t			apiVersion = 0;
 
-private:
 	int32_t			reserved[100];
 
-public:
 	// Information used to describe this plugin as a custom OP.
 	OP_CustomOPInfo	customOPInfo;
 
-private:
 	int32_t			reserved2[20];
 };
-
-
 
 class DAT_GeneralInfo
 {
 public:
 	// Set this to true if you want the DAT to cook every frame, even
-	// if none of it's inputs/parameters are changing
+	// if none of it's inputs/parameters are changing.
+	// This is generally useful for cases where the node is outputting to
+	// something external to TouchDesigner, such as a network socket or device.
+	// It ensures the node cooks every if nothing inside the network is using/viewing
+	// the output of this node.
+	// Important:
+	// If the node may not be viewed/used by other nodes in the file,
+	// such as a TCP network output node that isn't viewed in perform mode,
+	// you should set cookOnStart = true in OP_CustomOPInfo.
+	// That will ensure cooking is kick-started for this node.
+	// Note that this fix only works for Custom Operators, not
+	// cases where the .dll is loaded into CPlusPlus DAT.
 	// DEFAULT: false
-
-	bool	cookEveryFrame;
+	bool cookEveryFrame;
 
 	// Set this to true if you want the DAT to cook every frame, but only
 	// if someone asks for it to cook. So if nobody is using the output from
 	// the DAT, it won't cook. This is difereent from 'cookEveryFrame'
 	// since that will cause it to cook every frame no matter what.
-
+	// DEFAULT: false
 	bool	cookEveryFrameIfAsked;
 
 private:
@@ -103,13 +102,9 @@ enum class DAT_OutDataType
 	Text,
 };
 
-
-// CPU loading of Table:
-
 class DAT_Output
 {
 public:
-
 	DAT_Output()
 	{
 	}
@@ -150,7 +145,7 @@ public:
 	// Set the int data for each cell, similar to the setCellString() but sets Int values.
 	virtual bool	setCellInt(int32_t row, int32_t col, int32_t value) = 0;
 
-	// Set the  data for each cell, similar to the setCellString() but sets Double values.
+	// Set the data for each cell, similar to the setCellString() but sets Double values.
 	virtual bool	setCellDouble(int32_t row, int32_t col, double value) = 0;
 
 
@@ -169,25 +164,20 @@ public:
 	// returns false if it cannot find the cell, or invalid argument
 	virtual bool		getCellDouble(int32_t row, int32_t col, double* res) = 0;
 
-
 private:
 
-	int32_t    reserved[20];
+	int32_t		reserved[20];
 };
-
 
 /*** DO NOT EDIT THIS CLASS, MAKE A SUBCLASS OF IT INSTEAD ***/
 class DAT_CPlusPlusBase
 {
-
 protected:
-
 	DAT_CPlusPlusBase()
 	{
 	}
 
 public:
-
 	virtual
 	~DAT_CPlusPlusBase()
 	{
@@ -202,14 +192,12 @@ public:
 	{
 	}
 
-
 	// Add geometry data such as points, normals, colors, and triangles
 	// or particles and etc. obtained from your desired algorithm or external files.
 	// If the "directToGPU" flag is set to false, this function is being called
 	// instead of executeVBO().
 	// See the OP_Inputs class definition for more details on it's contents
 	virtual void	execute(DAT_Output*, const OP_Inputs*, void* reserved1) = 0;
-
 
 	// Override these methods if you want to output values to the Info CHOP/DAT
 	// returning 0 means you dont plan to output any Info CHOP channels
@@ -231,7 +219,6 @@ public:
 	{
 	}
 
-
 	// Return false if you arn't returning data for an Info DAT
 	// Return true if you are.
 	// Set the members of the CHOP_InfoDATSize class to specify
@@ -241,7 +228,6 @@ public:
 	{
 		return false;
 	}
-
 
 	// You are asked to assign values to the Info DAT 1 row or column at a time
 	// The 'byColumn' variable in 'getInfoDATSize' is how you specify
@@ -253,7 +239,6 @@ public:
 						OP_InfoDATEntries* entries, void* reserved1)
 	{
 	}
-
 
 	// You can use this function to put the node into a warning state
 	// with the returned string as the message.
@@ -276,13 +261,11 @@ public:
 	{
 	}
 
-
 	// Override these methods if you want to define specfic parameters
 	virtual void
 	setupParameters(OP_ParameterManager* manager, void* reserved1)
 	{
 	}
-
 
 	// This is called whenever a pulse parameter is pressed
 	virtual void
@@ -291,7 +274,6 @@ public:
 	}
 
 	// END PUBLIC INTERFACE
-
 
 private:
 
@@ -313,8 +295,9 @@ private:
 	virtual int32_t	reservedFunc20() { return 0; }
 
 	int32_t			reserved[400];
-
 };
+
+#pragma pack(pop)
 
 static_assert(offsetof(DAT_PluginInfo, apiVersion) == 0, "Incorrect Alignment");
 static_assert(offsetof(DAT_PluginInfo, customOPInfo) == 408, "Incorrect Alignment");
@@ -323,5 +306,7 @@ static_assert(sizeof(DAT_PluginInfo) == 944, "Incorrect Size");
 static_assert(offsetof(DAT_GeneralInfo, cookEveryFrame) == 0, "Incorrect Alignment");
 static_assert(offsetof(DAT_GeneralInfo, cookEveryFrameIfAsked) == 1, "Incorrect Alignment");
 static_assert(sizeof(DAT_GeneralInfo) == 84, "Incorrect Size");
+
+};	// namespace TD
 
 #endif
