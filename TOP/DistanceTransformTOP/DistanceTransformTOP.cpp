@@ -152,7 +152,7 @@ DistanceTransformTOP::~DistanceTransformTOP()
 void
 DistanceTransformTOP::getGeneralInfo(TD::TOP_GeneralInfo* ginfo, const TD::OP_Inputs*, void*)
 {
-    ginfo->cookEveryFrame = false;
+	ginfo->cookEveryFrame = false;
 	ginfo->cookEveryFrameIfAsked = false;
 }
 
@@ -297,10 +297,11 @@ void
 DistanceTransformTOP::inputTopToMat(const TD::OP_Inputs* in)
 {
 	const TD::OP_TOPInput*	top = in->getInputTOP(0);
-	if (!top) {
-                *myFrame = cv::Mat();
+	if (!top)
+	{
+		*myFrame = cv::Mat();
 		return;
-        }
+	}
 
 	TD::OP_TOPInputDownloadOptions	opts;
 	opts.verticalFlip = true;
