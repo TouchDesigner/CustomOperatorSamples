@@ -20,6 +20,7 @@
 #include <opencv2/core/cuda.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/core/cuda_stream_accessor.hpp>
 
 #include "cuda_runtime.h"
 
@@ -82,7 +83,8 @@ CannyEdgeTOP::CannyEdgeTOP(const TD::OP_NodeInfo*, TD::TOP_Context *context) :
 	myFrame{ new cv::cuda::GpuMat() },
 	myExecuteCount(0),
 	myError(""),
-	myContext(context)
+	myContext(context),
+	myStream(0)
 {
 	cudaStreamCreate(&myStream);
 }
@@ -90,7 +92,8 @@ CannyEdgeTOP::CannyEdgeTOP(const TD::OP_NodeInfo*, TD::TOP_Context *context) :
 CannyEdgeTOP::~CannyEdgeTOP()
 {
 	delete myFrame;
-	cudaStreamDestroy(myStream);
+	if(myStream)
+		cudaStreamDestroy(myStream);
 }
 
 void
@@ -183,7 +186,9 @@ CannyEdgeTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, void*
 											 255 * hithresh,
 											 kernel,
 											 l2grad ? true : false);
-	cannyEdge->detect(*myFrame, *myFrame);
+
+	cv::cuda::Stream stream = cv::cuda::StreamAccessor::wrapStream(myStream);
+	cannyEdge->detect(*myFrame, *myFrame, stream);
 
 	GpuUtils::matGPUToArray(info.textureDesc.width, info.textureDesc.height, *myFrame, outputInfo->cudaArray, 1);
 

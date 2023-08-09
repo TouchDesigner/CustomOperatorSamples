@@ -18,8 +18,39 @@
 #include "TOP_CPlusPlusBase.h"
 
 #include <opencv2\core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <string>
 
+#pragma region Menus
+enum class DistancetypeMenuItems
+{
+	L1,
+	L2,
+	C
+};
+
+enum class MasksizeMenuItems
+{
+	Three,
+	Five,
+	Precise
+};
+
+enum class DownloadtypeMenuItems
+{
+	Delayed,
+	Instant
+};
+
+enum class ChannelMenuItems
+{
+	R,
+	G,
+	B,
+	A
+};
+
+#pragma endregion
 
 /*
 This example implements a TOP to calculate the distance transform using openCV.
@@ -50,6 +81,34 @@ private:
 	void                inputTopToMat(const TD::OP_Inputs*);
 
 	void 				cvMatToOutput(TD::TOP_Output*, TD::TOP_UploadInfo) const;
+
+	int getType(DistancetypeMenuItems dt)
+	{
+		switch (dt)
+		{
+		default:
+		case DistancetypeMenuItems::L1:
+			return cv::DIST_L1;
+		case DistancetypeMenuItems::L2:
+			return cv::DIST_L2;
+		case DistancetypeMenuItems::C:
+			return cv::DIST_C;
+		}
+	}
+
+	int getMask(MasksizeMenuItems ms)
+	{
+		switch (ms)
+		{
+		default:
+		case MasksizeMenuItems::Three:
+			return cv::DIST_MASK_3;
+		case MasksizeMenuItems::Five:
+			return cv::DIST_MASK_5;
+		case MasksizeMenuItems::Precise:
+			return cv::DIST_MASK_PRECISE;
+		}
+	}
 
 	cv::Mat*		myFrame;
 

@@ -22,6 +22,7 @@
 #include <opencv2/cudawarping.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/video/tracking.hpp>
+#include <opencv2/core/cuda_stream_accessor.hpp>
 
 #include "cuda_runtime.h"
 
@@ -109,6 +110,7 @@ SpectrumTOP::SpectrumTOP(const OP_NodeInfo*, TOP_Context *context) :
 	myFrame( new cv::cuda::GpuMat() ), 
 	myResult( new cv::cuda::GpuMat() ), 
 	myExecuteCount(0),
+	myStream(0),
 	myError(""),
 	myNumChan(-1),
 	myContext(context),
@@ -121,7 +123,8 @@ SpectrumTOP::~SpectrumTOP()
 {
 	delete myFrame;
 	delete myResult;
-	cudaStreamDestroy(myStream);
+	if(myStream)
+		cudaStreamDestroy(myStream);
 }
 
 void
@@ -195,7 +198,8 @@ SpectrumTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void*)
 
 	if (mode == ModeMenuItems::dft)
 	{
-		dft(*myFrame, *myResult, mySize, 0);
+		cv::cuda::Stream stream = cv::cuda::StreamAccessor::wrapStream(myStream);
+		dft(*myFrame, *myResult, mySize,0, stream);
 
 		if (!transrows)
 		{

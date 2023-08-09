@@ -19,67 +19,6 @@
 #include <opencv2/imgproc.hpp>
 
 
-#pragma region Menus
-enum class DistancetypeMenuItems
-{
-	L1,
-	L2,
-	C
-};
-
-enum class MasksizeMenuItems
-{
-	Three,
-	Five,
-	Precise
-};
-
-enum class DownloadtypeMenuItems
-{
-	Delayed,
-	Instant
-};
-
-enum class ChannelMenuItems
-{
-	R,
-	G,
-	B,
-	A
-};
-
-#pragma endregion
-
-namespace
-{
-	int getType(DistancetypeMenuItems dt)
-	{
-		switch (dt)
-		{
-		default:
-		case DistancetypeMenuItems::L1:
-			return cv::DIST_L1;
-		case DistancetypeMenuItems::L2:
-			return cv::DIST_L2;
-		case DistancetypeMenuItems::C:
-			return cv::DIST_C;
-		}
-	}
-
-	int getMask(MasksizeMenuItems ms)
-	{
-		switch (ms)
-		{
-		default:
-		case MasksizeMenuItems::Three:
-			return cv::DIST_MASK_3;
-		case MasksizeMenuItems::Five:
-			return cv::DIST_MASK_5;
-		case MasksizeMenuItems::Precise:
-			return cv::DIST_MASK_PRECISE;
-		}
-	}
-}
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -302,6 +241,8 @@ DistanceTransformTOP::inputTopToMat(const TD::OP_Inputs* in)
 		return;
         }
 
+	int chan = in->getParInt("Channel");
+
 	TD::OP_TOPInputDownloadOptions	opts;
 	opts.verticalFlip = true;
 	opts.pixelFormat = TD::OP_PixelFormat::RGBA8Fixed;
@@ -332,7 +273,7 @@ DistanceTransformTOP::inputTopToMat(const TD::OP_Inputs* in)
 		for (int i = 0; i < height; i += 1) {
 			for (int j = 0; j < width; j += 1) {
 				int pixelN = i * width + j;
-				int index = 4 * pixelN + (in->getParInt("Channel"));
+				int index = 4 * pixelN + chan;
 				data[pixelN] = pixel[index];
 			}
 		}
