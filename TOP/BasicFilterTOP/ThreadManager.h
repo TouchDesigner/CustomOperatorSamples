@@ -18,7 +18,8 @@ enum class ThreadStatus
 {
 	Busy,
 	Ready,
-	Done
+	Done,
+	Waiting
 };
 
 class ThreadManager
@@ -28,23 +29,26 @@ public:
 
 	~ThreadManager();
 
-	void	syncParms(bool doDither, int bitsPerColor, int inWidth, int inHeight, int outWidth, int outHeight, const TD::OP_Inputs* inputs);
+	void	sync(bool doDither, int bitsPerColor, int inWidth, int inHeight, const OP_SmartRef<OP_TOPDownloadResult> downRes, TD::TOP_Context* context);
 
-	void	syncBuffer(uint32_t* inBuffer, uint32_t* outBuffer);
 
+	void	popOutBuffer(OP_SmartRef<TOP_Buffer>& outBuffer, TD::TOP_UploadInfo& info);
+	
+	ThreadStatus getStatus();
 private:
 	void	threadFn();
 
 	ThreadStatus			myStatus;
 
 	// Out buffer resource
-	uint32_t*				myInBuffer;
-	uint32_t*				myOutBuffer;
+	OP_SmartRef<OP_TOPDownloadResult>	myDownRes;
+	OP_SmartRef<TOP_Buffer>				myOutBuffer;
 
 	// Thread and Sync variables
 	std::thread*			myThread;
 	std::mutex				myBufferMutex;
 	std::mutex				myParmsMutex;
+	std::mutex				myStatusMutex;
 	std::condition_variable myBufferCV;
 	std::atomic_bool		myThreadShouldExit;
 
@@ -55,6 +59,8 @@ private:
 	int						myOutHeight;
 	bool					myDoDither;
 	int						myBitsPerColor;
+	TD::TOP_Context*		myContext;
+	TD::TOP_UploadInfo		myUploadInfo;
 };
 
 #endif

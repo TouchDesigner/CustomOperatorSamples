@@ -20,7 +20,6 @@
 #include <cassert>
 #include <vector>
 #include <cstdlib>
-
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
 // The DLLEXPORT prefix is needed so the compile exports these functions from the .dll
@@ -76,7 +75,7 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 };
 
 BasicFilterTOP::BasicFilterTOP(const OP_NodeInfo* info, TOP_Context* context) :
-	myThreadManagers{}, myExecuteCount{ 0 }, myMultiThreaded{ false }, 
+	myThreadManagers{}, myThreadQueue{}, myExecuteCount{ 0 }, myMultiThreaded{ false },
 	myContext{ context},
 	myPrevDownRes{nullptr}
 {
@@ -98,7 +97,7 @@ BasicFilterTOP::getGeneralInfo(TOP_GeneralInfo* ginfo, const TD::OP_Inputs*, voi
 void
 BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* reserved)
 {
-
+	myExecuteCount++;
 	const OP_TOPInput*	top = inputs->getInputTOP(0);
 
 	if (!top)
@@ -106,10 +105,6 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 
 	int inHeight = top->textureDesc.height;
 	int inWidth = top->textureDesc.width;
-
-
-	int outWidth = inWidth;
-	int outHeight = inHeight;
 
 	OP_TOPInputDownloadOptions	opts;
 	opts.pixelFormat = top->textureDesc.pixelFormat;
@@ -123,46 +118,47 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 
 	bool doDither = inputs->getParInt("Dither");
 	int bitsPerColor = inputs->getParInt("Bitspercolor");
-
+	myPrevDownRes = std::move(downRes);
 	if (myPrevDownRes)
 	{
 		if (myMultiThreaded)
 		{
-			TOP_UploadInfo info;
-			info.textureDesc = myPrevDownRes->textureDesc;
-
-			outWidth = info.textureDesc.width;
-			outHeight = info.textureDesc.height;
-
-
-			for (ThreadManager* tm : myThreadManagers)
+			if (myThreadQueue.empty())
 			{
-				tm->syncParms(doDither, bitsPerColor, inWidth, inHeight, outWidth, outHeight, inputs);
+				ThreadManager* threadForWork = myThreadManagers.at(0);
+				threadForWork->sync(doDither, bitsPerColor, inWidth, inHeight, myPrevDownRes, myContext);
+				myThreadQueue.push(threadForWork);
 			}
+			else if (myThreadQueue.front()->getStatus() == ThreadStatus::Done)
+			{
+				ThreadManager* threadForWork = myThreadQueue.front();
+				myThreadQueue.pop();
+				OP_SmartRef<TOP_Buffer> outBuffer = nullptr;
+				TOP_UploadInfo info;
+				threadForWork->popOutBuffer(outBuffer, info);
+				output->uploadBuffer(&outBuffer, info, nullptr);
 
-
-			int threadId = std::abs(myExecuteCount % 3);
-			info.colorBufferIndex = 0;
-
-			uint64_t byteSize = myPrevDownRes->size;
-			OP_SmartRef<TOP_Buffer> outBuf = myContext->createOutputBuffer(byteSize, TOP_BufferFlags::None, nullptr);
-
-			uint32_t* inBuffer = (uint32_t*)myPrevDownRes->getData();
-			uint32_t* outbuf = (uint32_t*)outBuf->data;
-
-
-			myThreadManagers.at(threadId)->syncBuffer(inBuffer, outbuf);
-
-			
-			if (myExecuteCount >= 0)
-				output->uploadBuffer(&outBuf, info, nullptr);
+				threadForWork->sync(doDither, bitsPerColor, inWidth, inHeight, myPrevDownRes, myContext);
+				myThreadQueue.push(threadForWork);
+			}
 			else
-				myContext->returnBuffer(&outBuf);
-
-			myExecuteCount++;
+			{
+				for (ThreadManager* tm : myThreadManagers)
+				{
+					if (tm->getStatus() == ThreadStatus::Waiting)
+					{
+						tm->sync(doDither, bitsPerColor, inWidth, inHeight, myPrevDownRes, myContext);
+						myThreadQueue.push(tm);
+						break;
+					}
+				}
+			}
 		}
 		else
 		{
+
+			if (!myThreadQueue.empty())
+				switchToSingleThreaded();
 
 
 			TOP_UploadInfo info;
@@ -176,8 +172,8 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 			uint32_t* inBuffer = (uint32_t*)myPrevDownRes->getData();
 			uint32_t* outBuffer = (uint32_t*)outbuf->data;
 
-			outWidth = info.textureDesc.width;
-			outHeight = info.textureDesc.height;
+			int outWidth = info.textureDesc.width;
+			int outHeight = info.textureDesc.height;
 
 			Filter::doFilterWork(
 				inBuffer, inWidth, inHeight, outBuffer, outWidth,
@@ -187,7 +183,7 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 			output->uploadBuffer(&outbuf, info, nullptr);
 		}
 	}
-	myPrevDownRes = std::move(downRes);
+	// myPrevDownRes = std::move(downRes);
 
 	bool threaded = inputs->getParInt("Multithreaded");
 
@@ -196,8 +192,6 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 
 	if (!threaded & myMultiThreaded)
 		switchToSingleThreaded();
-		
-	// switchToSingleThreaded();
 }
 
 void 
@@ -206,7 +200,7 @@ BasicFilterTOP::setupParameters(OP_ParameterManager* manager, void* reserved)
 	{
 		OP_NumericParameter np;
 		np.name = "Bitspercolor";
-		np.label = "Bits per Color";
+		np.label = "Bits per Color"; 
 		np.page = "Filter";
 		np.defaultValues[0] = 2;
 		np.minSliders[0] = 1.0;
@@ -255,6 +249,11 @@ BasicFilterTOP::switchToSingleThreaded()
 		myThreadManagers.at(i) = nullptr;
 	}
 
+
+	while (!myThreadQueue.empty()) 
+	{
+		myThreadQueue.pop();
+	}
 	myMultiThreaded = false;
 }
 
@@ -262,7 +261,7 @@ void
 BasicFilterTOP::switchToMultiThreaded()
 {
 	// This delays the output by 3 frames
-	myExecuteCount = -3;
+	// myExecuteCount = -3;
 
 	for (int i = 0; i < NumCPUPixelDatas; ++i)
 	{

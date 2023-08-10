@@ -20,6 +20,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <array>
+#include <queue>
 
 class ThreadManager;
 
@@ -65,6 +66,7 @@ private:
 
 	// Threading variables
 	std::array<ThreadManager*, NumCPUPixelDatas>	myThreadManagers;
+	std::queue<ThreadManager*>						myThreadQueue;
 	int												myExecuteCount;
 	bool											myMultiThreaded;
 };
