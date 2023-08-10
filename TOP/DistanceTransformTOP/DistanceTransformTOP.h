@@ -68,12 +68,12 @@ This TOP takes one input which must be 8 bit single channel.
 class DistanceTransformTOP : public TD::TOP_CPlusPlusBase
 {
 public:
-    DistanceTransformTOP(const TD::OP_NodeInfo *info, TD::TOP_Context *context);
-    virtual ~DistanceTransformTOP();
+	DistanceTransformTOP(const TD::OP_NodeInfo *info, TD::TOP_Context *context);
+	virtual ~DistanceTransformTOP();
 
-    virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
+	virtual void		getGeneralInfo(TD::TOP_GeneralInfo*, const TD::OP_Inputs*, void* reserved) override;
 
-    virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
+	virtual void		execute(TD::TOP_Output*, const TD::OP_Inputs*, void* reserved) override;
 
 	virtual void		setupParameters(TD::OP_ParameterManager*, void* reserved) override;
 
