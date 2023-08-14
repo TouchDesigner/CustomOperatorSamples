@@ -38,7 +38,7 @@ public:
 private:
 	void	threadFn();
 
-	ThreadStatus			myStatus;
+	std::atomic<ThreadStatus>			myStatus;
 
 	// Out buffer resource
 	OP_SmartRef<OP_TOPDownloadResult>	myDownRes;
@@ -47,8 +47,6 @@ private:
 	// Thread and Sync variables
 	std::thread*			myThread;
 	std::mutex				myBufferMutex;
-	std::mutex				myParmsMutex;
-	std::mutex				myStatusMutex;
 	std::condition_variable myBufferCV;
 	std::atomic_bool		myThreadShouldExit;
 

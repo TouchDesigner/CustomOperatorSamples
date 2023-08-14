@@ -11,7 +11,7 @@
 
 ThreadManager::ThreadManager() :
 	myStatus{ ThreadStatus::Waiting }, myOutBuffer{nullptr}, myDownRes{nullptr},
-	myThread{}, myBufferMutex{}, myParmsMutex{}, myStatusMutex{}, myBufferCV{},
+	myThread{}, myBufferMutex{}, myBufferCV{},
 	myThreadShouldExit{false}, myInWidth{}, myInHeight{},
 	myOutWidth{}, myOutHeight{}, myDoDither{ false }, myBitsPerColor{ 8 }, myContext{ nullptr }, myUploadInfo{}
 {
@@ -40,24 +40,20 @@ void
 ThreadManager::sync(bool doDither, int bitsPerColor, int inWidth, int inHeight, 
 																			const OP_SmartRef<OP_TOPDownloadResult> downRes, TD::TOP_Context* context)
 {
-	std::unique_lock<std::mutex> parmslock(myParmsMutex);
+	std::unique_lock<std::mutex> bufferlock(myBufferMutex);
 	myDoDither = doDither;
 	myBitsPerColor = bitsPerColor;
 	myInWidth = inWidth;
 	myInHeight = inHeight;
-	parmslock.unlock();
 
-	std::unique_lock<std::mutex> bufferlock(myBufferMutex);
 	myContext = context;
 	myDownRes = downRes;
 	myUploadInfo.textureDesc = myDownRes->textureDesc;
 	myOutWidth = myUploadInfo.textureDesc.width;
 	myOutHeight = myUploadInfo.textureDesc.height;
+	myStatus.store(ThreadStatus::Ready);
 	bufferlock.unlock();
 
-	std::unique_lock<std::mutex> statusLock(myStatusMutex);
-	myStatus = ThreadStatus::Ready;
-	statusLock.unlock();
 	myBufferCV.notify_all();
 
 }
@@ -69,7 +65,7 @@ ThreadManager::threadFn()
 	while (!myThreadShouldExit)
 	{
 		std::unique_lock<std::mutex>		bufferLock(myBufferMutex);
-		myBufferCV.wait(bufferLock, [this] { return myStatus == ThreadStatus::Ready || myThreadShouldExit; });
+		myBufferCV.wait(bufferLock, [this] { return myStatus.load() == ThreadStatus::Ready || myThreadShouldExit; });
 		if (myThreadShouldExit)
 		{
 			if (myDownRes)
@@ -77,11 +73,8 @@ ThreadManager::threadFn()
 			return;
 		}
 
-		std::unique_lock<std::mutex> statusLock(myStatusMutex);
-		myStatus = ThreadStatus::Busy;
-		statusLock.unlock();
+		myStatus.store(ThreadStatus::Busy);
 
-		std::unique_lock<std::mutex>		parmsLock(myParmsMutex);
 		const int							outwidth = myOutWidth;
 		const int							outheight = myOutHeight;
 		const int							inwidth = myInWidth;
@@ -90,7 +83,6 @@ ThreadManager::threadFn()
 		const int							bitsPerColor = myBitsPerColor;
 		TOP_Context*					context = myContext;
 		OP_SmartRef<OP_TOPDownloadResult> downRes = myDownRes;
-		parmsLock.unlock();
 
 		size_t byteSize = inwidth * inheight * sizeof(uint32_t);
 		myOutBuffer = context->createOutputBuffer(byteSize, TOP_BufferFlags::None, nullptr);
@@ -102,11 +94,8 @@ ThreadManager::threadFn()
 
 		Filter::doFilterWork(inBuffer, inwidth, inheight, outbuf, outwidth, outheight, doDither, bitsPerColor);
 		myDownRes.release();
+		myStatus.store(ThreadStatus::Done);
 		bufferLock.unlock();
-
-		statusLock.lock();
-		myStatus = ThreadStatus::Done;
-		statusLock.unlock();
 
 		myBufferCV.notify_one();
 	}
@@ -116,19 +105,14 @@ ThreadManager::threadFn()
 void
 ThreadManager::popOutBuffer(OP_SmartRef<TOP_Buffer>& outBuffer, TD::TOP_UploadInfo& info)
 {
-	std::unique_lock<std::mutex> bufferLock(myBufferMutex);
+	std::lock_guard<std::mutex> bufferLock(myBufferMutex);
 	outBuffer = std::move(myOutBuffer);
 	info = std::move(myUploadInfo);
-	bufferLock.unlock();
-
-	std::unique_lock<std::mutex> statusLock(myStatusMutex);
-	myStatus = ThreadStatus::Waiting;
-	statusLock.unlock();
+	myStatus.store(ThreadStatus::Waiting);
 }
 
 ThreadStatus
 ThreadManager::getStatus()
 {
-	std::lock_guard<std::mutex> StatusLock(myStatusMutex);
-	return myStatus;
+	return myStatus.load();
 }
