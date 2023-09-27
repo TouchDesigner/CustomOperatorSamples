@@ -28,7 +28,6 @@ For discussions around this repository, please use our [forum](https://forum.der
   * [FilterTOP](TOP/BasicFilterTOP)
   * [CPUMemoryTOP](TOP/CPUMemoryTOP)
   * [CannyEdgeTOP](TOP/CannyEdgeTOP)
-  * [ContoursTOP](TOP/ContoursTOP)
   * [CudaTOP](TOP/CudaTOP)
   * [DistanceTransformTOP](TOP/DistanceTransformTOP)
   * [ObjectDetectorTOP](TOP/ObjectDetectorTOP)
