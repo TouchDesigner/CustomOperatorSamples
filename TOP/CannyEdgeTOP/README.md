@@ -14,6 +14,3 @@ Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#re
 * **L2 Gradient**: ndicating whether a more accurate L2 should be used to calculate the image gradient magnitude.
 
 This TOP takes one input which must be 8 bit single channel.
-
-
-
