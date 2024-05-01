@@ -18,6 +18,7 @@
 #include <cassert>
 #include <array>
 
+using namespace TD;
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -83,7 +84,7 @@ GeneratorSOP::~GeneratorSOP()
 };
 
 void
-GeneratorSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*)
+GeneratorSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const TD::OP_Inputs* inputs, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	ginfo->cookEveryFrameIfAsked = false;
@@ -93,7 +94,7 @@ GeneratorSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, vo
 }
 
 void
-GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
+GeneratorSOP::execute(SOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	ShapeMenuItems shape = myParms.evalShape(inputs);
 	Color color = myParms.evalColor(inputs);
@@ -132,7 +133,7 @@ GeneratorSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void
-GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
+GeneratorSOP::executeVBO(SOP_VBOOutput* output, const TD::OP_Inputs* inputs, void*)
 {
 	ShapeMenuItems shape = myParms.evalShape(inputs);
 	Color color = myParms.evalColor(inputs);
@@ -179,7 +180,7 @@ GeneratorSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 }
 
 void
-GeneratorSOP::setupParameters(OP_ParameterManager* manager, void*)
+GeneratorSOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
 	myParms.setup(manager);
 }

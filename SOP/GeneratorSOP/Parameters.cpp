@@ -5,14 +5,16 @@
 
 #pragma region Evals
 
+using namespace TD;
+
 ShapeMenuItems
-Parameters::evalShape(const OP_Inputs* input)
+Parameters::evalShape(const TD::OP_Inputs* input)
 {
 	return static_cast<ShapeMenuItems>(input->getParInt(ShapeName));
 }
 
 Color
-Parameters::evalColor(const OP_Inputs* input)
+Parameters::evalColor(const TD::OP_Inputs* input)
 {
 	std::array<double, 4> vals;
 	input->getParDouble4(ColorName, vals[0], vals[1], vals[2], vals[3]);
@@ -20,7 +22,7 @@ Parameters::evalColor(const OP_Inputs* input)
 }
 
 bool
-Parameters::evalGpudirect(const OP_Inputs* input)
+Parameters::evalGpudirect(const TD::OP_Inputs* input)
 {
 	return input->getParInt(GpudirectName) ? true : false;
 }
@@ -31,7 +33,7 @@ Parameters::evalGpudirect(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;

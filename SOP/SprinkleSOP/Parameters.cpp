@@ -3,6 +3,8 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
+using namespace TD;
+
 #pragma region Evals
 
 double

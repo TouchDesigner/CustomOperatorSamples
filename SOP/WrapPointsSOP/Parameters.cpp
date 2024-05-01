@@ -3,6 +3,8 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
+using namespace TD;
+
 #pragma region Evals
 
 RaysMenuItems
@@ -18,6 +20,7 @@ Parameters::evalDirection(const OP_Inputs* input)
 	input->getParDouble3(DirectionName, vals[0], vals[1], vals[2]);
 	return vals;
 }
+
 
 std::array<double, 3>
 Parameters::evalDestination(const OP_Inputs* input)

@@ -32,19 +32,19 @@ This SOP is a generator and it takes no input.
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class GeneratorSOP : public SOP_CPlusPlusBase
+class GeneratorSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	GeneratorSOP(const OP_NodeInfo* info);
+	GeneratorSOP(const TD::OP_NodeInfo* info);
 	virtual ~GeneratorSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void*) override;
 
 private:
 	// Class to construct geometry

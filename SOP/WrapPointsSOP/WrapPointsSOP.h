@@ -16,6 +16,7 @@
 #define __WrapPointsSOP__
 
 #include "SOP_CPlusPlusBase.h"
+#include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
 #include <string>
@@ -38,40 +39,40 @@ This SOP takes two inputs and wraps the first one onto the second one.
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class WrapPointsSOP : public SOP_CPlusPlusBase
+class WrapPointsSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	WrapPointsSOP(const OP_NodeInfo* info);
+	WrapPointsSOP(const TD::OP_NodeInfo* info);
 	virtual ~WrapPointsSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void*) override;
 
-	virtual void		getWarningString(OP_String*, void*) override;
+	virtual void		getWarningString(TD::OP_String*, void*) override;
 
 private:
-	void		castParallel(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Vector, bool, double, Color, Color);
+	void		castParallel(TD::SOP_Output*, const TD::OP_SOPInput*, const TD::OP_SOPInput*, TD::Vector, bool, double, TD::Color, TD::Color);
 
-	void		castRadial(SOP_Output*, const OP_SOPInput*, const OP_SOPInput*, Position, bool, double, Color, Color);
+	void		castRadial(TD::SOP_Output*, const TD::OP_SOPInput*, const TD::OP_SOPInput*, TD::Position, bool, double, TD::Color, TD::Color);
 
 	// This method returns true if the input geometry only has triangles and lines
-	void		copyPrimitives(SOP_Output*, const OP_SOPInput*);
+	void		copyPrimitives(TD::SOP_Output*, const TD::OP_SOPInput*);
 
 	// Before calling this functions SOP_Output should contain as many points as OP_SOPInput
-	void		copyAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyColors(SOP_Output*, const OP_SOPInput*) const;
+	void		copyColors(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyTextures(SOP_Output*, const OP_SOPInput*) const;
+	void		copyTextures(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyCustomAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		castPoint(SOP_Output*, const Position*, const Vector* normals, int index, const OP_SOPInput* geo, Vector direction, double, Color, Color);
+	void		castPoint(TD::SOP_Output*, const TD::Position*, const TD::Vector* normals, int index, const TD::OP_SOPInput* geo, TD::Vector direction, double, TD::Color, TD::Color);
 
 	std::string	myWarningString;
 	

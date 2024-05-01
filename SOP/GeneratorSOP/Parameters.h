@@ -35,16 +35,16 @@ enum class ShapeMenuItems
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Shape
-	static ShapeMenuItems		evalShape(const OP_Inputs* input);
+	static ShapeMenuItems		evalShape(const TD::OP_Inputs* input);
 
 	// Color
-	static Color		evalColor(const OP_Inputs* input);
+	static TD::Color		evalColor(const TD::OP_Inputs* input);
 
 	// GPU Direct
-	static bool		evalGpudirect(const OP_Inputs* input);
+	static bool		evalGpudirect(const TD::OP_Inputs* input);
 
 
 };

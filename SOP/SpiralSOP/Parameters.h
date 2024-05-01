@@ -59,34 +59,34 @@ enum class OutputgeometryMenuItems
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Orientation
-	static OrientationMenuItems		evalOrientation(const OP_Inputs* input);
+	static OrientationMenuItems		evalOrientation(const TD::OP_Inputs* input);
 
 	// Top Radius
-	static double		evalTopradius(const OP_Inputs* input);
+	static double		evalTopradius(const TD::OP_Inputs* input);
 
 	// Bottom Radius
-	static double		evalBottomradius(const OP_Inputs* input);
+	static double		evalBottomradius(const TD::OP_Inputs* input);
 
 	// Height
-	static double		evalHeight(const OP_Inputs* input);
+	static double		evalHeight(const TD::OP_Inputs* input);
 
 	// Turns
-	static double		evalTurns(const OP_Inputs* input);
+	static double		evalTurns(const TD::OP_Inputs* input);
 
 	// Divisions
-	static int		evalDivisions(const OP_Inputs* input);
+	static int		evalDivisions(const TD::OP_Inputs* input);
 
 	// Output Geometry
-	static OutputgeometryMenuItems		evalOutputgeometry(const OP_Inputs* input);
+	static OutputgeometryMenuItems		evalOutputgeometry(const TD::OP_Inputs* input);
 
 	// Strip Width
-	static double		evalStripwidth(const OP_Inputs* input);
+	static double		evalStripwidth(const TD::OP_Inputs* input);
 
 	// GPU Direct
-	static bool		evalGpudirect(const OP_Inputs* input);
+	static bool		evalGpudirect(const TD::OP_Inputs* input);
 
 
 };

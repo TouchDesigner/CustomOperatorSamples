@@ -17,6 +17,8 @@
 
 #include <cassert>
 
+using namespace TD;
+
 namespace
 {
 	Position 
@@ -312,7 +314,7 @@ WrapPointsSOP::castPoint(SOP_Output* output, const Position* pos, const Vector* 
 	Vector hitNormal{};
 	Position pt = pos[index];
 
-	if (geo->sendRay(pt, dir, hitP, hitLength, hitNormal, hitU, hitV, hitPrimitiveIndex))
+	if (((OP_SOPInput*)geo)->sendRay(pt, dir, hitP, hitLength, hitNormal, hitU, hitV, hitPrimitiveIndex))
 	{
 		output->addPoint(pt + dir * static_cast<float>(hitLength * scale));
 		output->setNormal(hitNormal, index);

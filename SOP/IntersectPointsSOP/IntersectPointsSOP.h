@@ -38,38 +38,38 @@ This SOP takes two inputs:
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class IntersectPointsSOP : public SOP_CPlusPlusBase
+class IntersectPointsSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	IntersectPointsSOP(const OP_NodeInfo* info);
+	IntersectPointsSOP(const TD::OP_NodeInfo* info);
 	virtual ~IntersectPointsSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void*) override;
 
-	virtual void		getWarningString(OP_String*, void*) override;
+	virtual void		getWarningString(TD::OP_String*, void*) override;
 
 private:
-	void		copyPoints(SOP_Output*, const OP_SOPInput*) const;
+	void		copyPoints(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
 	// Before calling this functions SOP_Output should contain as many points as OP_SOPInput
-	void		copyAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
 	// This method returns true if the input geometry only has triangles and lines
-	void		copyPrimitives(SOP_Output*, const OP_SOPInput*);
+	void		copyPrimitives(TD::SOP_Output*, const TD::OP_SOPInput*);
 
-	void		copyNormals(SOP_Output*, const OP_SOPInput*) const;
+	void		copyNormals(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyColors(SOP_Output*, const OP_SOPInput*) const;
+	void		copyColors(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyTextures(SOP_Output*, const OP_SOPInput*) const;
+	void		copyTextures(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyCustomAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
 	std::string	myWarningString;
 	

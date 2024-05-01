@@ -19,14 +19,17 @@
 #include <cmath>
 #include <numeric>
 
+using namespace TD;
+
 static constexpr double PI = 3.141592653589793238463;
 
 namespace
 {
-	Vector PerpBofA(const Vector& A, const Vector& B)
+	TD::Vector PerpBofA(const TD::Vector& A, const TD::Vector& B)
 	{
-		Vector ret = B;
-		ret -= A * (A.dot(B) / A.length() / A.length());
+		TD::Vector ret = B;
+		TD::Vector nonConstA = A;
+		ret -= nonConstA * (nonConstA.dot(B) / nonConstA.length() / nonConstA.length());
 		return ret;
 
 	}
@@ -97,7 +100,7 @@ SpiralSOP::~SpiralSOP()
 };
 
 void
-SpiralSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*)
+SpiralSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const TD::OP_Inputs* inputs, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	ginfo->cookEveryFrameIfAsked = false;
@@ -107,7 +110,7 @@ SpiralSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*
 }
 
 void
-SpiralSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
+SpiralSOP::execute(SOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	handleParameters(inputs);
 
@@ -148,7 +151,7 @@ SpiralSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void
-SpiralSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
+SpiralSOP::executeVBO(SOP_VBOOutput* output, const TD::OP_Inputs* inputs, void*)
 {
 	handleParameters(inputs);
 
@@ -201,13 +204,13 @@ SpiralSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
 }
 
 void
-SpiralSOP::setupParameters(OP_ParameterManager* manager, void*)
+SpiralSOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
 	myParms.setup(manager);
 }
 
 void 
-SpiralSOP::handleParameters(const OP_Inputs* inputs)
+SpiralSOP::handleParameters(const TD::OP_Inputs* inputs)
 {
 	myOrientation = myParms.evalOrientation(inputs);
 	myTopRad = myParms.evalTopradius(inputs);

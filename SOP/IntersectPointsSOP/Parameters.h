@@ -24,13 +24,13 @@ constexpr static char OutsidecolorLabel[] = "Outside Color";
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Inside Color
-	static Color		evalInsidecolor(const OP_Inputs* input);
+	static TD::Color		evalInsidecolor(const TD::OP_Inputs* input);
 
 	// Outside Color
-	static Color		evalOutsidecolor(const OP_Inputs* input);
+	static TD::Color		evalOutsidecolor(const TD::OP_Inputs* input);
 
 
 };

@@ -17,6 +17,8 @@
 
 #include <cassert>
 
+using namespace TD;
+
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
 // The DLLEXPORT prefix is needed so the compile exports these functions from the .dll
@@ -80,7 +82,7 @@ FilterSOP::~FilterSOP()
 };
 
 void
-FilterSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*)
+FilterSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const TD::OP_Inputs* inputs, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	// We set it to true otherwise the sop does not update when input sop changes
@@ -91,7 +93,7 @@ FilterSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*
 }
 
 void
-FilterSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
+FilterSOP::execute(SOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	const OP_SOPInput*	sop = inputs->getInputSOP(0);
 	if (!sop)
@@ -110,13 +112,13 @@ FilterSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void
-FilterSOP::executeVBO(SOP_VBOOutput* output, const OP_Inputs* inputs, void*)
+FilterSOP::executeVBO(SOP_VBOOutput* output, const TD::OP_Inputs* inputs, void*)
 {
 	// Not Called since ginfo->directToGPU is false
 }
 
 void
-FilterSOP::setupParameters(OP_ParameterManager* manager, void*)
+FilterSOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
 	myParms.setup(manager);
 }
@@ -135,7 +137,8 @@ FilterSOP::copyPointsTranslated(SOP_Output* output, const OP_SOPInput* sop, cons
 	const Position*	inPos = sop->getPointPositions();
 	for (int i = 0; i < sop->getNumPoints(); ++i)
 	{
-		output->addPoint(inPos[i] + t);
+		TD::Position xlatedPos = TD::Position(inPos[i]) + t;
+		output->addPoint(xlatedPos);
 	}
 }
 

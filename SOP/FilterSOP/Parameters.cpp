@@ -3,10 +3,12 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
+using namespace TD;
+
 #pragma region Evals
 
 const OP_CHOPInput*
-Parameters::evalTranslatechop(const OP_Inputs* input)
+Parameters::evalTranslatechop(const TD::OP_Inputs* input)
 {
 	return input->getParCHOP(TranslatechopName);
 }
@@ -17,7 +19,7 @@ Parameters::evalTranslatechop(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;

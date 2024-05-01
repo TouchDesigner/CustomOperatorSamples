@@ -3,6 +3,8 @@
 #include "CPlusPlus_Common.h"
 #include <algorithm>
 
+using namespace TD;
+
 enum class Axis
 {
 	X = 0,

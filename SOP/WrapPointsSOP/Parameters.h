@@ -1,9 +1,10 @@
 #pragma once
 
 #include <array>
+#include "CPlusPlus_Common.h"
 
-class OP_Inputs;
-class OP_ParameterManager;
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -47,28 +48,28 @@ enum class RaysMenuItems
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Rays
-	static RaysMenuItems		evalRays(const OP_Inputs* input);
+	static RaysMenuItems		evalRays(const TD::OP_Inputs* input);
 
 	// Direction
-	static std::array<double, 3>		evalDirection(const OP_Inputs* input);
+	static std::array<double, 3>		evalDirection(const TD::OP_Inputs* input);
 
 	// Destination
-	static std::array<double, 3>		evalDestination(const OP_Inputs* input);
+	static std::array<double, 3>		evalDestination(const TD::OP_Inputs* input);
 
 	// Reverse
-	static bool		evalReverse(const OP_Inputs* input);
+	static bool		evalReverse(const TD::OP_Inputs* input);
 
 	// Hit Color
-	static Color		evalHitcolor(const OP_Inputs* input);
+	static TD::Color		evalHitcolor(const TD::OP_Inputs* input);
 
 	// Miss Color
-	static Color		evalMisscolor(const OP_Inputs* input);
+	static TD::Color		evalMisscolor(const TD::OP_Inputs* input);
 
 	// Scale
-	static double		evalScale(const OP_Inputs* input);
+	static double		evalScale(const TD::OP_Inputs* input);
 
 
 };

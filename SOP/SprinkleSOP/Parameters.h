@@ -1,7 +1,7 @@
 #pragma once
 
-class OP_Inputs;
-class OP_ParameterManager;
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -41,22 +41,22 @@ enum class GenerateMenuItems
 class Parameters
 {
 public:
-	static void		setup(OP_ParameterManager*);
+	static void		setup(TD::OP_ParameterManager*);
 
 	// Seed
-	static double		evalSeed(const OP_Inputs* input);
+	static double		evalSeed(const TD::OP_Inputs* input);
 
 	// Generate
-	static GenerateMenuItems		evalGenerate(const OP_Inputs* input);
+	static GenerateMenuItems		evalGenerate(const TD::OP_Inputs* input);
 
 	// Point Count
-	static int		evalPointcount(const OP_Inputs* input);
+	static int		evalPointcount(const TD::OP_Inputs* input);
 
 	// Separate Points
-	static bool		evalSeparatepoints(const OP_Inputs* input);
+	static bool		evalSeparatepoints(const TD::OP_Inputs* input);
 
 	// Minimum Distance
-	static double		evalMinimumdistance(const OP_Inputs* input);
+	static double		evalMinimumdistance(const TD::OP_Inputs* input);
 
 
 };

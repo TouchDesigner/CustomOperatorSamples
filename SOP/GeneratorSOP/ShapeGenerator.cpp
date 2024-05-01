@@ -1,6 +1,8 @@
 #include "ShapeGenerator.h"
 #include <array>
 
+using namespace TD;
+
 // Cube descriptors
 const std::array<Position, ShapeGenerator::theCubeNumPts>
 ShapeGenerator::theCubePos = {
@@ -258,7 +260,7 @@ ShapeGenerator::outputSquareVBO(SOP_VBOOutput* output)
 	Vector* outN = output->getNormals();
 	for (int i = 0; i < theSquareNormals.size(); i += 1)
 	{
-		outN[i] = theSquareNormals.at(i) * -1.0f;
+		outN[i] = Vector(theSquareNormals.at(i)) * -1.0f;
 	}
 	memcpy(output->getTexCoords(), theSquareTexture.data(), theSquareNumPts * sizeof(TexCoord));
 	memcpy(output->addTriangles(theSquareNumPrim), theSquareVertices.data(), theSquareNumPts * 3 * sizeof(int32_t));
@@ -274,7 +276,7 @@ ShapeGenerator::outputCubeVBO(SOP_VBOOutput* output)
 	Vector* outN = output->getNormals();
 	for (int i = 0; i < theCubeNormals.size(); i += 1)
 	{
-		outN[i] = theCubeNormals.at(i) * -1.0f;
+		outN[i] = Vector(theCubeNormals.at(i)) * -1.0f;
 	}
 	memcpy(output->getTexCoords(), theCubeTexture.data(), theCubeNumPts * sizeof(TexCoord));
 	memcpy(output->addTriangles(theCubeNumPrim), theCubeVertices.data(), theCubeNumPrim * 3 * sizeof(int32_t));

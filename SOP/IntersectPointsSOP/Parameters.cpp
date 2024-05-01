@@ -5,8 +5,10 @@
 
 #pragma region Evals
 
+using namespace TD;
+
 Color
-Parameters::evalInsidecolor(const OP_Inputs* input)
+Parameters::evalInsidecolor(const TD::OP_Inputs* input)
 {
 	std::array<double, 4> vals;
 	input->getParDouble4(InsidecolorName, vals[0], vals[1], vals[2], vals[3]);
@@ -14,7 +16,7 @@ Parameters::evalInsidecolor(const OP_Inputs* input)
 }
 
 Color
-Parameters::evalOutsidecolor(const OP_Inputs* input)
+Parameters::evalOutsidecolor(const TD::OP_Inputs* input)
 {
 	std::array<double, 4> vals;
 	input->getParDouble4(OutsidecolorName, vals[0], vals[1], vals[2], vals[3]);
@@ -27,7 +29,7 @@ Parameters::evalOutsidecolor(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
 		OP_NumericParameter p;

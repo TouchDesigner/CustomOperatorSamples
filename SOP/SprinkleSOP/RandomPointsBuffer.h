@@ -2,8 +2,9 @@
 #define __MinDistanceTree__
 
 #include <vector>
+#include "CPlusPlus_Common.h"
 
-class Position;
+class TD::Position;
 class Node;
 
 class RandomPointsBuffer
@@ -13,17 +14,17 @@ public:
 
 	~RandomPointsBuffer();
 
-	bool	addIfPointFits(const Position&);
+	bool	addIfPointFits(const TD::Position&);
 
-	std::vector<Position>&	getVector();
+	std::vector<TD::Position>&	getVector();
 
 private:
-	void	addPoint(const Position&);
+	void	addPoint(const TD::Position&);
 
-	bool	doesPointFit(const Position&);
+	bool	doesPointFit(const TD::Position&);
 
 	Node*					root;
-	std::vector<Position>	points;
+	std::vector<TD::Position>	points;
 	bool					mySeparatePoints;
 	double					myDistance;
 };

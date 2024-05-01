@@ -3,58 +3,60 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
+using namespace TD;
+
 #pragma region Evals
 
 OrientationMenuItems
-Parameters::evalOrientation(const OP_Inputs* input)
+Parameters::evalOrientation(const TD::OP_Inputs* input)
 {
 	return static_cast<OrientationMenuItems>(input->getParInt(OrientationName));
 }
 
 double
-Parameters::evalTopradius(const OP_Inputs* input)
+Parameters::evalTopradius(const TD::OP_Inputs* input)
 {
 	return input->getParDouble(TopradiusName);
 }
 
 double
-Parameters::evalBottomradius(const OP_Inputs* input)
+Parameters::evalBottomradius(const TD::OP_Inputs* input)
 {
 	return input->getParDouble(BottomradiusName);
 }
 
 double
-Parameters::evalHeight(const OP_Inputs* input)
+Parameters::evalHeight(const TD::OP_Inputs* input)
 {
 	return input->getParDouble(HeightName);
 }
 
 double
-Parameters::evalTurns(const OP_Inputs* input)
+Parameters::evalTurns(const TD::OP_Inputs* input)
 {
 	return input->getParDouble(TurnsName);
 }
 
 int
-Parameters::evalDivisions(const OP_Inputs* input)
+Parameters::evalDivisions(const TD::OP_Inputs* input)
 {
 	return input->getParInt(DivisionsName);
 }
 
 OutputgeometryMenuItems
-Parameters::evalOutputgeometry(const OP_Inputs* input)
+Parameters::evalOutputgeometry(const TD::OP_Inputs* input)
 {
 	return static_cast<OutputgeometryMenuItems>(input->getParInt(OutputgeometryName));
 }
 
 double
-Parameters::evalStripwidth(const OP_Inputs* input)
+Parameters::evalStripwidth(const TD::OP_Inputs* input)
 {
 	return input->getParDouble(StripwidthName);
 }
 
 bool
-Parameters::evalGpudirect(const OP_Inputs* input)
+Parameters::evalGpudirect(const TD::OP_Inputs* input)
 {
 	return input->getParInt(GpudirectName) ? true : false;
 }
@@ -65,7 +67,7 @@ Parameters::evalGpudirect(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
 		OP_StringParameter p;

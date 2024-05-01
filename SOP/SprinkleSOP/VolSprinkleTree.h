@@ -18,24 +18,25 @@
 #include <vector>
 #include <random>
 #include "CPlusPlus_Common.h"
+#include "SOP_CPlusPlusBase.h"
 
-class SOP_Output;
+class TD::SOP_Output;
 
 struct BoxNode;
 
 class VolSprinkleTree
 {
 public:
-	VolSprinkleTree(const OP_SOPInput* sop, BoundingBox& bb);
+	VolSprinkleTree(const TD::OP_SOPInput* sop, TD::BoundingBox& bb);
 	~VolSprinkleTree();
 
-	Position getPoint(float, float, float, float);
+	TD::Position getPoint(float, float, float, float);
 
-	void outputTest(SOP_Output*);
+	void outputTest(TD::SOP_Output*);
 private:
 	constexpr static int	myBoxNumber = 50000;
 
-	void processBox(BoundingBox&, const OP_SOPInput*);
+	void processBox(TD::BoundingBox&, const TD::OP_SOPInput*);
 
 	std::vector<BoxNode>	myTree;
 	std::mt19937			myRNG;

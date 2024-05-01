@@ -19,59 +19,60 @@
 #include "CPlusPlus_Common.h"
 #include "SOP_CPlusPlusBase.h"
 
+
 class ShapeGenerator
 {
 public:
-	void	outputDot(SOP_Output*) const;
+	void	outputDot(TD::SOP_Output*) const;
 
-	void	outputLine(SOP_Output*) const;
+	void	outputLine(TD::SOP_Output*) const;
 
-	void	outputSquare(SOP_Output*) const;
+	void	outputSquare(TD::SOP_Output*) const;
 
-	void	outputCube(SOP_Output*) const;
+	void	outputCube(TD::SOP_Output*) const;
 
 	// Output the shape directly to the GPU
-	void	outputDotVBO(SOP_VBOOutput*);
+	void	outputDotVBO(TD::SOP_VBOOutput*);
 
-	void	outputLineVBO(SOP_VBOOutput*);
+	void	outputLineVBO(TD::SOP_VBOOutput*);
 
-	void	outputSquareVBO(SOP_VBOOutput*);
+	void	outputSquareVBO(TD::SOP_VBOOutput*);
 
-	void	outputCubeVBO(SOP_VBOOutput*);
+	void	outputCubeVBO(TD::SOP_VBOOutput*);
 
 	// Used to know how many verties we allocated last, 
 	int		getLastVBONumVertices() const;
 
 private:
-	void	setPointTexCoords(SOP_Output*, const TexCoord* t, int numPts) const;
+	void	setPointTexCoords(TD::SOP_Output*, const TD::TexCoord* t, int numPts) const;
 
 	// Cube descriptors 32 points 3 per  vertex
 	constexpr static int									theCubeNumPts = 24;
 	constexpr static int									theCubeNumPrim = 12;
-	const static std::array<Position, theCubeNumPts>		theCubePos;
-	const static std::array<Vector, theCubeNumPts>			theCubeNormals;
+	const static std::array<TD::Position, theCubeNumPts>		theCubePos;
+	const static std::array<TD::Vector, theCubeNumPts>			theCubeNormals;
 	const static std::array<int32_t, theCubeNumPrim * 3>	theCubeVertices;
-	const static std::array<TexCoord, theCubeNumPts>		theCubeTexture;
+	const static std::array<TD::TexCoord, theCubeNumPts>		theCubeTexture;
 											
 	// Square descriptors
 	constexpr static int									theSquareNumPts = 4;
 	constexpr static int									theSquareNumPrim = 2;
-	const static std::array<Position, theSquareNumPts>		theSquarePos;
-	const static std::array<Vector, theSquareNumPts>		theSquareNormals;
+	const static std::array<TD::Position, theSquareNumPts>		theSquarePos;
+	const static std::array<TD::Vector, theSquareNumPts>		theSquareNormals;
 	const static std::array<int32_t, theSquareNumPrim * 3>	theSquareVertices;
-	const static std::array<TexCoord, theSquareNumPts>		theSquareTexture;
+	const static std::array<TD::TexCoord, theSquareNumPts>		theSquareTexture;
 											
 	// Line descriptors
 	constexpr static int									theLineNumPts = 2;
-	const static std::array<Position, theLineNumPts>		theLinePos;
-	const static std::array<Vector, theLineNumPts>			theLineNormals;
+	const static std::array<TD::Position, theLineNumPts>		theLinePos;
+	const static std::array<TD::Vector, theLineNumPts>			theLineNormals;
 	const static std::array<int32_t, theLineNumPts>			theLineVertices;
-	const static std::array<TexCoord, theLineNumPts>		theLineTexture;
+	const static std::array<TD::TexCoord, theLineNumPts>		theLineTexture;
 
 	// Point descriptors
-	const static Position									thePointPos;
-	const static Vector										thePointNormal;
-	const static TexCoord									thePointTexture;
+	const static TD::Position									thePointPos;
+	const static TD::Vector										thePointNormal;
+	const static TD::TexCoord									thePointTexture;
 
 	// LastVBO allocation
 	int myLastVBOAllocVertices;

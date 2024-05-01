@@ -19,6 +19,7 @@
 #include "Parameters.h"
 #include <string>
 
+
 /*
 This example implements a SOP which takes the following parameters:
 	- Translate CHOP: A CHOP with 3 channels whose value determines a translation for the input SOP.
@@ -30,40 +31,40 @@ This SOP is a filter and it takes one input SOP with triangulated geometry.
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class FilterSOP : public SOP_CPlusPlusBase
+class FilterSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	FilterSOP(const OP_NodeInfo* info);
+	FilterSOP(const TD::OP_NodeInfo* info);
 	virtual ~FilterSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager* manager, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager* manager, void*) override;
 
-	virtual void		getWarningString(OP_String*, void*) override;
+	virtual void		getWarningString(TD::OP_String*, void*) override;
 
 
 private:
-	void		copyPointsTranslated(SOP_Output*, const OP_SOPInput*, const Vector&) const;
+	void		copyPointsTranslated(TD::SOP_Output*, const TD::OP_SOPInput*, const TD::Vector&) const;
 
 	// Before calling this functions SOP_Output should contain as many points as OP_SOPInput
-	void		copyAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 	
-	void		copyNormals(SOP_Output*, const OP_SOPInput*) const;
+	void		copyNormals(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyColors(SOP_Output*, const OP_SOPInput*) const;
+	void		copyColors(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyTextures(SOP_Output*, const OP_SOPInput*) const;
+	void		copyTextures(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 
-	void		copyCustomAttributes(SOP_Output*, const OP_SOPInput*) const;
+	void		copyCustomAttributes(TD::SOP_Output*, const TD::OP_SOPInput*) const;
 	// This method returns true if the input geometry only has triangles and lines
-	void		copyPrimitives(SOP_Output*, const OP_SOPInput*);
+	void		copyPrimitives(TD::SOP_Output*, const TD::OP_SOPInput*);
 
-	Vector		getTranslate(const OP_CHOPInput*);
+	TD::Vector		getTranslate(const TD::OP_CHOPInput*);
 
 	std::string			myWarningString;
 	

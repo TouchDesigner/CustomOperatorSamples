@@ -42,36 +42,36 @@ This SOP is a generator and it takes no input.
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class SpiralSOP : public SOP_CPlusPlusBase
+class SpiralSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	SpiralSOP(const OP_NodeInfo* info);
+	SpiralSOP(const TD::OP_NodeInfo* info);
 	virtual ~SpiralSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void*) override;
 
 private:
-	void		handleParameters(const OP_Inputs*);
+	void		handleParameters(const TD::OP_Inputs*);
 
 	void		calculateOutputPoints();
 
-	void		calculateSpiralPoints(std::vector<Position>::iterator&, int numPts);
+	void		calculateSpiralPoints(std::vector<TD::Position>::iterator&, int numPts);
 
-	void		calculateNormals(std::vector<Vector>::iterator&, std::vector<Position>::const_iterator&, int numPts);
+	void		calculateNormals(std::vector<TD::Vector>::iterator&, std::vector<TD::Position>::const_iterator&, int numPts);
 
 	void		calculateTriangleStrip();
 
-	std::vector<Position>	myPointPos;
-	std::vector<Vector>		myNormals;
+	std::vector<TD::Position>	myPointPos;
+	std::vector<TD::Vector>		myNormals;
 	std::vector<int32_t>	myLineStrip;
-	std::vector<TexCoord>	myLineStripTexture;
-	BoundingBox				myBoundingBox;
+	std::vector<TD::TexCoord>	myLineStripTexture;
+	TD::BoundingBox				myBoundingBox;
 
 	//// Parameters
 	OrientationMenuItems		myOrientation;

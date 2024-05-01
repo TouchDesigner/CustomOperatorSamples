@@ -54,40 +54,40 @@ Note, if Generate is [Surface Area, Per Primitive] a point float attribute named
 // if you want to output values to the Info CHOP/DAT
 
 // To get more help about these functions, look at SOP_CPlusPlusBase.h
-class SprinkleSOP : public SOP_CPlusPlusBase
+class SprinkleSOP : public TD::SOP_CPlusPlusBase
 {
 public:
-	SprinkleSOP(const OP_NodeInfo* info);
+	SprinkleSOP(const TD::OP_NodeInfo* info);
 	virtual ~SprinkleSOP();
 
-	virtual void		getGeneralInfo(SOP_GeneralInfo*, const OP_Inputs*, void*) override;
+	virtual void		getGeneralInfo(TD::SOP_GeneralInfo*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		execute(SOP_Output*, const OP_Inputs*, void*) override;
+	virtual void		execute(TD::SOP_Output*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*) override;
+	virtual void		executeVBO(TD::SOP_VBOOutput*, const TD::OP_Inputs*, void*) override;
 
-	virtual void		setupParameters(OP_ParameterManager*, void*) override;
+	virtual void		setupParameters(TD::OP_ParameterManager*, void*) override;
 
-	virtual void		getErrorString(OP_String*, void*) override;
+	virtual void		getErrorString(TD::OP_String*, void*) override;
 
 private:
-	void				executeAreaScatter(const OP_SOPInput*);
+	void				executeAreaScatter(const TD::OP_SOPInput*);
 
-	void				executePrimScatter(const OP_SOPInput*);
+	void				executePrimScatter(const TD::OP_SOPInput*);
 
-	void				executeVolumeScatter(const OP_SOPInput*);
+	void				executeVolumeScatter(const TD::OP_SOPInput*);
 
-	void				executeBoundingBoxScatter(const OP_SOPInput*);
+	void				executeBoundingBoxScatter(const TD::OP_SOPInput*);
 
-	std::vector<Position>	mapSurfaceToSOP(const OP_SOPInput*);
+	std::vector<TD::Position>	mapSurfaceToSOP(const TD::OP_SOPInput*);
 
-	bool				addPointToPrim(const Position*, const SOP_PrimitiveInfo* prims, size_t primN);
+	bool				addPointToPrim(const TD::Position*, const TD::SOP_PrimitiveInfo* prims, size_t primN);
 
-	bool				addPointToBoundingBox(BoundingBox&);
+	bool				addPointToBoundingBox(TD::BoundingBox&);
 
-	Position			getPointInBoundingBox(BoundingBox&);
+	TD::Position			getPointInBoundingBox(TD::BoundingBox&);
 
-	bool				addPointToVolume(const OP_SOPInput*, BoundingBox&);
+	bool				addPointToVolume(const TD::OP_SOPInput*, TD::BoundingBox&);
 
 	int				myPointCount;
 	int64_t			myInputCook;

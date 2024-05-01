@@ -18,6 +18,8 @@
 #include <random>
 #include <array>
 
+using namespace TD;
+
 namespace
 {
 	float getVolume(BoundingBox& bb)
@@ -50,7 +52,7 @@ struct BoxNode
 	float		cumulativeVolume;
 };
 
-VolSprinkleTree::VolSprinkleTree(const OP_SOPInput* sop, BoundingBox& bb)
+VolSprinkleTree::VolSprinkleTree(const TD::OP_SOPInput* sop, BoundingBox& bb)
 {
 	float boxSize = std::cbrt(getVolume(bb) / myBoxNumber);
 	Vector boxSizeV = Vector{ boxSize, boxSize, boxSize };
@@ -91,19 +93,19 @@ VolSprinkleTree::getPoint(float r1, float r2, float r3, float r4)
 }
 
 void
-VolSprinkleTree::processBox(BoundingBox& bb, const OP_SOPInput* sop)
+VolSprinkleTree::processBox(BoundingBox& bb, const TD::OP_SOPInput* sop)
 {
 	Position	p;
 
 	bb.getCenter(&p);
-	if (sop->isInside(p))
+	if (((TD::OP_SOPInput*)sop)->isInside(p))
 	{
 		myTree.emplace_back(BoxNode(bb));
 		return;
 	}
 }
 
-void VolSprinkleTree::outputTest(SOP_Output* out)
+void VolSprinkleTree::outputTest(TD::SOP_Output* out)
 {
 	auto outputBox = [&](BoundingBox& bb) {
 		int idx = out->getNumPoints();

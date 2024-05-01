@@ -22,8 +22,12 @@
 #include <random>
 #include <algorithm>
 
+using namespace TD;
+
 namespace
 {
+	using TD::Position;
+
 	Vector
 	toVector(const Position& p)
 	{
@@ -184,7 +188,7 @@ SprinkleSOP::~SprinkleSOP()
 };
 
 void
-SprinkleSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*)
+SprinkleSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const TD::OP_Inputs* inputs, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	ginfo->cookEveryFrameIfAsked = true;
@@ -193,7 +197,7 @@ SprinkleSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, voi
 }
 
 void
-SprinkleSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
+SprinkleSOP::execute(TD::SOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	const OP_SOPInput* sop = inputs->getInputSOP(0);
 	if (!sop)
@@ -244,12 +248,12 @@ SprinkleSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	const OP_SOPInput* sop1 = inputs->getInputSOP(1);
 	if (surfaceGen && sop1)
 	{
-		std::vector<Position>&& vec = mapSurfaceToSOP(sop1);
+		std::vector<TD::Position>&& vec = mapSurfaceToSOP(sop1);
 		output->addPoints(vec.data(), static_cast<int32_t>(vec.size()));
 	}
 	else
 	{
-		std::vector<Position>& vec = myPoints->getVector();
+		std::vector<TD::Position>& vec = myPoints->getVector();
 		output->addPoints(vec.data(), static_cast<int32_t>(vec.size()));
 	}
 
@@ -262,12 +266,12 @@ SprinkleSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void
-SprinkleSOP::executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*)
+SprinkleSOP::executeVBO(SOP_VBOOutput*, const TD::OP_Inputs*, void*)
 {
 }
 
 void
-SprinkleSOP::setupParameters(OP_ParameterManager* manager, void*)
+SprinkleSOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
 	myParms.setup(manager);
 }
@@ -284,7 +288,7 @@ void
 SprinkleSOP::executeAreaScatter(const OP_SOPInput* sop)
 {
 	const SOP_PrimitiveInfo* prims = sop->myPrimsInfo;
-	const Position* pos = sop->getPointPositions();
+	const TD::Position* pos = sop->getPointPositions();
 
 	std::vector<double> cumulativeA = calcAreaVector(prims, sop->getNumPrimitives(), pos);
 	double totalA = cumulativeA.back();
@@ -312,7 +316,7 @@ void
 SprinkleSOP::executePrimScatter(const OP_SOPInput* sop)
 {
 	const SOP_PrimitiveInfo* prims = sop->myPrimsInfo;
-	const Position* pos = sop->getPointPositions();
+	const TD::Position* pos = sop->getPointPositions();
 
 	float pointsPerPrim = myPointCount / static_cast<float>(sop->getNumPrimitives());
 	int pointsGen = 0;
@@ -332,7 +336,7 @@ void
 SprinkleSOP::executeVolumeScatter(const OP_SOPInput* sop)
 {
 	const SOP_PrimitiveInfo* prims = sop->myPrimsInfo;
-	const Position* pos = sop->getPointPositions();
+	const TD::Position* pos = sop->getPointPositions();
 	BoundingBox bBox = getBoundingBox(pos, sop->getNumPoints());
 
 	if (!myVolSprinkleTree || myInputCook != sop->totalCooks)
@@ -360,7 +364,7 @@ SprinkleSOP::executeVolumeScatter(const OP_SOPInput* sop)
 void 
 SprinkleSOP::executeBoundingBoxScatter(const OP_SOPInput* sop)
 {
-	const Position* pos = sop->getPointPositions();
+	const TD::Position* pos = sop->getPointPositions();
 	BoundingBox bBox = getBoundingBox(pos, sop->getNumPoints());
 	for (int i = 0; i < myPointCount; ++i)
 	{
@@ -378,11 +382,11 @@ SprinkleSOP::executeBoundingBoxScatter(const OP_SOPInput* sop)
 	}
 }
 
-std::vector<Position>
+std::vector<TD::Position>
 SprinkleSOP::mapSurfaceToSOP(const OP_SOPInput* sop)
 {
-	std::vector<Position> ret{};
-	const Position* pos = sop->getPointPositions();
+	std::vector<TD::Position> ret{};
+	const TD::Position* pos = sop->getPointPositions();
 	const SOP_PrimitiveInfo* prims = sop->myPrimsInfo;
 
 	for (int i = 0; i < mySurfaceAttribute.size(); i += 3)
@@ -396,7 +400,7 @@ SprinkleSOP::mapSurfaceToSOP(const OP_SOPInput* sop)
 }
 
 bool
-SprinkleSOP::addPointToPrim(const Position* pos, const SOP_PrimitiveInfo* prims, size_t primN)
+SprinkleSOP::addPointToPrim(const TD::Position* pos, const SOP_PrimitiveInfo* prims, size_t primN)
 {
 	const SOP_PrimitiveInfo& prim = prims[primN];
 	const int32_t* idx = prim.pointIndices;
@@ -404,7 +408,7 @@ SprinkleSOP::addPointToPrim(const Position* pos, const SOP_PrimitiveInfo* prims,
 
 	float r[2] = { static_cast<float>(uni(myRNG)), static_cast<float>(uni(myRNG)) };
 
-	Position newP = randPoint(pos[idx[0]], pos[idx[1]], pos[idx[2]], r[0], r[1]);
+	TD::Position newP = randPoint(pos[idx[0]], pos[idx[1]], pos[idx[2]], r[0], r[1]);
 	
 	if (myPoints->addIfPointFits(newP))
 	{
@@ -417,16 +421,16 @@ SprinkleSOP::addPointToPrim(const Position* pos, const SOP_PrimitiveInfo* prims,
 }
 
 bool 
-SprinkleSOP::addPointToBoundingBox(BoundingBox& bb)
+SprinkleSOP::addPointToBoundingBox(BoundingBox& b)
 {
-	Position p = getPointInBoundingBox(bb);
+	TD::Position p = getPointInBoundingBox(b);
 	return myPoints->addIfPointFits(p);
 }
 
-Position 
+TD::Position 
 SprinkleSOP::getPointInBoundingBox(BoundingBox& bb)
 {
-	Position p;
+	TD::Position p;
 	std::uniform_real_distribution<> uni(0.0, 1.0);
 
 	p.x = static_cast<float>(uni(myRNG) * bb.sizeX() + bb.minX);
@@ -443,9 +447,9 @@ SprinkleSOP::addPointToVolume(const OP_SOPInput* sop, BoundingBox& bb)
 		return static_cast<float>(uni(myRNG));
 	};
 	//Position p = getPointInBoundingBox(bb);
-	Position p = myVolSprinkleTree->getPoint(newRNG(), newRNG(), newRNG(), newRNG());
+	TD::Position p = myVolSprinkleTree->getPoint(newRNG(), newRNG(), newRNG(), newRNG());
 	
-	if (sop->isInside(p))
+	if (((OP_SOPInput*)sop)->isInside(p))
 	{
 		return myPoints->addIfPointFits(p);
 	}

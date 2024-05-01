@@ -19,6 +19,8 @@
 #include <vector>
 #include <array>
 
+using namespace TD;
+
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
 // The DLLEXPORT prefix is needed so the compile exports these functions from the .dll
@@ -81,7 +83,7 @@ IntersectPointsSOP::~IntersectPointsSOP()
 };
 
 void
-IntersectPointsSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*)
+IntersectPointsSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const TD::OP_Inputs* inputs, void*)
 {
 	// This will cause the node to cook every frame if the output is used
 	ginfo->cookEveryFrameIfAsked = true;
@@ -91,7 +93,7 @@ IntersectPointsSOP::getGeneralInfo(SOP_GeneralInfo* ginfo, const OP_Inputs* inpu
 }
 
 void
-IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
+IntersectPointsSOP::execute(SOP_Output* output, const TD::OP_Inputs* inputs, void*)
 {
 	const OP_SOPInput* sop0 = inputs->getInputSOP(0);
 	const OP_SOPInput* sop1 = inputs->getInputSOP(1);
@@ -111,7 +113,8 @@ IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 	insideAttrib.reserve(sop0->getNumPoints());
 	for (int i = 0; i < sop0->getNumPoints(); ++i)
 	{
-		insideAttrib.push_back(sop1->isInside(pos[i]));
+		// OP_SOPInput* cp = sop1;
+		insideAttrib.push_back(((OP_SOPInput*)sop1)->isInside(pos[i]));
 		if (insideAttrib.at(i))
 			output->setColor(inside, i);
 		else
@@ -124,12 +127,12 @@ IntersectPointsSOP::execute(SOP_Output* output, const OP_Inputs* inputs, void*)
 }
 
 void
-IntersectPointsSOP::executeVBO(SOP_VBOOutput*, const OP_Inputs*, void*)
+IntersectPointsSOP::executeVBO(SOP_VBOOutput*, const TD::OP_Inputs*, void*)
 {
 }
 
 void
-IntersectPointsSOP::setupParameters(OP_ParameterManager* manager, void*)
+IntersectPointsSOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
 	myParms.setup(manager);
 }
