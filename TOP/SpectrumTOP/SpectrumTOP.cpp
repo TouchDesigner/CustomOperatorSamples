@@ -397,11 +397,6 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 		case OP_PixelFormat::RG32Float:
 			myNumChan = 2;
 			break;
-		// RGB has alpha on its channels
-		case OP_PixelFormat::RGBX16Float:
-		case OP_PixelFormat::RGBX32Float:
-			if (myChan == ChanMenuItems::a)
-				myChan = ChanMenuItems::r; // ::Invalid what is Invalid here ?
 		case OP_PixelFormat::BGRA8Fixed:
 		case OP_PixelFormat::RGBA8Fixed:
 		case OP_PixelFormat::RGBA16Fixed:
@@ -429,7 +424,6 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 		case OP_PixelFormat::Mono16Float:
 		case OP_PixelFormat::MonoA16Float:
 		case OP_PixelFormat::RG16Float:
-		case OP_PixelFormat::RGBX16Float:
 		case OP_PixelFormat::RGBA16Float:
 			myChanFormat = GpuUtils::ChannelFormat::F16;
 			break;
@@ -444,7 +438,6 @@ SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 		case OP_PixelFormat:: Mono32Float:
 		case OP_PixelFormat::MonoA32Float:
 		case OP_PixelFormat::RG32Float:
-		case OP_PixelFormat::RGBX32Float:
 		case OP_PixelFormat::RGBA32Float:
 			myChanFormat = GpuUtils::ChannelFormat::F32;
 			break;

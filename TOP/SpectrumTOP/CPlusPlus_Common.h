@@ -29,7 +29,6 @@ stays the same, otherwise changes won't be backwards compatible
 	#include <stdint.h>
 	#define DLLEXPORT __declspec (dllexport)
 #else
-	#include <OpenGL/gltypes.h>
 	#define DLLEXPORT
 #endif
 
@@ -54,8 +53,6 @@ class TOP_CPlusPlus;
 
 namespace TD
 {
-
-//class OP_NodeInfo;
 
 class CHOP_PluginInfo;
 class CHOP_CPlusPlusBase;
@@ -103,10 +100,6 @@ enum class OP_PixelFormat : int32_t
 	MonoA16Fixed,
 	MonoA16Float,
 	MonoA32Float,
-
-	// RGBX, Alpha channel is ignored, will be treated a 1.0 for operations.
-	RGBX16Float = 500,
-	RGBX32Float,
 
 	// sRGB. use SBGRA if possible since that's what most GPUs use
 	SBGRA8Fixed = 600,
@@ -390,6 +383,37 @@ public:
 	int32_t			reserved[88];
 };
 
+// This class is used to provide direct access to the instance of a Custom OP
+// by another Custom OP who has a reference to it, via it's input or a parameter.
+// The type of 'T' will be TOP_CPlusPlusBase, CHOP_CPlusPlusBase etc. depending
+// on the OP family. Use the 'opType' field to verify that this node is the
+// type you expect it to be, before casting 'instance' to your real class that
+// implements the custom OP.
+// Since the header of the Custom OP is needed to do the cast, this is only
+// useful in cases where you are implementing multiple Custom OPs, and need a
+// higher level of communication between them than parameters/inputs etc.
+// The customOP field will be nullptr in the OP_TOPInput, OP_CHOPInput etc
+// if the node is not a Custom OP.
+//
+// Does not work with plugins loaded directly into the CPlusPlus nodes.
+template <class T>
+class OP_CustomOPInstance
+{
+public:
+	OP_CustomOPInstance()
+	{
+		instance = nullptr;
+		opType = nullptr;
+		memset(reserved, 0, sizeof(reserved));
+	}
+
+	T*				instance;
+	const char*		opType;
+	int32_t			minorVersion;
+	int32_t			majorVersion;
+
+	int32_t			reserved[50];
+};
 
 class OP_Context
 {
@@ -472,7 +496,19 @@ public:
 	// Used to do other operations to the node such as call python callbacks
 	OP_Context*		context;
 
-	int32_t			reserved[15];
+	// The number of times this node has cooked. Incremented at the start of the cook.
+	uint32_t		cookCount;
+
+#ifdef _WIN32
+	// The HINSTANCE of the process executable
+	HINSTANCE		processHInstance;
+#endif
+
+#ifdef _WIN32
+	int32_t			reserved[12];
+#else
+	int32_t			reserved[14];
+#endif
 };
 
 class OP_DATInput
@@ -500,7 +536,10 @@ public:
 	// The number of times this node has cooked
 	int64_t			totalCooks;
 
-	int32_t			reserved[18];
+	// See documentation for OPCustomOPInstance
+	const OP_CustomOPInstance<DAT_CPlusPlusBase>* customOP;
+
+	int32_t			reserved[16];
 };
 
 class OP_TOPInputDownloadOptions
@@ -630,7 +669,11 @@ public:
 	// The number of times this node has cooked
 	int64_t			totalCooks;
 
-	int32_t			reserved[14];
+	// See documentation for OPCustomOPInstance
+	const OP_CustomOPInstance<TOP_CPlusPlusBase>* customOP;
+
+	int32_t			reserved[12];
+
 protected:
 	virtual void*	reserved0() = 0;
 	virtual void*	reserved1() = 0;
@@ -695,7 +738,11 @@ public:
 
 	// The number of times this node has cooked
 	int64_t			totalCooks;
-	int32_t			reserved[18];
+
+	// See documentation for OPCustomOPInstance
+	const OP_CustomOPInstance<CHOP_CPlusPlusBase>* customOP;
+
+	int32_t			reserved[16];
 };
 
 class OP_ObjectInput
@@ -724,11 +771,12 @@ enum class AttribType : int32_t
 	Int,
 };
 
-// Right now we only support point attributes.
 enum class AttribSet : int32_t
 {
 	Invalid,
 	Point = 0,
+	Vertex,
+	Primitive,
 };
 
 // The type of the primitives, currently only Polygon type
@@ -1221,9 +1269,8 @@ public:
 		intData = nullptr;
 	}
 
-	const float*		floatData;
-	const int32_t*		intData;
-
+	float*			floatData;
+	int32_t*		intData;
 };
 
 // SOP_PrimitiveInfo, all the required data for each primitive
@@ -1239,6 +1286,7 @@ public:
 		numVertices = 0;
 		type = PrimitiveType::Invalid;
 		pointIndicesOffset = 0;
+		isClosed = true;
 	}
 
 	// number of vertices of this prim
@@ -1255,6 +1303,9 @@ public:
 	// returned from getAllPrimPointIndices()
 	int32_t			pointIndicesOffset;
 
+	bool			isClosed;
+
+	uint8_t			reserved[7];
 };
 
 class OP_SOPInput
@@ -1282,16 +1333,16 @@ public:
 	// Returns an array of point positions. This array is getNumPoints() long.
 	virtual const Position*	getPointPositions() const = 0;
 
-	// Returns an array of normals.
+	// Returns an array of point normals.
 	//
 	// Returns nullptr if no normals are present
 	virtual const SOP_NormalInfo* 	getNormals() const = 0;
 
-	// Returns an array of colors.
+	// Returns an array of point colors.
 	// Returns nullptr if no colors are present
 	virtual const SOP_ColorInfo* 	getColors() const = 0;
 
-	// Returns an array of texture coordinates.
+	// Returns an array of point texture coordinates.
 	// If multiple texture coordinate layers are present, they will be placed
 	// interleaved back-to-back.
 	// E.g layer0 followed by layer1 followed by layer0 etc.
@@ -1305,11 +1356,11 @@ public:
 	// Returns the custom attribute data with its name
 	virtual const SOP_CustomAttribData*	getCustomAttribute(const char* customAttribName) const = 0;
 
-	// Returns true if the SOP has a normal attribute of the given source
+	// Returns true if the SOP has a normal point attribute of the given source
 	// attribute 'N'
 	virtual bool			hasNormals() const = 0;
 
-	// Returns true if the SOP has a color the given source
+	// Returns true if the SOP has a color point attribute of the given source
 	// attribute 'Cd'
 	virtual bool			hasColors() const = 0;
 
@@ -1322,7 +1373,7 @@ public:
 								float &hitU, float &hitV, int &hitPrimitiveIndex) = 0;
 
 	// Returns the SOP_PrimitiveInfo with primIndex
-	const SOP_PrimitiveInfo
+	const SOP_PrimitiveInfo&
 	getPrimitive(int32_t primIndex) const
 	{
 		return myPrimsInfo[primIndex];
@@ -1336,13 +1387,40 @@ public:
 		return myPrimPointIndices;
 	}
 
+	// Returns an array of vertex colors.
+	// Returns nullptr if no colors are present
+	virtual const SOP_ColorInfo* getVtxColors() const = 0;
+
+	// Returns an array of vertex texture coordinates.
+	// If multiple texture coordinate layers are present, they will be placed
+	// interleaved back-to-back.
+	// E.g layer0 followed by layer1 followed by layer0 etc.
+	//
+	// Returns nullptr if no texture layers are present
+	virtual const SOP_TextureInfo* getVtxTextures() const = 0;
+
+	// Returns an array of primitive colors.
+	// Returns nullptr if no colors are present
+	virtual const SOP_ColorInfo* getPrimColors() const = 0;
+
+	// Returns true if the SOP has a color vertex attribute of the given source
+// attribute 'Cd'
+	virtual bool			hasVtxColors() const = 0;
+
+	// Returns true if the SOP has a color primitive attribute of the given source
+	// attribute 'Cd'
+	virtual bool			hasPrimColors() const = 0;
+
 	SOP_PrimitiveInfo*		myPrimsInfo;
 	const int32_t*			myPrimPointIndices;
 
 	// The number of times this node has cooked
 	int64_t			totalCooks;
 
-	int32_t			reserved[97];
+	// See documentation for OPCustomOPInstance
+	const OP_CustomOPInstance<SOP_CPlusPlusBase>* customOP;
+
+	int32_t			reserved[95];
 };
 
 class OP_TimeInfo
@@ -1613,11 +1691,28 @@ enum class OP_ParAppendResult : int32_t
 	InvalidSize,	// size out of range
 };
 
+class OP_BuildDynamicMenuInfo
+{
+public:
+	// A pointer to your plugin instance, cast this to your class type
+	void*		instance;
+
+	// The name of the parameter being dynamically filled
+	const char* name;
+
+	int			reserved[20];
+
+	// Call this to add menu entries for your dynamic menu.
+	// The contents of the strings are copied during the call, you don't need to keep copies around
+	// after the call returns.
+	virtual bool	addMenuEntry(const char* name, const char* label) = 0;
+};
+
 class OP_ParameterManager
 {
 
 public:
-	// Returns PARAMETER_APPEND_SUCCESS on succesful
+	// Returns OP_ParAppendResult::Success on success
 	virtual OP_ParAppendResult		appendFloat(const OP_NumericParameter &np, int32_t size = 1) = 0;
 	virtual OP_ParAppendResult		appendInt(const OP_NumericParameter &np, int32_t size = 1) = 0;
 
@@ -1670,6 +1765,11 @@ public:
 	virtual OP_ParAppendResult		appendHeader(const OP_StringParameter &np) = 0;
 	virtual OP_ParAppendResult		appendMomentary(const OP_NumericParameter &np) = 0;
 	virtual OP_ParAppendResult		appendWH(const OP_NumericParameter &np) = 0;
+
+	// The buildDynamicMenu() function will be called in your class instance when required, allowing you to
+	// fill the menu with custom entries based on other parameters or external state (such as available devices).
+	virtual OP_ParAppendResult		appendDynamicStringMenu(const OP_StringParameter &sp) = 0;
+	virtual OP_ParAppendResult		appendDynamicMenu(const OP_NumericParameter &np) = 0;
 
 };
 
@@ -1776,7 +1876,7 @@ static_assert(offsetof(SOP_PrimitiveInfo, numVertices) == 0, "Incorrect Alignmen
 static_assert(offsetof(SOP_PrimitiveInfo, pointIndices) == 8, "Incorrect Alignment");
 static_assert(offsetof(SOP_PrimitiveInfo, type) == 16, "Incorrect Alignment");
 static_assert(offsetof(SOP_PrimitiveInfo, pointIndicesOffset) == 20, "Incorrect Alignment");
-static_assert(sizeof(SOP_PrimitiveInfo) == 24, "Incorrect Size");
+static_assert(sizeof(SOP_PrimitiveInfo) == 32, "Incorrect Size");
 
 static_assert(sizeof(OP_SOPInput) == 440, "Incorrect Size");
 
