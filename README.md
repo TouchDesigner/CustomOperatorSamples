@@ -169,6 +169,19 @@ Projects in this repositroy are setup to support all previous and future gpu har
 
 ![alt_text](images/image1.png "cuda architecture")
 
+## Fixes for Cuda version `< 12.4` compilation error
+
+Microsoft Visual Studio 2022 might throw an error due to the toolset (v143) compatibility version with MSC_VER expected by the CUDA toolkit.
+
+A `MSB3721` error and `C1189`	error referencing the `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include\crt\host_config.h` can arise.
+
+Use [the following flag](https://stackoverflow.com/a/78576792/11056845) to remedy this ( in Properties -> Cuda C/C++ -> Command Line):
+
+```-allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH ```
+
+(second half of the compilation is to allow Visual Studio to accept Cuda < 12.4 ).
+
+
 ## Fixes for openCV or CUDA version updates
 
 Some newer TouchDesigner Versions might be delivered with an updated openCV and/or require a newer CUDA Version. In this case it is easiest to edit the solutions `*.vcxproj` file. The files are XML strucutred.
