@@ -112,13 +112,13 @@ BasicFilterCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = inputs->getParInt("Applyscale") ? true : false;
-	double	scale = inputs->getParDouble("Scale");
-	bool	applyOffset = inputs->getParInt("Applyoffset") ? true : false;
-	double	offset = inputs->getParDouble("Offset");
+	bool	applyScale = myParms.evalApplyscale(inputs);
+	double	scale = myParms.evalScale(inputs);
+	bool	applyOffset = myParms.evalApplyoffset(inputs);
+	double	offset = myParms.evalOffset(inputs);
 
-	inputs->enablePar("Scale", applyScale);
-	inputs->enablePar("Offset", applyOffset);
+	inputs->enablePar(ScaleName, applyScale);
+	inputs->enablePar(OffsetName, applyOffset);
 
 	const OP_CHOPInput* input = inputs->getInputCHOP(0);
 
@@ -139,61 +139,5 @@ BasicFilterCHOP::execute(CHOP_Output* output,
 void
 BasicFilterCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter p;
-		p.name = "Applyscale";
-		p.label = "Apply Scale";
-		p.page = "Filter";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Scale";
-		p.label = "Scale";
-		p.page = "Filter";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = -10.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Applyoffset";
-		p.label = "Apply Offset";
-		p.page = "Filter";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Offset";
-		p.label = "Offset";
-		p.page = "Filter";
-		p.defaultValues[0] = 0.0;
-		p.minSliders[0] = -10.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }

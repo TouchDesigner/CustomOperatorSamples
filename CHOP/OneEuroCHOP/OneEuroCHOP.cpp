@@ -137,64 +137,15 @@ OneEuroCHOP::execute(CHOP_Output* output,
 void
 OneEuroCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter p;
-		p.name = "Mincutoff";
-		p.label = "Cutoff Frequency(Hz)";
-		p.page = "Filter";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Beta";
-		p.label = "Speed Coefficient";
-		p.page = "Filter";
-		p.defaultValues[0] = 0.0;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Dcutoff";
-		p.label = "Slope Cutoff Frequency (Hz)";
-		p.page = "Filter";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void
 OneEuroCHOP::handleParameters(const OP_Inputs* input, const OP_CHOPInput* chop)
 {
-	double	minCutOff = input->getParDouble("Mincutoff");
-	double	beta = input->getParDouble("Beta");
-	double	dCutOff = input->getParDouble("Dcutoff");
+	double	minCutOff = myParms.evalMincutoff(input);
+	double	beta = myParms.evalBeta(input);
+	double	dCutOff = myParms.evalDcutoff(input);
 	double	rate = chop->sampleRate;
 	int		numChannels = chop->numChannels;
 

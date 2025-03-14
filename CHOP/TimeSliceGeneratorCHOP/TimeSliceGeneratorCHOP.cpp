@@ -13,6 +13,7 @@
 */
 
 #include "TimeSliceGeneratorCHOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <array>
@@ -20,12 +21,6 @@
 
 static constexpr double PI = 3.141592653589793238463;
 
-enum class TypeMenuItems
-{
-	Sine,
-	Square,
-	Ramp
-};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -124,14 +119,14 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = inputs->getParInt("Applyscale") ? true : false;
-	double	scale = inputs->getParDouble("Scale");
-	double	speed = inputs->getParDouble("Frequency");
+	bool	applyScale = myParms.evalApplyscale(inputs);
+	double	scale = myParms.evalScale(inputs);
+	double	speed = myParms.evalFrequency(inputs);
 
-	inputs->enablePar("Scale", applyScale);
+	inputs->enablePar(ScaleName, applyScale);
 
 	// Menu items can be evaluated as either an integer menu position, or a string
-	TypeMenuItems		shape = static_cast<TypeMenuItems>(inputs->getParInt("Type"));
+	TypeMenuItems		shape = myParms.evalType(inputs);
 	
 	double	step = speed / output->sampleRate;
 	double	value = 0;
@@ -172,72 +167,5 @@ TimeSliceGeneratorCHOP::execute(CHOP_Output* output,
 void
 TimeSliceGeneratorCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_StringParameter p;
-		p.name = "Type";
-		p.label = "Type";
-		p.page = "Generator";
-		p.defaultValue = "Sine";
-		std::array<const char*, 3> Names =
-		{
-			"Sine",
-			"Square",
-			"Ramp"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"Sine",
-			"Square",
-			"Ramp"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Frequency";
-		p.label = "Frequency";
-		p.page = "Generator";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = -10.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Applyscale";
-		p.label = "Apply Scale";
-		p.page = "Generator";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Scale";
-		p.label = "Scale";
-		p.page = "Generator";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = -10.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }

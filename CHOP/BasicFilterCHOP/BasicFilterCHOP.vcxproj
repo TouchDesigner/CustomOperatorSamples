@@ -86,9 +86,11 @@
     <ClInclude Include="BasicFilterCHOP.h" />
     <ClInclude Include="CHOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
+    <ClInclude Include="Parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicFilterCHOP.cpp" />
+    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

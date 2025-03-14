@@ -16,6 +16,7 @@
 #define __BasicGeneratorCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 using namespace TD;
 
@@ -51,6 +52,8 @@ public:
 	virtual void		setupParameters(TD::OP_ParameterManager* manager, void*) override;
 
 private:
+
+	Parameters myParms;
 };
 
 #endif

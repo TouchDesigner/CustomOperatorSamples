@@ -83,11 +83,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TimeSliceFilterCHOP.h" />
     <ClInclude Include="CHOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="TimeSliceFilterCHOP.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -16,6 +16,7 @@
 #define __TimeSliceGeneratorCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 using namespace TD;
 
@@ -53,6 +54,7 @@ public:
 
 private:
 	double myOffset;
+	Parameters myParms;
 };
 
 #endif

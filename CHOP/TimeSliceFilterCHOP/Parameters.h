@@ -1,9 +1,9 @@
 #pragma once
 
-class OP_Inputs;
-class OP_ParameterManager;
+#include<string>
 
-using namespace TD;
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -36,10 +36,10 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Operation
-	static OperationMenuItems		evalOperation(const TD::OP_Inputs* input);
+	static OperationMenuItems		evalOperation(const TD::OP_Inputs* inputs);
 
 	// Reset
-	static int		evalReset(const TD::OP_Inputs* input);
+	static int		evalReset(const TD::OP_Inputs* inputs);
 
 
 };
