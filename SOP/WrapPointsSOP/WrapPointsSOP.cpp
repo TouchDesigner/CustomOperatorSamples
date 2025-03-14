@@ -16,6 +16,7 @@
 #include "Parameters.h"
 
 #include <cassert>
+#include <array>
 
 using namespace TD;
 

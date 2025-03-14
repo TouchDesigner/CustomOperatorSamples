@@ -5,26 +5,24 @@
 
 #pragma region Evals
 
-using namespace TD;
-
 ShapeMenuItems
-Parameters::evalShape(const TD::OP_Inputs* input)
+Parameters::evalShape(const TD::OP_Inputs* inputs)
 {
-	return static_cast<ShapeMenuItems>(input->getParInt(ShapeName));
+	return static_cast<ShapeMenuItems>(inputs->getParInt(ShapeName));
 }
 
-Color
-Parameters::evalColor(const TD::OP_Inputs* input)
+TD::Color
+Parameters::evalColor(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 4> vals;
-	input->getParDouble4(ColorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+	inputs->getParDouble4(ColorName, vals[0], vals[1], vals[2], vals[3]);
+	return TD::Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
 
 bool
-Parameters::evalGpudirect(const TD::OP_Inputs* input)
+Parameters::evalGpudirect(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(GpudirectName) ? true : false;
+	return inputs->getParInt(GpudirectName) ? true : false;
 }
 
 
@@ -36,7 +34,7 @@ void
 Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
-		OP_StringParameter p;
+		TD::OP_StringParameter p;
 		p.name = ShapeName;
 		p.label = ShapeLabel;
 		p.page = "Generator";
@@ -55,13 +53,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"Square",
 			"Cube"
 		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = ColorName;
 		p.label = ColorLabel;
 		p.page = "Generator";
@@ -85,21 +83,21 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendRGBA(p);
+		TD::OP_ParAppendResult res = manager->appendRGBA(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = GpudirectName;
 		p.label = GpudirectLabel;
 		p.page = "Generator";
 		p.defaultValues[0] = false;
 
-		OP_ParAppendResult res = manager->appendToggle(p);
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 

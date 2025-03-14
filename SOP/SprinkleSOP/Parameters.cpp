@@ -3,38 +3,36 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
-using namespace TD;
-
 #pragma region Evals
 
 double
-Parameters::evalSeed(const OP_Inputs* input)
+Parameters::evalSeed(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(SeedName);
+	return inputs->getParDouble(SeedName);
 }
 
 GenerateMenuItems
-Parameters::evalGenerate(const OP_Inputs* input)
+Parameters::evalGenerate(const TD::OP_Inputs* inputs)
 {
-	return static_cast<GenerateMenuItems>(input->getParInt(GenerateName));
+	return static_cast<GenerateMenuItems>(inputs->getParInt(GenerateName));
 }
 
 int
-Parameters::evalPointcount(const OP_Inputs* input)
+Parameters::evalPointcount(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(PointcountName);
+	return inputs->getParInt(PointcountName);
 }
 
 bool
-Parameters::evalSeparatepoints(const OP_Inputs* input)
+Parameters::evalSeparatepoints(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(SeparatepointsName) ? true : false;
+	return inputs->getParInt(SeparatepointsName) ? true : false;
 }
 
 double
-Parameters::evalMinimumdistance(const OP_Inputs* input)
+Parameters::evalMinimumdistance(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(MinimumdistanceName);
+	return inputs->getParDouble(MinimumdistanceName);
 }
 
 
@@ -43,10 +41,10 @@ Parameters::evalMinimumdistance(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = SeedName;
 		p.label = SeedLabel;
 		p.page = "Sprinkle";
@@ -57,13 +55,13 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = true;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_StringParameter p;
+		TD::OP_StringParameter p;
 		p.name = GenerateName;
 		p.label = GenerateLabel;
 		p.page = "Sprinkle";
@@ -82,13 +80,13 @@ Parameters::setup(OP_ParameterManager* manager)
 			"Bounding Box",
 			"Inside Volume"
 		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = PointcountName;
 		p.label = PointcountLabel;
 		p.page = "Sprinkle";
@@ -99,25 +97,25 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = true;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendInt(p);
+		TD::OP_ParAppendResult res = manager->appendInt(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = SeparatepointsName;
 		p.label = SeparatepointsLabel;
 		p.page = "Sprinkle";
 		p.defaultValues[0] = false;
 
-		OP_ParAppendResult res = manager->appendToggle(p);
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = MinimumdistanceName;
 		p.label = MinimumdistanceLabel;
 		p.page = "Sprinkle";
@@ -128,9 +126,9 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = true;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 

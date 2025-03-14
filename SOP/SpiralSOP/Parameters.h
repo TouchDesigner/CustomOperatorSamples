@@ -1,7 +1,9 @@
 #pragma once
 
-class OP_Inputs;
-class OP_ParameterManager;
+#include<string>
+
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -62,31 +64,31 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Orientation
-	static OrientationMenuItems		evalOrientation(const TD::OP_Inputs* input);
+	static OrientationMenuItems		evalOrientation(const TD::OP_Inputs* inputs);
 
 	// Top Radius
-	static double		evalTopradius(const TD::OP_Inputs* input);
+	static double		evalTopradius(const TD::OP_Inputs* inputs);
 
 	// Bottom Radius
-	static double		evalBottomradius(const TD::OP_Inputs* input);
+	static double		evalBottomradius(const TD::OP_Inputs* inputs);
 
 	// Height
-	static double		evalHeight(const TD::OP_Inputs* input);
+	static double		evalHeight(const TD::OP_Inputs* inputs);
 
 	// Turns
-	static double		evalTurns(const TD::OP_Inputs* input);
+	static double		evalTurns(const TD::OP_Inputs* inputs);
 
 	// Divisions
-	static int		evalDivisions(const TD::OP_Inputs* input);
+	static int		evalDivisions(const TD::OP_Inputs* inputs);
 
 	// Output Geometry
-	static OutputgeometryMenuItems		evalOutputgeometry(const TD::OP_Inputs* input);
+	static OutputgeometryMenuItems		evalOutputgeometry(const TD::OP_Inputs* inputs);
 
 	// Strip Width
-	static double		evalStripwidth(const TD::OP_Inputs* input);
+	static double		evalStripwidth(const TD::OP_Inputs* inputs);
 
 	// GPU Direct
-	static bool		evalGpudirect(const TD::OP_Inputs* input);
+	static bool		evalGpudirect(const TD::OP_Inputs* inputs);
 
 
 };

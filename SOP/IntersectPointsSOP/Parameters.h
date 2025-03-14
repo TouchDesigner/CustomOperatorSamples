@@ -1,7 +1,9 @@
 #pragma once
 
-class OP_Inputs;
-class OP_ParameterManager;
+#include<string>
+
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -27,10 +29,10 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Inside Color
-	static TD::Color		evalInsidecolor(const TD::OP_Inputs* input);
+	static TD::Color		evalInsidecolor(const TD::OP_Inputs* inputs);
 
 	// Outside Color
-	static TD::Color		evalOutsidecolor(const TD::OP_Inputs* input);
+	static TD::Color		evalOutsidecolor(const TD::OP_Inputs* inputs);
 
 
 };

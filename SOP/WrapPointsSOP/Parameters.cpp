@@ -3,59 +3,56 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
-using namespace TD;
-
 #pragma region Evals
 
 RaysMenuItems
-Parameters::evalRays(const OP_Inputs* input)
+Parameters::evalRays(const TD::OP_Inputs* inputs)
 {
-	return static_cast<RaysMenuItems>(input->getParInt(RaysName));
+	return static_cast<RaysMenuItems>(inputs->getParInt(RaysName));
 }
 
 std::array<double, 3>
-Parameters::evalDirection(const OP_Inputs* input)
+Parameters::evalDirection(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 3> vals;
-	input->getParDouble3(DirectionName, vals[0], vals[1], vals[2]);
+	inputs->getParDouble3(DirectionName, vals[0], vals[1], vals[2]);
 	return vals;
 }
 
-
 std::array<double, 3>
-Parameters::evalDestination(const OP_Inputs* input)
+Parameters::evalDestination(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 3> vals;
-	input->getParDouble3(DestinationName, vals[0], vals[1], vals[2]);
+	inputs->getParDouble3(DestinationName, vals[0], vals[1], vals[2]);
 	return vals;
 }
 
 bool
-Parameters::evalReverse(const OP_Inputs* input)
+Parameters::evalReverse(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(ReverseName) ? true : false;
+	return inputs->getParInt(ReverseName) ? true : false;
 }
 
-Color
-Parameters::evalHitcolor(const OP_Inputs* input)
+TD::Color
+Parameters::evalHitcolor(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 4> vals;
-	input->getParDouble4(HitcolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+	inputs->getParDouble4(HitcolorName, vals[0], vals[1], vals[2], vals[3]);
+	return TD::Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
 
-Color
-Parameters::evalMisscolor(const OP_Inputs* input)
+TD::Color
+Parameters::evalMisscolor(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 4> vals;
-	input->getParDouble4(MisscolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+	inputs->getParDouble4(MisscolorName, vals[0], vals[1], vals[2], vals[3]);
+	return TD::Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
 
 double
-Parameters::evalScale(const OP_Inputs* input)
+Parameters::evalScale(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(ScaleName);
+	return inputs->getParDouble(ScaleName);
 }
 
 
@@ -64,10 +61,10 @@ Parameters::evalScale(const OP_Inputs* input)
 #pragma region Setup
 
 void
-Parameters::setup(OP_ParameterManager* manager)
+Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
-		OP_StringParameter p;
+		TD::OP_StringParameter p;
 		p.name = RaysName;
 		p.label = RaysLabel;
 		p.page = "Cast Ray";
@@ -82,13 +79,13 @@ Parameters::setup(OP_ParameterManager* manager)
 			"Parallel",
 			"Radial"
 		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = DirectionName;
 		p.label = DirectionLabel;
 		p.page = "Cast Ray";
@@ -112,13 +109,13 @@ Parameters::setup(OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendXYZ(p);
+		TD::OP_ParAppendResult res = manager->appendXYZ(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = DestinationName;
 		p.label = DestinationLabel;
 		p.page = "Cast Ray";
@@ -142,25 +139,25 @@ Parameters::setup(OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendXYZ(p);
+		TD::OP_ParAppendResult res = manager->appendXYZ(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = ReverseName;
 		p.label = ReverseLabel;
 		p.page = "Cast Ray";
 		p.defaultValues[0] = false;
 
-		OP_ParAppendResult res = manager->appendToggle(p);
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = HitcolorName;
 		p.label = HitcolorLabel;
 		p.page = "Cast Ray";
@@ -184,13 +181,13 @@ Parameters::setup(OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendRGBA(p);
+		TD::OP_ParAppendResult res = manager->appendRGBA(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = MisscolorName;
 		p.label = MisscolorLabel;
 		p.page = "Cast Ray";
@@ -214,13 +211,13 @@ Parameters::setup(OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendRGBA(p);
+		TD::OP_ParAppendResult res = manager->appendRGBA(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = ScaleName;
 		p.label = ScaleLabel;
 		p.page = "Cast Ray";
@@ -231,9 +228,9 @@ Parameters::setup(OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 

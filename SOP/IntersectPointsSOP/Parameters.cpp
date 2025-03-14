@@ -5,22 +5,20 @@
 
 #pragma region Evals
 
-using namespace TD;
-
-Color
-Parameters::evalInsidecolor(const TD::OP_Inputs* input)
+TD::Color
+Parameters::evalInsidecolor(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 4> vals;
-	input->getParDouble4(InsidecolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+	inputs->getParDouble4(InsidecolorName, vals[0], vals[1], vals[2], vals[3]);
+	return TD::Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
 
-Color
-Parameters::evalOutsidecolor(const TD::OP_Inputs* input)
+TD::Color
+Parameters::evalOutsidecolor(const TD::OP_Inputs* inputs)
 {
 	std::array<double, 4> vals;
-	input->getParDouble4(OutsidecolorName, vals[0], vals[1], vals[2], vals[3]);
-	return Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
+	inputs->getParDouble4(OutsidecolorName, vals[0], vals[1], vals[2], vals[3]);
+	return TD::Color((float)vals[0], (float)vals[1], (float)vals[2], (float)vals[3]);
 }
 
 
@@ -32,7 +30,7 @@ void
 Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = InsidecolorName;
 		p.label = InsidecolorLabel;
 		p.page = "Intersection";
@@ -56,13 +54,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendRGBA(p);
+		TD::OP_ParAppendResult res = manager->appendRGBA(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = OutsidecolorName;
 		p.label = OutsidecolorLabel;
 		p.page = "Intersection";
@@ -86,9 +84,9 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			p.clampMins[i] = ClampMins[i];
 			p.clampMaxes[i] = ClampMaxes[i];
 		}
-		OP_ParAppendResult res = manager->appendRGBA(p);
+		TD::OP_ParAppendResult res = manager->appendRGBA(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 

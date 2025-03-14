@@ -3,62 +3,60 @@
 #include "CPlusPlus_Common.h"
 #include "Parameters.h"
 
-using namespace TD;
-
 #pragma region Evals
 
 OrientationMenuItems
-Parameters::evalOrientation(const TD::OP_Inputs* input)
+Parameters::evalOrientation(const TD::OP_Inputs* inputs)
 {
-	return static_cast<OrientationMenuItems>(input->getParInt(OrientationName));
+	return static_cast<OrientationMenuItems>(inputs->getParInt(OrientationName));
 }
 
 double
-Parameters::evalTopradius(const TD::OP_Inputs* input)
+Parameters::evalTopradius(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(TopradiusName);
+	return inputs->getParDouble(TopradiusName);
 }
 
 double
-Parameters::evalBottomradius(const TD::OP_Inputs* input)
+Parameters::evalBottomradius(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(BottomradiusName);
+	return inputs->getParDouble(BottomradiusName);
 }
 
 double
-Parameters::evalHeight(const TD::OP_Inputs* input)
+Parameters::evalHeight(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(HeightName);
+	return inputs->getParDouble(HeightName);
 }
 
 double
-Parameters::evalTurns(const TD::OP_Inputs* input)
+Parameters::evalTurns(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(TurnsName);
+	return inputs->getParDouble(TurnsName);
 }
 
 int
-Parameters::evalDivisions(const TD::OP_Inputs* input)
+Parameters::evalDivisions(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(DivisionsName);
+	return inputs->getParInt(DivisionsName);
 }
 
 OutputgeometryMenuItems
-Parameters::evalOutputgeometry(const TD::OP_Inputs* input)
+Parameters::evalOutputgeometry(const TD::OP_Inputs* inputs)
 {
-	return static_cast<OutputgeometryMenuItems>(input->getParInt(OutputgeometryName));
+	return static_cast<OutputgeometryMenuItems>(inputs->getParInt(OutputgeometryName));
 }
 
 double
-Parameters::evalStripwidth(const TD::OP_Inputs* input)
+Parameters::evalStripwidth(const TD::OP_Inputs* inputs)
 {
-	return input->getParDouble(StripwidthName);
+	return inputs->getParDouble(StripwidthName);
 }
 
 bool
-Parameters::evalGpudirect(const TD::OP_Inputs* input)
+Parameters::evalGpudirect(const TD::OP_Inputs* inputs)
 {
-	return input->getParInt(GpudirectName) ? true : false;
+	return inputs->getParInt(GpudirectName) ? true : false;
 }
 
 
@@ -70,7 +68,7 @@ void
 Parameters::setup(TD::OP_ParameterManager* manager)
 {
 	{
-		OP_StringParameter p;
+		TD::OP_StringParameter p;
 		p.name = OrientationName;
 		p.label = OrientationLabel;
 		p.page = "Spiral";
@@ -87,13 +85,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"Y",
 			"Z"
 		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = TopradiusName;
 		p.label = TopradiusLabel;
 		p.page = "Spiral";
@@ -104,13 +102,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = BottomradiusName;
 		p.label = BottomradiusLabel;
 		p.page = "Spiral";
@@ -121,13 +119,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = HeightName;
 		p.label = HeightLabel;
 		p.page = "Spiral";
@@ -138,13 +136,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = TurnsName;
 		p.label = TurnsLabel;
 		p.page = "Spiral";
@@ -155,13 +153,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = DivisionsName;
 		p.label = DivisionsLabel;
 		p.page = "Spiral";
@@ -172,13 +170,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendInt(p);
+		TD::OP_ParAppendResult res = manager->appendInt(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_StringParameter p;
+		TD::OP_StringParameter p;
 		p.name = OutputgeometryName;
 		p.label = OutputgeometryLabel;
 		p.page = "Spiral";
@@ -195,13 +193,13 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"Line",
 			"Triangle Strip"
 		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = StripwidthName;
 		p.label = StripwidthLabel;
 		p.page = "Spiral";
@@ -212,21 +210,21 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 		p.maxValues[0] = 1.0;
 		p.clampMins[0] = false;
 		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
+		TD::OP_ParAppendResult res = manager->appendFloat(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 	{
-		OP_NumericParameter p;
+		TD::OP_NumericParameter p;
 		p.name = GpudirectName;
 		p.label = GpudirectLabel;
 		p.page = "Spiral";
 		p.defaultValues[0] = false;
 
-		OP_ParAppendResult res = manager->appendToggle(p);
+		TD::OP_ParAppendResult res = manager->appendToggle(p);
 
-		assert(res == OP_ParAppendResult::Success);
+		assert(res == TD::OP_ParAppendResult::Success);
 	}
 
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <array>
-#include "CPlusPlus_Common.h"
+#include<string>
 
 class TD::OP_Inputs;
 class TD::OP_ParameterManager;
@@ -51,25 +50,25 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Rays
-	static RaysMenuItems		evalRays(const TD::OP_Inputs* input);
+	static RaysMenuItems		evalRays(const TD::OP_Inputs* inputs);
 
 	// Direction
-	static std::array<double, 3>		evalDirection(const TD::OP_Inputs* input);
+	static std::array<double, 3>		evalDirection(const TD::OP_Inputs* inputs);
 
 	// Destination
-	static std::array<double, 3>		evalDestination(const TD::OP_Inputs* input);
+	static std::array<double, 3>		evalDestination(const TD::OP_Inputs* inputs);
 
 	// Reverse
-	static bool		evalReverse(const TD::OP_Inputs* input);
+	static bool		evalReverse(const TD::OP_Inputs* inputs);
 
 	// Hit Color
-	static TD::Color		evalHitcolor(const TD::OP_Inputs* input);
+	static TD::Color		evalHitcolor(const TD::OP_Inputs* inputs);
 
 	// Miss Color
-	static TD::Color		evalMisscolor(const TD::OP_Inputs* input);
+	static TD::Color		evalMisscolor(const TD::OP_Inputs* inputs);
 
 	// Scale
-	static double		evalScale(const TD::OP_Inputs* input);
+	static double		evalScale(const TD::OP_Inputs* inputs);
 
 
 };

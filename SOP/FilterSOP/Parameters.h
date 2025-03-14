@@ -1,5 +1,7 @@
 #pragma once
 
+#include<string>
+
 class TD::OP_Inputs;
 class TD::OP_ParameterManager;
 
@@ -16,6 +18,7 @@ constexpr static char TranslatechopLabel[] = "Translate CHOP";
 #pragma region Menus
 #pragma endregion
 
+
 #pragma region Parameters
 class Parameters
 {
@@ -23,7 +26,7 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Translate CHOP
-	static const TD::OP_CHOPInput*		evalTranslatechop(const TD::OP_Inputs* input);
+	static const TD::OP_CHOPInput*		evalTranslatechop(const TD::OP_Inputs* inputs);
 
 
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include<string>
+
 class TD::OP_Inputs;
 class TD::OP_ParameterManager;
 
@@ -44,19 +46,19 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Seed
-	static double		evalSeed(const TD::OP_Inputs* input);
+	static double		evalSeed(const TD::OP_Inputs* inputs);
 
 	// Generate
-	static GenerateMenuItems		evalGenerate(const TD::OP_Inputs* input);
+	static GenerateMenuItems		evalGenerate(const TD::OP_Inputs* inputs);
 
 	// Point Count
-	static int		evalPointcount(const TD::OP_Inputs* input);
+	static int		evalPointcount(const TD::OP_Inputs* inputs);
 
 	// Separate Points
-	static bool		evalSeparatepoints(const TD::OP_Inputs* input);
+	static bool		evalSeparatepoints(const TD::OP_Inputs* inputs);
 
 	// Minimum Distance
-	static double		evalMinimumdistance(const TD::OP_Inputs* input);
+	static double		evalMinimumdistance(const TD::OP_Inputs* inputs);
 
 
 };

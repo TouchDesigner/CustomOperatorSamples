@@ -1,7 +1,9 @@
 #pragma once
 
-class OP_Inputs;
-class OP_ParameterManager;
+#include<string>
+
+class TD::OP_Inputs;
+class TD::OP_ParameterManager;
 
 #pragma region ParNames and ParLabels
 
@@ -38,13 +40,13 @@ public:
 	static void		setup(TD::OP_ParameterManager*);
 
 	// Shape
-	static ShapeMenuItems		evalShape(const TD::OP_Inputs* input);
+	static ShapeMenuItems		evalShape(const TD::OP_Inputs* inputs);
 
 	// Color
-	static TD::Color		evalColor(const TD::OP_Inputs* input);
+	static TD::Color		evalColor(const TD::OP_Inputs* inputs);
 
 	// GPU Direct
-	static bool		evalGpudirect(const TD::OP_Inputs* input);
+	static bool		evalGpudirect(const TD::OP_Inputs* inputs);
 
 
 };
