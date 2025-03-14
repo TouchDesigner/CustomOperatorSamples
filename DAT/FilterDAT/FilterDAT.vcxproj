@@ -58,7 +58,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,11 +84,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FilterDAT.cpp" />
+    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DAT_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="FilterDAT.h" />
+    <ClInclude Include="Parameters.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

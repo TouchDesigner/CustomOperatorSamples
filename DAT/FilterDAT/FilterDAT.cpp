@@ -13,17 +13,11 @@
 */
 
 #include "FilterDAT.h"
+#include "Parameters.h"
 
 #include <string>
 #include <cctype>
 #include <array>
-
-enum class CaseMenuItems
-{
-	Uppercamelcase,
-	Lowercase,
-	Uppercase
-};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -167,47 +161,14 @@ FilterDAT::execute(DAT_Output* output, const OP_Inputs* inputs, void*)
 void 
 FilterDAT::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_StringParameter p;
-		p.name = "Case";
-		p.label = "Case";
-		p.page = "Filter";
-		p.defaultValue = "Uppercamelcase";
-		std::array<const char*, 3> Names =
-		{
-			"Uppercamelcase",
-			"Lowercase",
-			"Uppercase"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"Upper Camel Case",
-			"Lower Case",
-			"Upper Case"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Keepspaces";
-		p.label = "Keep Spaces";
-		p.page = "Filter";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void
 FilterDAT::fillTable(const OP_Inputs* inputs, DAT_Output* out, const OP_DATInput* in)
 {
-	CaseMenuItems myCase = static_cast<CaseMenuItems>(inputs->getParInt("Case"));
-	bool myKeepSpaces = inputs->getParInt("Keepspaces") ? true : false;
+	CaseMenuItems myCase = myParms.evalCase(inputs);
+	bool myKeepSpaces = myParms.evalKeepspaces(inputs);
 
 	for (int i = 0; i < in->numRows; ++i)
 	{

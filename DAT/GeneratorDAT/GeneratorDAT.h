@@ -16,6 +16,7 @@
 #define __GeneratorDAT__
 
 #include "DAT_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <random>
 
@@ -56,6 +57,8 @@ private:
 	std::string		generateString(const OP_Inputs*);
 
 	std::mt19937	myRNG;
+
+	Parameters		myParms;
 };
 
 #endif

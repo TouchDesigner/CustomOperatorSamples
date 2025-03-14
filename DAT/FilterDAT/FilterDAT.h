@@ -16,6 +16,7 @@
 #define __FilterDAT__
 
 #include "DAT_CPlusPlusBase.h"
+#include "Parameters.h"
 
 using namespace TD;
 /*
@@ -47,6 +48,7 @@ public:
 
 private:
 	void				fillTable(const OP_Inputs*, DAT_Output*, const OP_DATInput*);
+	Parameters			myParms;
 };
 
 #endif
