@@ -15,6 +15,7 @@
 #define __OpticalFlowCPUTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 namespace cv
 {
@@ -65,6 +66,8 @@ private:
 	int					myExecuteCount;
 	TD::TOP_Context* myContext;
 	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
+
+	Parameters	myParms;
 };
 
 #endif

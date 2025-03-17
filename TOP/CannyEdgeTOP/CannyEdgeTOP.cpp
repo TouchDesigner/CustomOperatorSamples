@@ -14,6 +14,7 @@
 
 #include "CannyEdgeTOP.h"
 #include "GpuUtils.cuh"
+#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
@@ -121,10 +122,10 @@ CannyEdgeTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, void*
 		return;
 	}
 
-	int appertureSize = inputs->getParInt("Apperturesize");
-	double lothresh = inputs->getParDouble("Lowthreshold");
-	double hithresh = inputs->getParDouble("Highthreshold");
-	bool l2grad = inputs->getParInt("L2gradient");
+	int appertureSize = myParms.evalApperturesize(inputs);
+	double lothresh = myParms.evalLowthreshold(inputs);
+	double hithresh = myParms.evalHighthreshold(inputs);
+	bool l2grad = myParms.evalL2gradient(inputs);
 
 	const uint32_t inheight = top->textureDesc.height;
 	const uint32_t inwidth = top->textureDesc.width;
@@ -198,68 +199,7 @@ CannyEdgeTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, void*
 void
 CannyEdgeTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Lowthreshold";
-		p.label = "Low Threshold";
-		p.page = "Edge Detector";
-		p.defaultValues[0] = 0.1;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Highthreshold";
-		p.label = "High Threshold";
-		p.page = "Edge Detector";
-		p.defaultValues[0] = 0.9;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Apperturesize";
-		p.label = "Apperture Size";
-		p.page = "Edge Detector";
-		p.defaultValues[0] = 3;
-		p.minSliders[0] = 1.0;
-		p.maxSliders[0] = 31.0;
-		p.minValues[0] = 1.0;
-		p.maxValues[0] = 31.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "L2gradient";
-		p.label = "L2 Gradient";
-		p.page = "Edge Detector";
-		p.defaultValues[0] = false;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void 

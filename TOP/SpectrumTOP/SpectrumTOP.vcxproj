@@ -13,10 +13,12 @@
   <ItemGroup>
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="GpuUtils.cuh" />
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="SpectrumTOP.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="SpectrumTOP.cpp" />
   </ItemGroup>
   <ItemGroup>

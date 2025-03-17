@@ -13,6 +13,7 @@
 */
 
 #include "OpticalFlowCPUTOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
@@ -123,8 +124,8 @@ OpticalFlowCPUTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, 
 		return;
 	}
 
-	bool usegaussianfilter = inputs->getParInt("Usegaussianfilter") ? true : false;
-	bool usepreviousflow = inputs->getParInt("Usepreviousflow") ? true : false;
+	bool usegaussianfilter = myParms.evalUsegaussianfilter(inputs);
+	bool usepreviousflow = myParms.evalUsepreviousflow(inputs);
 	int myFlags = usegaussianfilter ? cv::OPTFLOW_FARNEBACK_GAUSSIAN : 0;
 	myFlags |= usepreviousflow ? cv::OPTFLOW_USE_INITIAL_FLOW : 0;
 
@@ -135,8 +136,8 @@ OpticalFlowCPUTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, 
 	}
 
 	calcOpticalFlowFarneback(
-		*myPrev, *myFrame, *myFlow, inputs->getParDouble("Pyramidscale"), inputs->getParInt("Numlevels"), inputs->getParInt("Windowsize"),
-		inputs->getParInt("Iterations"), inputs->getParInt("Polyn"), inputs->getParDouble("Polysigma"), myFlags
+		*myPrev, *myFrame, *myFlow, myParms.evalPyramidscale(inputs), myParms.evalNumlevels(inputs), myParms.evalWindowsize(inputs),
+		myParms.evalIterations(inputs), myParms.evalPolyn(inputs), myParms.evalPolysigma(inputs), myFlags
 	);
 
 	*myPrev = std::move(*myFrame);
@@ -147,157 +148,7 @@ OpticalFlowCPUTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* inputs, 
 void
 OpticalFlowCPUTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Numlevels";
-		p.label = "Num Levels";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 5;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Pyramidscale";
-		p.label = "Pyramid Scale";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 0.5;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 0.5;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 0.5;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Windowsize";
-		p.label = "Window Size";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 13;
-		p.minSliders[0] = 1.0;
-		p.maxSliders[0] = 100.0;
-		p.minValues[0] = 1.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Iterations";
-		p.label = "Iterations";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 10;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 50.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Polyn";
-		p.label = "Poly N";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 5;
-		p.minSliders[0] = 5.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 5.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Polysigma";
-		p.label = "Poly Sigma";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = 1.1;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 2.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Usegaussianfilter";
-		p.label = "Use Gaussian Filter";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = false;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Usepreviousflow";
-		p.label = "Use Previous Flow";
-		p.page = "Optical Flow";
-		p.defaultValues[0] = false;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_StringParameter p;
-		p.name = "Channel";
-		p.label = "Channel";
-		p.page = "Optical Flow";
-		p.defaultValue = "R";
-		std::array<const char*, 4> Names =
-		{
-			"R",
-			"G",
-			"B",
-			"A"
-		};
-		std::array<const char*, 4> Labels =
-		{
-			"R",
-			"G",
-			"B",
-			"A"
-		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
+	myParms.setup(manager);
 }
 
 void 
@@ -360,7 +211,7 @@ OpticalFlowCPUTOP::inputToMat(const TD::OP_Inputs* in)
 		for (int i = 0; i < height; i += 1) {
 			for (int j = 0; j < width; j += 1) {
 				int pixelN = i * width + j;
-				int index = 4 * pixelN + static_cast<int>(in->getParInt("Channel"));
+				int index = 4 * pixelN + static_cast<int>(myParms.evalChannel(in));
 				data[pixelN] = pixel[index];
 			}
 		}

@@ -13,6 +13,7 @@
 */
 
 #include "ObjectDetectorTOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <string>
@@ -165,171 +166,7 @@ ObjectDetectorTOP::execute(TD::TOP_Output* output,
 void
 ObjectDetectorTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	{
-		TD::OP_StringParameter p;
-		p.name = "Classifier";
-		p.label = "Classifier";
-		p.page = "Object Detector";
-		p.defaultValue = "";
-		TD::OP_ParAppendResult res = manager->appendFile(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Scalefactor";
-		p.label = "Scale Factor";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 1.05;
-		p.minSliders[0] = 1.0;
-		p.maxSliders[0] = 5.0;
-		p.minValues[0] = 1.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Minneighbors";
-		p.label = "Min Neighbors";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 3;
-		p.minSliders[0] = 1.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 1.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Limitobjectsize";
-		p.label = "Limit Object Size";
-		p.page = "Object Detector";
-		p.defaultValues[0] = true;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Minobjectwidth";
-		p.label = "Min Object Width";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 0.1;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Minobjectheight";
-		p.label = "Min Object Height";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 0.1;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Maxobjectwidth";
-		p.label = "Max Object Width";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 0.9;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Maxobjectheight";
-		p.label = "Max Object Height";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 0.9;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 1.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = true;
-		TD::OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Drawboundingbox";
-		p.label = "Draw Bounding Box";
-		p.page = "Object Detector";
-		p.defaultValues[0] = true;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Limitobjectsdetected";
-		p.label = "Limit Objects Detected";
-		p.page = "Object Detector";
-		p.defaultValues[0] = false;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Maximumobjects";
-		p.label = "Maximum Objects";
-		p.page = "Object Detector";
-		p.defaultValues[0] = 10;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 20.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		TD::OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 int32_t 
@@ -472,15 +309,15 @@ ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, TD::OP_Inf
 void 
 ObjectDetectorTOP::handleParameters(const TD::OP_Inputs* in)
 {
-	myPath = in->getParFilePath("Classifier");
-	myScale = in->getParDouble("Scalefactor");
-	myMinNeighbors = in->getParDouble("Minneighbors");
+	myPath = myParms.evalClassifier(in);
+	myScale = myParms.evalScalefactor(in);
+	myMinNeighbors = myParms.evalMinneighbors(in);
 
-	myLimitSize = in->getParDouble("Limitobjectsize");
-	in->enablePar("Minobjectwidth", myLimitSize);
-	in->enablePar("Minobjectheight", myLimitSize);
-	in->enablePar("Maxobjectwidth", myLimitSize);
-	in->enablePar("Maxobjectheight", myLimitSize);
+	myLimitSize = myParms.evalLimitobjectsize(in);
+	in->enablePar(MinobjectwidthName, myLimitSize);
+	in->enablePar(MinobjectheightName, myLimitSize);
+	in->enablePar(MaxobjectwidthName, myLimitSize);
+	in->enablePar(MaxobjectheightName, myLimitSize);
 
 	if (myLimitSize)
 	{
@@ -489,11 +326,11 @@ ObjectDetectorTOP::handleParameters(const TD::OP_Inputs* in)
 		int32_t totalW = myPrevDownRes->textureDesc.width;
 
 		double	w, h;
-		w = in->getParDouble("Minobjectwidth");
-		h = in->getParDouble("Minobjectheight");
+		w = myParms.evalMinobjectwidth(in);
+		h = myParms.evalMinobjectheight(in);
 		myMinSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
-		w = in->getParDouble("Maxobjectwidth");
-		h = in->getParDouble("Maxobjectheight");
+		w = myParms.evalMaxobjectwidth(in);
+		h = myParms.evalMaxobjectheight(in);
 		myMaxSize = cv::Size(static_cast<int>(w * totalW), static_cast<int>(h * totalH));
 	}
 	else
@@ -502,10 +339,10 @@ ObjectDetectorTOP::handleParameters(const TD::OP_Inputs* in)
 		myMaxSize = cv::Size();
 	}
 
-	myDrawBoundingBox =in->getParInt("Drawboundingbox");
-	myLimitObjs = in->getParInt("Limitobjectsdetected");
-	in->enablePar("Maximumobjects", myLimitObjs);
-	myMaxObjs = myLimitObjs ? in->getParInt("Maximumobjects") : 0;
+	myDrawBoundingBox = myParms.evalDrawboundingbox(in);
+	myLimitObjs = myParms.evalLimitobjectsdetected(in);
+	in->enablePar(MaximumobjectsName, myLimitObjs);
+	myMaxObjs = myLimitObjs ? myParms.evalMaximumobjects(in) : 0;
 }
 
 void 

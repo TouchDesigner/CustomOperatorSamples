@@ -16,6 +16,7 @@
 #define __CannyEdgeTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
@@ -74,6 +75,8 @@ private:
 
 	TD::TOP_Context*	myContext;
 	cudaStream_t		myStream;
+
+	Parameters			myParms;
 
 	// In this example this value will be incremented each time the execute()
 // function is called, then passes back to the TOP 

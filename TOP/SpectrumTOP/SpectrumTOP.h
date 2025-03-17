@@ -16,6 +16,7 @@
 #define __SpectrumTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <opencv2\core.hpp>
 #include <string>
@@ -89,6 +90,7 @@ private:
 
 	TOP_Context*		myContext;
 	cudaStream_t		myStream;
+	Parameters			myParms;
 };
 
 #endif

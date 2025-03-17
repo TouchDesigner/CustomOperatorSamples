@@ -14,6 +14,7 @@
 
 #include "SpectrumTOP.h"
 #include "GpuUtils.cuh"
+#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
@@ -28,28 +29,6 @@
 
 
 
-#pragma region Menus
-enum class ModeMenuItems
-{
-	dft,
-	idft
-};
-
-enum class CoordMenuItems
-{
-	polar,
-	cartesian
-};
-
-enum class ChanMenuItems
-{
-	r,
-	g,
-	b,
-	a
-};
-
-#pragma endregion
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -145,10 +124,10 @@ SpectrumTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void*)
 	if (!top || !checkInputTop(top, inputs))
 		return;
 
-	ModeMenuItems mode = static_cast<ModeMenuItems>(inputs->getParInt("Mode"));
-	int channame = inputs->getParInt("Chan");
-	bool transrows = inputs->getParInt("Transrows");
-	CoordMenuItems coord = static_cast<CoordMenuItems>(inputs->getParInt("Coord"));
+	ModeMenuItems mode = myParms.evalMode(inputs);
+	int channame = static_cast<int>(myParms.evalChan(inputs));
+	bool transrows = myParms.evalTransrows(inputs);
+	CoordMenuItems coord = myParms.evalCoord(inputs);
 
 	mySize.width = top->textureDesc.width;
 	mySize.height = top->textureDesc.height;
@@ -266,84 +245,7 @@ SpectrumTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void*)
 void
 SpectrumTOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_StringParameter p;
-		p.name = "Mode";
-		p.label = "Mode";
-		p.page = "Spectrum";
-		p.defaultValue = "dft";
-		std::array<const char*, 2> Names =
-		{
-			"dft",
-			"idft"
-		};
-		std::array<const char*, 2> Labels =
-		{
-			"Discrete Fourier Transform",
-			"Inverse Discrete Fourier Transform"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_StringParameter p;
-		p.name = "Coord";
-		p.label = "Coordinate System";
-		p.page = "Spectrum";
-		p.defaultValue = "polar";
-		std::array<const char*, 2> Names =
-		{
-			"polar",
-			"cartesian"
-		};
-		std::array<const char*, 2> Labels =
-		{
-			"Polar (Magnitude, Phase)",
-			"Cartesian (Real, Imaginary)"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_StringParameter p;
-		p.name = "Chan";
-		p.label = "Channel";
-		p.page = "Spectrum";
-		p.defaultValue = "r";
-		std::array<const char*, 4> Names =
-		{
-			"r",
-			"g",
-			"b",
-			"a"
-		};
-		std::array<const char*, 4> Labels =
-		{
-			"R",
-			"G",
-			"B",
-			"A"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Transrows";
-		p.label = "Transform Rows";
-		p.page = "Spectrum";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void 
@@ -357,14 +259,14 @@ SpectrumTOP::getErrorString(OP_String* error, void*)
 bool
 SpectrumTOP::checkInputTop(const OP_TOPInput* topInput, const OP_Inputs* input)
 {
-	ModeMenuItems myMode = static_cast<ModeMenuItems>(input->getParInt("Mode"));
+	ModeMenuItems myMode = myParms.evalMode(input);
 	if (myMode == ModeMenuItems::idft && topInput->textureDesc.pixelFormat != OP_PixelFormat::RG32Float)
 	{
 		myError = "Inverse transform requires a 32-bit float RG texture.";
 		return false;
 	}
 
-	ChanMenuItems myChan = static_cast<ChanMenuItems>(input->getParInt("Chan"));
+	ChanMenuItems myChan = myParms.evalChan(input);
 	switch (topInput->textureDesc.pixelFormat)
 	{
 		case OP_PixelFormat::A8Fixed:

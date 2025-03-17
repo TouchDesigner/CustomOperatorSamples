@@ -13,6 +13,7 @@
 */
 
 #include "DistanceTransformTOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <opencv2/core.hpp>
@@ -114,12 +115,12 @@ DistanceTransformTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* input
 	info.textureDesc.pixelFormat = TD::OP_PixelFormat::Mono32Float;
 	info.colorBufferIndex = 0;
 
-	int distanceType = getType(static_cast<DistancetypeMenuItems>(inputs->getParInt("Distancetype")));
-	int maskSize = getMask(static_cast<MasksizeMenuItems>(inputs->getParInt("Masksize")));
+	int distanceType = getType(myParms.evalDistancetype(inputs));
+	int maskSize = getMask(myParms.evalMasksize(inputs));
 
 	distanceTransform(*myFrame, *myFrame, distanceType, maskSize);
 	
-	bool donormalize = inputs->getParInt("Normalize") ? true : false;
+	bool donormalize = myParms.evalNormalize(inputs);
 
 	if (donormalize)
 		normalize(*myFrame, *myFrame, 0, 1.0, NORM_MINMAX);
@@ -130,88 +131,7 @@ DistanceTransformTOP::execute(TD::TOP_Output* output, const TD::OP_Inputs* input
 void
 DistanceTransformTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	{
-		TD::OP_StringParameter p;
-		p.name = "Distancetype";
-		p.label = "Distance Type";
-		p.page = "Transform";
-		p.defaultValue = "L1";
-		std::array<const char*, 3> Names =
-		{
-			"L1",
-			"L2",
-			"C"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"L1",
-			"L2",
-			"C"
-		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_StringParameter p;
-		p.name = "Masksize";
-		p.label = "Mask Size";
-		p.page = "Transform";
-		p.defaultValue = "Three";
-		std::array<const char*, 3> Names =
-		{
-			"Three",
-			"Five",
-			"Precise"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"3x3",
-			"5x5",
-			"Precise"
-		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_NumericParameter p;
-		p.name = "Normalize";
-		p.label = "Normalize";
-		p.page = "Transform";
-		p.defaultValues[0] = false;
-
-		TD::OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
-
-	{
-		TD::OP_StringParameter p;
-		p.name = "Channel";
-		p.label = "Channel";
-		p.page = "Transform";
-		p.defaultValue = "R";
-		std::array<const char*, 4> Names =
-		{
-			"R",
-			"G",
-			"B",
-			"A"
-		};
-		std::array<const char*, 4> Labels =
-		{
-			"R",
-			"G",
-			"B",
-			"A"
-		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == TD::OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }
 
 void
@@ -242,7 +162,7 @@ DistanceTransformTOP::inputTopToMat(const TD::OP_Inputs* in)
 		return;
 	}
 
-	int chan = in->getParInt("Channel");
+	int chan = (int)myParms.evalChannel(in);
 
 	TD::OP_TOPInputDownloadOptions	opts;
 	opts.verticalFlip = true;
