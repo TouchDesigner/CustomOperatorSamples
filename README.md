@@ -85,13 +85,13 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ### Referencing OpenCV libraries
 
-_Some projects make use of various OpenCV modules. Which OpenCV release is required depends on the version used by the creator. Since TouchDesigner 2020.44130, OpenCV 4.5’s libraries are included in the TouchDesigner Installfolder at Samples\CPlusPlus\3rdParty_. The solutions using OpenCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via Windows' _System Properties_ dialog. 
+_Some projects make use of various OpenCV modules. Which OpenCV release is required depends on the version used by the creator. Since TouchDesigner 2020.44130, OpenCV libraries are included in the TouchDesigner Install folder at Samples\CPlusPlus\3rdParty_. The solutions using OpenCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via Windows' _System Properties_ dialog. 
 
 ![alt_text](images/image10.png "system variabes")
 
 #### Using external OpenCV libraries
 
-If you want to use a different OpenCV version, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling-OpenCV-with-CUDA-support) to compile OpenCV with CUDA support.
+If you want to use a different OpenCV version than what ships with TouchDesigner, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling-OpenCV-with-CUDA-support) to compile OpenCV with CUDA support.
 
 *   Download the precompiled version of the OpenCV windows libraries from here: [https://github.com/opencv/opencv/releases](https://github.com/opencv/opencv/releases) - there are self extracting archives available 
 *   Extract to a location on your computer
