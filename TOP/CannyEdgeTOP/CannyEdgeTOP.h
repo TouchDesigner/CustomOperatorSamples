@@ -35,7 +35,7 @@ namespace GpuUtils
 }
 
 /*
-This example implements a TOP exposing the canny edge detector using openCV's cuda functionallity.
+This example implements a TOP exposing the canny edge detector using OpenCV's CUDA functionallity.
 
 It takes the following parameters:
 		- Low Threshold:    First threshold for the hysteresis procedure.

@@ -6,7 +6,7 @@ For more information on the parameters check
 https://docs.opencv.org/3.4/d9/d30/classcv_1_1cuda_1_1FarnebackOpticalFlow.html
 
 ## Prerequisites
-Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the openCV include and library folder.
+Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the OpenCV include and library folder.
 
 ## Parameters
 * **Num Levels**:	Number of pyramid layers including the intial image.

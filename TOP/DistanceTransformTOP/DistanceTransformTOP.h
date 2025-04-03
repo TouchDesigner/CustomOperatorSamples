@@ -23,7 +23,7 @@
 #include <string>
 
 /*
-This example implements a TOP to calculate the distance transform using openCV.
+This example implements a TOP to calculate the distance transform using OpenCV.
 
 It takes the following parameters:
 	- Distance Type:        One of [L1, L2, C], which determines how to calculate the distance.
