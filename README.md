@@ -2,9 +2,7 @@
 
 We hope these custom operators can be a starting point to developing for anybody including members of the community only beginning with c++ development.
 
-A collection of these operators can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. Others, which depend on more external libraries can be found on the Derivative github here: [https://github.com/TouchDesigner](https://github.com/TouchDesigner)
-
-For discussions around this repository, please use our [forum](https://forum.derivative.ca).
+A few basic examples can be found in the Samples/CPlusPlus folder of the TouchDesigner Installation. This repository contains more complex examples, some of which depend on more external libraries.
 
 > Tip: You can kick-start your custom operators projects by using the Cpp Pars Template Generator (cppParsTemplateGen) available in TouchDesigner's Palette to generate a Parameters class that will mimic the custom parameters of a reference COMP. For more informations, please [visit the wiki](https://docs.derivative.ca/Palette:cppParsTemplateGeni).
 
