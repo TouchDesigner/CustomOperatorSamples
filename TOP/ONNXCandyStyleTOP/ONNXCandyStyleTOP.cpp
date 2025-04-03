@@ -187,7 +187,8 @@ ONNXCandyStyleTOP::allocCUDAAndValue(void** cudaMemory, OrtValue** value, size_t
 		return false;
 	}
 
-	status = myORT->CreateTensorWithDataAsOrtValue(memoryInfo, *cudaMemory, size, shape.data(), shape.size(), ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, value);
+	status = myORT->CreateTensorWithDataAsOrtValue(memoryInfo, *cudaMemory, size, shape.data(), shape.size(),
+													ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, value);
 	myORT->ReleaseMemoryInfo(memoryInfo);
 	if (!checkORTStatus(status, &extraErr) || !*value)
 	{
@@ -371,7 +372,8 @@ ONNXCandyStyleTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void* re
 		return;
 	}
 
-	auto cudaRes = doCopyRGBATToRGBPlanar(info.textureDesc.width, info.textureDesc.height, info.textureDesc.depth, info.textureDesc.texDim, myInputSurface, (float*)mySourceData, myStream);
+	auto cudaRes = doCopyRGBATToRGBPlanar(info.textureDesc.width, info.textureDesc.height,
+											info.textureDesc.depth, info.textureDesc.texDim, myInputSurface, (float*)mySourceData, myStream);
 
 	OrtStatus* status = nullptr;
 
@@ -387,7 +389,16 @@ ONNXCandyStyleTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void* re
 		return;
 	}
 
-	cudaRes = doCopyRGBPlanarToRGBA(info.textureDesc.width, info.textureDesc.height, info.textureDesc.depth, info.textureDesc.texDim, (float*)myDestData, myOutputSurface, myStream);
+	// Since the results of this model is a texture, we can copy the results directly back into the output texture.
+	cudaRes = doCopyRGBPlanarToRGBA(info.textureDesc.width, info.textureDesc.height, info.textureDesc.depth, info.textureDesc.texDim,
+									(float*)myDestData, myOutputSurface, myStream);
+
+	// If the results from the model are something that should instead be accessed on the CPU,
+	// such as face or skeleton tracking points, you will need to issue a download from 'myDestData'.
+	// to CPU memory via cudaMemcpyAsync(). Use 'myStream' as the stream argument.
+	// You'll either need to call cudaStreamSynchronize(myStream) to ensure the data is availalbe.
+	// Or to avoid stalls, you could insert CUDA events after issuing the download, and only
+	// consume the data once that event has occured.
 
 	myContext->endCUDAOperations(nullptr);
 }
