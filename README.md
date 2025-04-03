@@ -33,6 +33,7 @@ A few basic examples can be found in the Samples/CPlusPlus folder of the TouchDe
   * [OpticalFlowCPUTOP](TOP/OpticalFlowCPUTOP)
   * [OpticalFlowGPUTOP](TOP/OpticalFlowGPUTOP)
   * [SpectrumTOP](TOP/SpectrumTOP)
+  * [ONNXCandyStyleTOP](TOP/ONNXCandyStyleTOP)
 * **CHOP Family**
   * [FilterCHOP](CHOP/BasicFilterCHOP)
   * [GeneratorCHOP](CHOP/BasicGeneratorCHOP)
