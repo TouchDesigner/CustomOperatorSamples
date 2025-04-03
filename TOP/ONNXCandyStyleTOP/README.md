@@ -4,6 +4,7 @@ This example implements loading an ONNX based AI model using the [ONNX Runtime](
 ## Prerequisites
 * Requires TouchDesigner 2023.12308 or later, due to the onnx-runtime.dll version bundled with the installer.
   * Until a public build is released, 2023.12308 is available [here](https://www.dropbox.com/scl/fi/zl5vdxi9eufdiocv2592v/TouchDesigner.2023.12308.exe?rlkey=92hvqbytiyybc9lye2xnfh2g4&dl=0).
+* Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
 * It requires ONNX runtime version 1.18.1, for CUDA 11. Newer ONNX runtime releases are only for CUDA 12.
   * The project currently looks for the headers/libs for ONNX in C:/Program Files/onnxruntime
   * Download 1.18.1 runtime from the [ONNX Github](https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-win-x64-gpu-1.18.1.zip). Unzip them into C:/Program Files/onnxruntime so the directories C:/Program Files/onnxruntime/lib and C:/Program Files/onnxruntime/include exist with the .lib and .h files.
