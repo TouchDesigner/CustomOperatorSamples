@@ -1,5 +1,5 @@
 # ONNX Candy Style TOP
-This example implements loading an ONNX based AI model using the [ONNX Runtime](https://onnxruntime.ai)
+This example implements loading an ONNX based AI model using the [ONNX Runtime](https://onnxruntime.ai). It uses CUDA to execute the model.
 
 ## Prerequisites
 * Requires TouchDesigner 2023.12308, due to the onnx-runtime.dll version bundled with the installer.
