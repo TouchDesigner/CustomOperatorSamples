@@ -14,3 +14,7 @@ images/
 CannyEdgeTOP/
 OpticalFlowCPUTOP/
 SpectrumTOP/
+ONNXCandyStyleTOP/
+
+**/Backup/
+Examples.*.toe
