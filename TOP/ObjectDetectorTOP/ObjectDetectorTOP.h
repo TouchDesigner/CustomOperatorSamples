@@ -15,6 +15,7 @@
 #define __ObjectDetectorTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <vector>
 #include <string>
@@ -111,6 +112,7 @@ private:
 	int					myExecuteCount;
 	TD::TOP_Context* myContext;
 	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
+	Parameters	myParms;
 };
 
 #endif

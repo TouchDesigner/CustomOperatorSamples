@@ -13,18 +13,12 @@
 */
 
 #include "BasicGeneratorCHOP.h"
+#include "Parameters.h"
 
 #include <string>
 #include <array>
 #include <cassert>
 #include <cmath>
-
-enum class OperationMenuItems
-{
-	Add,
-	Multiply,
-	Power
-};
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -125,11 +119,11 @@ BasicGeneratorCHOP::execute(CHOP_Output* output,
 							  void*)
 {
 	// Get all Parameters
-	bool	applyScale = inputs->getParInt("Applyscale") ? true : false;
-	double	scale = inputs->getParDouble("Scale");
-	OperationMenuItems		operation = static_cast<OperationMenuItems>(inputs->getParInt("Operation"));
+	bool	applyScale = myParms.evalApplyscale(inputs);
+	double	scale = myParms.evalScale(inputs);
+	OperationMenuItems		operation = myParms.evalOperation(inputs);
 
-	inputs->enablePar("Scale", applyScale);
+	inputs->enablePar(ScaleName, applyScale);
 
 	// Get length and channels from the output since they first need to be set to the current size
 	int		length = output->numSamples;
@@ -171,89 +165,5 @@ BasicGeneratorCHOP::execute(CHOP_Output* output,
 void
 BasicGeneratorCHOP::setupParameters(OP_ParameterManager* manager, void*)
 {
-	{
-		OP_NumericParameter p;
-		p.name = "Length";
-		p.label = "Length";
-		p.page = "Generator Basic";
-		p.defaultValues[0] = 10;
-		p.minSliders[0] = 1.0;
-		p.maxSliders[0] = 50.0;
-		p.minValues[0] = 1.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = true;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Numberofchannels";
-		p.label = "Number Of Channels";
-		p.page = "Generator Basic";
-		p.defaultValues[0] = 10;
-		p.minSliders[0] = 0.0;
-		p.maxSliders[0] = 50.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendInt(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Applyscale";
-		p.label = "Apply Scale";
-		p.page = "Generator Basic";
-		p.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Scale";
-		p.label = "Scale";
-		p.page = "Generator Basic";
-		p.defaultValues[0] = 1.0;
-		p.minSliders[0] = -10.0;
-		p.maxSliders[0] = 10.0;
-		p.minValues[0] = 0.0;
-		p.maxValues[0] = 1.0;
-		p.clampMins[0] = false;
-		p.clampMaxes[0] = false;
-		OP_ParAppendResult res = manager->appendFloat(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_StringParameter p;
-		p.name = "Operation";
-		p.label = "Operation";
-		p.page = "Generator Basic";
-		p.defaultValue = "Add";
-		std::array<const char*, 3> Names =
-		{
-			"Add",
-			"Multiply",
-			"Power"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"Add",
-			"Multiply",
-			"Power"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
-
-		assert(res == OP_ParAppendResult::Success);
-	}
+	myParms.setup(manager);
 }

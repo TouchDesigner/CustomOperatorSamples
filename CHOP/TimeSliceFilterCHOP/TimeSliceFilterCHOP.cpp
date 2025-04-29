@@ -13,17 +13,12 @@
 */
 
 #include "TimeSliceFilterCHOP.h"
+#include "Parameters.h"
 
 #include <cassert>
 #include <string>
 #include <array>
 
-enum class OperationMenuItems
-{
-	Max,
-	Min,
-	Average
-};
 
 class FilterValues
 {
@@ -205,7 +200,7 @@ TimeSliceFilterCHOP::execute(CHOP_Output* output,
 							  const TD::OP_Inputs* inputs,
 							  void*)
 {
-	OperationMenuItems operation = static_cast<OperationMenuItems>(inputs->getParInt("Operation"));
+	OperationMenuItems operation = myParms.evalOperation(inputs);
 
 	int numInputs = inputs->getNumInputs();
 	// Since inputs connected might be out of order we need to loop until we get as many inputs as numInputs
@@ -239,44 +234,14 @@ TimeSliceFilterCHOP::execute(CHOP_Output* output,
 void
 TimeSliceFilterCHOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 {
-	{
-		OP_StringParameter p;
-		p.name = "Operation";
-		p.label = "Operation";
-		p.page = "Filter";
-		p.defaultValue = "Max";
-		std::array<const char*, 3> Names =
-		{
-			"Max",
-			"Min",
-			"Average"
-		};
-		std::array<const char*, 3> Labels =
-		{
-			"Max",
-			"Min",
-			"Average"
-		};
-		OP_ParAppendResult res = manager->appendMenu(p, int(Names.size()), Names.data(), Labels.data());
+	myParms.setup(manager);
 
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter p;
-		p.name = "Reset";
-		p.label = "Reset";
-		p.page = "Filter";
-		OP_ParAppendResult res = manager->appendPulse(p);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
 }
 
 void
 TimeSliceFilterCHOP::pulsePressed(const char* name, void*)
 {
-	if (!strcmp(name, "Reset"))
+	if (!strcmp(name, ResetName))
 	{
 		for (FilterValues& value : myValues)
 		{

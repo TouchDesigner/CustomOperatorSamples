@@ -16,6 +16,7 @@
 #define __TimeSliceFilterCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 #include <vector>
 
 class FilterValues;
@@ -54,6 +55,7 @@ public:
 
 private:
 	std::vector<FilterValues>	myValues;
+	Parameters myParms;
 };
 
 #endif

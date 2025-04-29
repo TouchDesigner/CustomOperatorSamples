@@ -16,44 +16,14 @@
 #define __DistanceTransformTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <string>
 
-#pragma region Menus
-enum class DistancetypeMenuItems
-{
-	L1,
-	L2,
-	C
-};
-
-enum class MasksizeMenuItems
-{
-	Three,
-	Five,
-	Precise
-};
-
-enum class DownloadtypeMenuItems
-{
-	Delayed,
-	Instant
-};
-
-enum class ChannelMenuItems
-{
-	R,
-	G,
-	B,
-	A
-};
-
-#pragma endregion
-
 /*
-This example implements a TOP to calculate the distance transform using openCV.
+This example implements a TOP to calculate the distance transform using OpenCV.
 
 It takes the following parameters:
 	- Distance Type:        One of [L1, L2, C], which determines how to calculate the distance.
@@ -110,11 +80,11 @@ private:
 		}
 	}
 
-	cv::Mat*		myFrame;
-
+	cv::Mat*			myFrame;
 	int					myExecuteCount;
-	TD::TOP_Context* myContext;
+	TD::TOP_Context*	myContext;
 	TD::OP_SmartRef<TD::OP_TOPDownloadResult> myPrevDownRes;
+	Parameters			myParms;
 };
 
 #endif

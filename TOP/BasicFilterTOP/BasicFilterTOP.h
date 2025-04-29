@@ -15,6 +15,7 @@
 #define __BasicFilterTOP__
 
 #include "TOP_CPlusPlusBase.h"
+#include "Parameters.h"
 
 #include <thread>
 #include <condition_variable>
@@ -69,6 +70,7 @@ private:
 	std::queue<ThreadManager*>						myThreadQueue;
 	int												myExecuteCount;
 	bool											myMultiThreaded;
+	Parameters										myParms;
 };
 
 #endif

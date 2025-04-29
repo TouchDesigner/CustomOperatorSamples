@@ -13,10 +13,12 @@
   <ItemGroup>
     <ClInclude Include="CPlusPlus_Common.h" />
     <ClInclude Include="DistanceTransformTOP.h" />
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TOP_CPlusPlusBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DistanceTransformTOP.cpp" />
+    <ClCompile Include="Parameters.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F5BEECD-FA36-459F-91B8-BB481A67EF44}</ProjectGuid>

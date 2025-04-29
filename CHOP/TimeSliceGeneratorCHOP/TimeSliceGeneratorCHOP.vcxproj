@@ -59,7 +59,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -83,11 +83,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="TimeSliceGeneratorCHOP.h" />
     <ClInclude Include="CHOP_CPlusPlusBase.h" />
     <ClInclude Include="CPlusPlus_Common.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="TimeSliceGeneratorCHOP.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

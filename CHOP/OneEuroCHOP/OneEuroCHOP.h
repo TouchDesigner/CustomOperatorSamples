@@ -15,6 +15,7 @@
 #define __OneEuroCHOP__
 
 #include "CHOP_CPlusPlusBase.h"
+#include "Parameters.h"
 #include <vector>
 
 class OneEuroImpl;
@@ -61,6 +62,7 @@ private:
 	void				handleParameters(const TD::OP_Inputs*, const OP_CHOPInput*);
 
 	std::vector<OneEuroImpl*>	myFiltersPerChannel;
+	Parameters myParms;
 };
 
 #endif

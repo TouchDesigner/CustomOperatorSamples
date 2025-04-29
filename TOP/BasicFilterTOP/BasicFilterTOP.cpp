@@ -13,6 +13,7 @@
 */
 
 #include "BasicFilterTOP.h"
+#include "Parameters.h"
 
 #include "ThreadManager.h"
 #include "FilterWork.h"
@@ -116,8 +117,8 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 		return;
 
 
-	bool doDither = inputs->getParInt("Dither");
-	int bitsPerColor = inputs->getParInt("Bitspercolor");
+	bool doDither = myParms.evalDither(inputs);
+	int bitsPerColor = myParms.evalBitspercolor(inputs);
 	myPrevDownRes = std::move(downRes);
 	if (myPrevDownRes)
 	{
@@ -185,7 +186,7 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 	}
 	// myPrevDownRes = std::move(downRes);
 
-	bool threaded = inputs->getParInt("Multithreaded");
+	bool threaded = myParms.evalMultithreaded(inputs);
 
 	if (threaded & !myMultiThreaded)
 		switchToMultiThreaded();
@@ -197,47 +198,7 @@ BasicFilterTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void* r
 void 
 BasicFilterTOP::setupParameters(OP_ParameterManager* manager, void* reserved)
 {
-	{
-		OP_NumericParameter np;
-		np.name = "Bitspercolor";
-		np.label = "Bits per Color"; 
-		np.page = "Filter";
-		np.defaultValues[0] = 2;
-		np.minSliders[0] = 1.0;
-		np.maxSliders[0] = 8.0;
-		np.minValues[0] = 1.0;
-		np.maxValues[0] = 8.0;
-		np.clampMins[0] = true;
-		np.clampMaxes[0] = true;
-		OP_ParAppendResult res = manager->appendInt(np);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter np;
-		np.name = "Dither";
-		np.label = "Dither";
-		np.page = "Filter";
-		np.defaultValues[0] = true;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
-	{
-		OP_NumericParameter np;
-		np.name = "Multithreaded";
-		np.label = "Multithreaded";
-		np.page = "Filter";
-		np.defaultValues[0] = false;
-
-		OP_ParAppendResult res = manager->appendToggle(np);
-
-		assert(res == OP_ParAppendResult::Success);
-	}
-
+	myParms.setup(manager);
 }
 
 void 
