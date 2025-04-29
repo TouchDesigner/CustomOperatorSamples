@@ -2,3 +2,15 @@
 **/Debug/
 **/.vs/
 *.user
+
+**/.vscode/
+**/build/
+**/plugin/
+
+SOP/
+DAT/
+images/
+
+CannyEdgeTOP/
+OpticalFlowCPUTOP/
+SpectrumTOP/
