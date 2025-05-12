@@ -15,7 +15,7 @@
 #ifndef __BasicFilterCHOP__
 #define __BasicFilterCHOP__
 
-#include "CPlusPlus_Common.h"
+#include "CHOP_CPlusPlusBase.h"
 #include "Parameters.h"
 
 using namespace TD;

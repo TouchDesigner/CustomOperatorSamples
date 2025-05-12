@@ -9,7 +9,7 @@ Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#re
 ## Parameters
 * **Classifier**:   A path to a .xml pretrained classifier. It can be either Haar or 
 		LBP. OpenCV includes pretrained classiffiers and can be found in 
-		opencv/sources/data.
+		opencv/sources/data (/opt/homebrew/Cellar/opencv/4.11.0_1/share/opencv4 - in MacOS).
 * **Scale Factor**: Specifies how much the image size is reduced at each image scale.
 * **Min Neighbors**:    How many neighbors each candidate rectangle should have to retain it.
 * **Limit Object Size**:    If on, limit the size of the detected objects.
