@@ -1,9 +1,7 @@
 #pragma once
 
 #include<string>
-
-class TD::OP_Inputs;
-class TD::OP_ParameterManager;
+#include "CPlusPlus_Common.h"
 
 #pragma region ParNames and ParLabels
 

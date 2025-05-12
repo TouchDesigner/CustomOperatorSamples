@@ -7,14 +7,5 @@
 **/build/
 **/plugin/
 
-SOP/
-DAT/
-images/
-
-CannyEdgeTOP/
-OpticalFlowCPUTOP/
-SpectrumTOP/
-ONNXCandyStyleTOP/
-
 **/Backup/
-Examples.*.toe
+*.toe

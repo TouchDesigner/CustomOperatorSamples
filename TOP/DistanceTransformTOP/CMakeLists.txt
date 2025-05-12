@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(DistanceTransform)
+project(DistanceTransform) # the output name of the plugin
 
 
 if (APPLE)
@@ -7,8 +7,9 @@ if (APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++")
 endif()
 
+# require the OpenCV library
 find_package(OpenCV REQUIRED)
-
+# include the OpenCV headers
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 set(OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugin)
@@ -55,4 +56,4 @@ endfunction(BuiltCustomOp)
 ###
 
 
-BuiltCustomOp(${PROJECT_NAME} "DistanceTransformTOP.cpp" "${OpenCV_LIBS}")
+BuiltCustomOp(${PROJECT_NAME} "${PROJECT_NAME}TOP.cpp" "${OpenCV_LIBS}") # the name of the entry file and a link to the OpenCV cmake libraries

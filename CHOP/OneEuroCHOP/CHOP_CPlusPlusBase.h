@@ -403,5 +403,6 @@ static_assert(offsetof(CHOP_Output, startIndex) == 12, "Incorrect Alignment");
 static_assert(offsetof(CHOP_Output, names) == 16, "Incorrect Alignment");
 static_assert(offsetof(CHOP_Output, channels) == 24, "Incorrect Alignment");
 static_assert(sizeof(CHOP_Output) == 112, "Incorrect Size");
-#endif
 }; // namespace TD
+
+#endif

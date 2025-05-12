@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(OneEuroFilter)
+project(OneEuroFilter) # the output name of the plugin
 
 
 if (APPLE)
@@ -52,4 +52,4 @@ endfunction(BuiltCustomOp)
 ###
 
 
-BuiltCustomOp(${PROJECT_NAME} "OneEuroCHOP.cpp" "")
+BuiltCustomOp(${PROJECT_NAME} "${PROJECT_NAME}CHOP.cpp" "") # the name of the entry file

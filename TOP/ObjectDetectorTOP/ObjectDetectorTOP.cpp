@@ -244,6 +244,10 @@ ObjectDetectorTOP::getInfoCHOPChan(int32_t index, TD::OP_InfoCHOPChan* chop, voi
 				chop->value = static_cast<float>(myObjects.at(obj - 1).height);
 			break;
 		}
+		case InfoChopChan::Size:
+		{
+			break;
+		}
 	}
 
 	const std::string& tmp = oss.str();
