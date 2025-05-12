@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(BasicGenerator) # the output name of the plugin
 
+message(STATUS "** Building ${PROJECT_NAME} CHOP **")
 
 if (APPLE)
 	set(CMAKE_CXX_STANDARD 17)

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(Sprinkle) # the output name of the Plugin
 
+message(STATUS "** Building ${PROJECT_NAME} SOP **")
 
 if (APPLE)
 	set(CMAKE_CXX_STANDARD 17)
