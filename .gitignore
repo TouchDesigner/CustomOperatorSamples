@@ -2,3 +2,10 @@
 **/Debug/
 **/.vs/
 *.user
+
+**/.vscode/
+**/build/
+**/plugin/
+
+**/Backup/
+*.toe

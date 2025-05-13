@@ -4,7 +4,7 @@
 #include <vector>
 #include "CPlusPlus_Common.h"
 
-class TD::Position;
+// class TD::Position;
 class Node;
 
 class RandomPointsBuffer

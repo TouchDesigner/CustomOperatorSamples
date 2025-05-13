@@ -249,22 +249,31 @@ SpiralSOP::calculateOutputPoints()
 	myPointPos.resize(myNumPoints);
 	myNormals.resize(myNumPoints);
 
+	std::vector<TD::Position>::iterator pointIt = myPointPos.begin();
+	std::vector<TD::Position>::const_iterator cPointIt = myPointPos.cbegin();
+	std::vector<TD::Vector>::iterator normIt = myNormals.begin();
+
 	if (myOutput == OutputgeometryMenuItems::Trianglestrip)
 	{
 
 		int halfPts = myNumPoints / 2;	// myNumPoints is divisible by 2 when triangle strip
-		calculateSpiralPoints(myPointPos.begin(), halfPts);
-		calculateNormals(myNormals.begin(), myPointPos.cbegin(), halfPts);
+		calculateSpiralPoints(pointIt, halfPts);
+		calculateNormals(normIt, cPointIt, halfPts);
 
 		myBotRad -= myStripWidth;
 		myTopRad -= myStripWidth;
-		calculateSpiralPoints(myPointPos.begin() + halfPts, halfPts);
-		calculateNormals(myNormals.begin() + halfPts, myPointPos.cbegin() + halfPts, halfPts);
+
+		std::vector<TD::Position>::iterator pointHalfIt = myPointPos.begin() + halfPts;
+		std::vector<TD::Position>::const_iterator cPointHalfIt = myPointPos.cbegin() + halfPts;
+		std::vector<TD::Vector>::iterator normHalfIt = myNormals.begin() + halfPts;
+
+		calculateSpiralPoints(pointHalfIt, halfPts);
+		calculateNormals(normHalfIt, cPointHalfIt, halfPts);
 	}
 	else
 	{
-		calculateSpiralPoints(myPointPos.begin(), myNumPoints);
-		calculateNormals(myNormals.begin(), myPointPos.cbegin(), myNumPoints);
+		calculateSpiralPoints(pointIt, myNumPoints);
+		calculateNormals(normIt, cPointIt, myNumPoints);
 	}
 }
 
