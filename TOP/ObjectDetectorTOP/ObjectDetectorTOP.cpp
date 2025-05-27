@@ -304,7 +304,7 @@ ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, TD::OP_Inf
 			entries->values[4]->setString(buffer);
 			snprintf(buffer, sizeof(buffer), "%d", myObjects.at(obj).width);
 			entries->values[5]->setString(buffer);
-			sprintf_s(buffer, "%d", myObjects.at(obj).height);
+			snprintf(buffer, sizeof(buffer), "%d", myObjects.at(obj).height);
 			entries->values[6]->setString(buffer);
 		}
 	}
