@@ -296,13 +296,13 @@ ObjectDetectorTOP::getInfoDATEntries(int32_t index, int32_t nEntries, TD::OP_Inf
 			int obj = index - 1;
 			char buffer[64];
 			entries->values[1]->setString("1");\
-			sprintf_s(buffer, "%f", myLevelWeights.at(obj));
+			snprintf(buffer, sizeof(buffer), "%f", myLevelWeights.at(obj));
 			entries->values[2]->setString(buffer);
-			sprintf_s(buffer, "%d", myObjects.at(obj).x);
+			snprintf(buffer, sizeof(buffer), "%d", myObjects.at(obj).x);
 			entries->values[3]->setString(buffer);
-			sprintf_s(buffer, "%d", myObjects.at(obj).y);
+			snprintf(buffer, sizeof(buffer), "%d", myObjects.at(obj).y);
 			entries->values[4]->setString(buffer);
-			sprintf_s(buffer, "%d", myObjects.at(obj).width);
+			snprintf(buffer, sizeof(buffer), "%d", myObjects.at(obj).width);
 			entries->values[5]->setString(buffer);
 			sprintf_s(buffer, "%d", myObjects.at(obj).height);
 			entries->values[6]->setString(buffer);
