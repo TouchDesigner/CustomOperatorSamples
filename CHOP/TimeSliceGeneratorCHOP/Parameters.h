@@ -2,9 +2,6 @@
 
 #include<string>
 
-class TD::OP_Inputs;
-class TD::OP_ParameterManager;
-
 #pragma region ParNames and ParLabels
 
 // Names of the parameters

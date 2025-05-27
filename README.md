@@ -9,15 +9,21 @@ A few basic examples can be found in the Samples/CPlusPlus folder of the TouchDe
 * [List of Operators](#Operators)
 * [Compiling Custom Operators](#Compiling-Custom-Operators)
   * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
+  * [Installing CMake (Cross Platform)](#installing-cmake-cross-platform)
+    * [MacOS](#macos)
   * [Installing CUDA Toolkit](#Installing-the-CUDA-Toolkit)
     * [Reference CUDA in VS](#Referencing-CUDA-libraries)
   * [Referencing OpenCV in VS](#Referencing-OpenCV-libraries)
-    * [Using external OpenCV libraries](#Using-external-OpenCV-libraries)
+    * [Windows](#windows)
+    * [MacOS (CMake)](#macos-cmake)
+    * [Using external OpenCV libraries (Windows)](#using-external-opencv-libraries-windows)
+    * [Using external OpenCV libraries (MacOS CMake)](#using-external-opencv-libraries-macos---cmake)
 * [Compiling OpenCV with CUDA support](#Compiling-OpenCV-with-CUDA-support)
   * [Prerequisites](#Prerequisites)
-  * [Create OpenCV build files](#Generating-OpenCV-build-files-with-CMake)
+  * [Create OpenCV build files (Windows)](#generating-opencv-build-files-with-cmake-windows)
 * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
 * [Fixes for OpenCV or CUDA version updates](#Fixes-for-OpenCV-or-CUDA-version-updates)
+* [Building Projects using CMake (MacOS)](#building-projects-using-cmake-macos)
 * [Loading Custom Operators in TouchDesigner](#Loading-Custom-Operators-in-TouchDesigner)
 
 ## Operators
@@ -55,7 +61,7 @@ A few basic examples can be found in the Samples/CPlusPlus folder of the TouchDe
 
 This text should be a small guide to getting started with compiling custom operators that can be found on github or elsewhere as pure source code. Often setting up your environment is the most difficult step followed by making accessible all libraries that might be necessary for successfully compiling other’s projects.
 
-### Installing Visual Studio Community Edition
+### Installing Visual Studio Community Edition (Windows only)
 
 *   Download the latest Visual Studio Community Edition from: [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/)
 *   Start the installation process
@@ -63,7 +69,18 @@ This text should be a small guide to getting started with compiling custom opera
 
 ![alt_text](images/image3.png "visual studio 2019 install options")
 
-### Installing the CUDA Toolkit
+### Installing CMake (Cross Platform)
+
+[CMake](https://cmake.org/) is a cross platform build system that allows you to compile the same code base on both Windows and MacOS. 
+
+#### MacOS
+
+The easiest way to install CMake is via [Brew](https://brew.sh/). Once `brew` is installed and setup, you can install `cmake` by running:
+```bash
+% brew install cmake
+```
+
+### Installing the CUDA Toolkit (Windows only)
 
 _For some of the projects a CUDA Development environment is required. Which version much depends on the TouchDesigner version the operator is targeted at. Check [https://docs.derivative.ca/CUDA](https://docs.derivative.ca/CUDA) for more information._
 
@@ -86,11 +103,20 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ### Referencing OpenCV libraries
 
-_Some projects make use of various OpenCV modules. Which OpenCV release is required depends on the version used by the creator. Since TouchDesigner 2020.44130, OpenCV libraries are included in the TouchDesigner Install folder at Samples\CPlusPlus\3rdParty_. The solutions using OpenCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via Windows' _System Properties_ dialog. 
+_Some projects make use of various OpenCV modules. Which OpenCV release is required depends on the version used by the creator. 
+
+#### Windows
+Since TouchDesigner 2020.44130, OpenCV libraries are included in the TouchDesigner Install folder at Samples\CPlusPlus\3rdParty. The solutions using OpenCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via Windows' _System Properties_ dialog. 
 
 ![alt_text](images/image10.png "system variabes")
 
-#### Using external OpenCV libraries
+#### MacOS (CMake)
+The OpenCV libraries included in the TouchDesigner install do not provide the necessary files to include OpenCV in your CMake project. To get the OpenCV library install them via brew:
+```
+% brew install opencv
+```
+
+#### Using external OpenCV libraries (Windows)
 
 If you want to use a different OpenCV version than what ships with TouchDesigner, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling-OpenCV-with-CUDA-support) to compile OpenCV with CUDA support.
 
@@ -111,6 +137,22 @@ If you want to use a different OpenCV version than what ships with TouchDesigner
 
 **Note:** By default, the binaries and libs shipped with TouchDesigner are "Release" binaries. The examples of this repository might fail to compile in the Debug configuration of Visual Studio. If you wish to compile with debug features, you should manually compile OpenCV with CUDA.
 
+#### Using external OpenCV libraries (MacOS - CMake)
+In order to include the OpenCV libraries in your CMake project you need to add the following instruction in your `CMakeLists.txt`
+```cmake
+# require the OpenCV library
+find_package(OpenCV REQUIRED)
+# include the OpenCV headers
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+...
+...
+BuiltCustomOp(${PROJECT_NAME} "${PROJECT_NAME}TOP.cpp" "${OpenCV_LIBS}")
+```
+This commands will search for the libraries in your `$PATH`. If you have installed `opencv` via `brew` (**recommended**) no further steps should be taken.
+
+For a complete example check the `TOP/ObjectDetectorTOP` project
+
+
 ## Compiling OpenCV with CUDA support (Not necessary for building these examples.)
 
 **Note:** This is not necessary for compiling these operators - in fact TouchDesigner comes with all necessary binaries precompiled. We'll leave this guide here as the instructions were hard to find initialy.
@@ -128,7 +170,7 @@ _Some other projects require the OpenCV windows libraries with CUDA modules incl
 *   _Optional:_ for DNN CUDA backend support - [cuDNN](https://developer.nvidia.com/rdp/form/cudnn-download-survey)
 *   Extract and copy the **bin**, **include** and **Lib** directories to your CUDA installation
 
-### Generating OpenCV build files with CMake
+### Generating OpenCV build files with CMake (Windows)
 
 The original instructions ask for running everything in a Command Prompt, arguably it’s easier to create a .bat file.
 
@@ -193,6 +235,27 @@ There should be at least 2 sections in the file where this is referenecd, once u
 ### change the CUDA version
 
 open the `*.vcxproj` file in a texteditor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Here change the version to the one currently used by your TouchDesigner build. This will have to be done in 2 places.
+
+## Building Projects using CMake (MacOS)
+- Navigate into a project folder (ex. `cd CHOP/BasicFilterCHOP`)
+- create a folder called `build` and `cd` into it
+- configure your project using `cmake ..`
+- build running `cmake --build .`
+
+**Full example**
+```bash
+% cd CHOP/BasicFilterCHOP
+% mkdir build && cd build
+% cmake ..
+% cmake --build .
+```
+The compiled plugin can be found in `CHOP/BasicFilterCHOP/plugin`
+
+_Note that you can configure your project using different Generators (such as `Xcode`, `Unix Makefiles`) using the `-G` flag:_
+```bash
+% cmake -G"Unix Makefiles" ..
+```
+_instead of `cmake ..`_
 
 ## Loading Custom Operators in TouchDesigner
 
