@@ -2,10 +2,12 @@
 
 #include<string>
 
-class TD::OP_Inputs;
-class TD::OP_ParameterManager;
-
 #pragma region ParNames and ParLabels
+
+namespace TD {
+	class OP_Inputs;
+	class OP_ParameterManager;
+}
 
 // Names of the parameters
 

@@ -18,7 +18,7 @@
 #include "TOP_CPlusPlusBase.h"
 #include "Parameters.h"
 
-#include <opencv2\core.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <string>
 
