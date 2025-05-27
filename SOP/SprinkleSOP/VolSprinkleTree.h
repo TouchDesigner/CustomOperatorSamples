@@ -20,8 +20,6 @@
 #include "CPlusPlus_Common.h"
 #include "SOP_CPlusPlusBase.h"
 
-class TD::SOP_Output;
-
 struct BoxNode;
 
 class VolSprinkleTree

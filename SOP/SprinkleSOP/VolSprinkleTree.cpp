@@ -64,7 +64,8 @@ VolSprinkleTree::VolSprinkleTree(const TD::OP_SOPInput* sop, BoundingBox& bb)
 			for (float z = bb.minZ; z < bb.maxZ; z += boxSize)
 			{
 				Position origin = Position(x, y, z);
-				processBox(BoundingBox(origin, origin + boxSizeV), sop);
+				BoundingBox boundingBox = BoundingBox(origin, origin + boxSizeV);
+				processBox(boundingBox, sop);
 			}
 		}
 	}
