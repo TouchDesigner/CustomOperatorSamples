@@ -1,5 +1,4 @@
 /* Shared Use License: This file is owned by Derivative Inc. (Derivative)
-/* Shared Use License: This file is owned by Derivative Inc. (Derivative)
 * and can only be used, and/or modified for use, in conjunction with
 * Derivative's TouchDesigner software, and only if you are a licensee who has
 * accepted Derivative's TouchDesigner license or assignment agreement
