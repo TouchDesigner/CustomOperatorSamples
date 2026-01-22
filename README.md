@@ -227,14 +227,14 @@ Use [the following flag](https://stackoverflow.com/a/78576792/11056845) to remed
 
 Some newer TouchDesigner Versions might be delivered with an updated OpenCV and/or require a newer CUDA Version. In this case it is easiest to edit the solutions `*.vcxproj` file. The files are XML strucutred.
 
-### change the OpenCV version
+### Changing the OpenCV version
 
 Open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example OpenCV version 4.5 would reference `opencv_world450.lib` while OpenCV version 4.5.1 would have to reference `opencv_world451.lib`.
 There should be at least 2 sections in the file where this is referenecd, once under `Debug` and once under `Release`.
 
-### change the CUDA version
+### Changing the CUDA version
 
-open the `*.vcxproj` file in a texteditor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Here change the version to the one currently used by your TouchDesigner build. This will have to be done in 2 places.
+Open the `*.vcxproj` file in a text editor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Change the version to match the CUDA Toolkit version you have installed. This should match the major version of CUDA (11, 12 etc.) that the version of TouchDesigner you are using is on. This will have to be done in 2 places.
 
 ## Building Projects using CMake (MacOS)
 - Navigate into a project folder (ex. `cd CHOP/BasicFilterCHOP`)

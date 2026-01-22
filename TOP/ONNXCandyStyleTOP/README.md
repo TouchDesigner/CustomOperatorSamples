@@ -2,14 +2,12 @@
 This example implements loading an ONNX based AI model using the [ONNX Runtime](https://onnxruntime.ai). It uses CUDA to execute the model.
 
 ## Prerequisites
-* Requires TouchDesigner 2023.12308, due to the onnx-runtime.dll version bundled with the installer.
-  * 2023.12308 is available [here](https://www.dropbox.com/scl/fi/zl5vdxi9eufdiocv2592v/TouchDesigner.2023.12308.exe?rlkey=92hvqbytiyybc9lye2xnfh2g4&dl=0).
-  * We hope to find a more general solution to this issue in the near future.
-* Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
-* Requires the CUDA 11.8 Toolkit to be installed.
-* It requires ONNX runtime version 1.18.1, for CUDA 11. Newer ONNX runtime releases are only for CUDA 12.
+* Requires TouchDesigner 2025.32302 or later, installed via the Web Installer. Select 'Public ONNX' as the installer option. This is due to a conflict with the onnx-runtime.dll version Kinet Azure requires.
+* Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine. This example could be changed to use a different engine.
+* Requires the CUDA 12.8 Toolkit to be installed.
+* It requires ONNX runtime version 1.23.2, for CUDA 12.
   * The project currently looks for the headers/libs for ONNX in C:/Program Files/onnxruntime
-  * Download 1.18.1 runtime from the [ONNX Github](https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-win-x64-gpu-1.18.1.zip). Unzip this into C:/Program Files/onnxruntime so the directories exist with the .lib and .h files:
+  * Download 1.23.2 runtime from the [ONNX Github](https://github.com/microsoft/onnxruntime/releases/download/v1.23.2/onnxruntime-win-x64-gpu-1.23.2.zip). Unzip this into C:/Program Files/onnxruntime so the directories exist with the .lib and .h files:
     * C:/Program Files/onnxruntime/lib
     * C:/Program Files/onnxruntime/include
   * The .dll files from this are not used. The .dlls that come with TouchDesigner will be what is loaded.
