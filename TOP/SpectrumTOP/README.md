@@ -11,7 +11,7 @@ Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#re
 This example uses OpenCV 4.11, bundled by default with TouchDesigner 2025.30000 builds.
 
 Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
-Requires CUDA 12.8 Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit).
+Requires CUDA 12.8 Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit-windows-only).
 
 ## Parameters
 * **Transform**:	One of [Image To DFT, DFT To Image], which determines if we calculate the forward or 
