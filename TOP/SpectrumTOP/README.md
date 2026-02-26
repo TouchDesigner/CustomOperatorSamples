@@ -8,8 +8,10 @@ For more information on image Fourier Transforms [read this OpenCV article](http
 
 ## Prerequisites
 Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the OpenCV include and library folder.
+This example uses OpenCV 4.11, bundled by default with TouchDesigner 2025.30000 builds.
 
-Requires the CUDA Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit).
+Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
+Requires CUDA 12.8 Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit).
 
 ## Parameters
 * **Transform**:	One of [Image To DFT, DFT To Image], which determines if we calculate the forward or 

@@ -42,7 +42,8 @@ void
 FillTOPPluginInfo(TOP_PluginInfo* info)
 {
 	// This must always be set to this constant
-	info->apiVersion = TOPCPlusPlusAPIVersion;
+    if (!info->setAPIVersion(TOPCPlusPlusAPIVersion)) 
+			return;
 
 	// Change this to change the executeMode behavior of this plugin.
 	info->executeMode = TOP_ExecuteMode::CUDA;
