@@ -37,7 +37,8 @@ void
 FillTOPPluginInfo(TD::TOP_PluginInfo* info)
 {
 	// This must always be set to this constant
-	info->apiVersion = TD::TOPCPlusPlusAPIVersion;
+	if (!info->setAPIVersion(TD::TOPCPlusPlusAPIVersion)) 
+	  return;
 
 	// Change this to change the executeMode behavior of this plugin.
 	info->executeMode = TD::TOP_ExecuteMode::CUDA;

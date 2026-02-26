@@ -6,7 +6,10 @@ For more information visit: https://docs.opencv.org/3.4/d0/d05/group__cudaimgpro
 
 ## Prerequisites
 Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the OpenCV include and library folder.
+This example uses OpenCV 4.11, bundled by default with TouchDesigner 2025.30000 builds.
 
+Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
+Requires CUDA 12.8 Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit-windows-only).
 ## Parameters
 * **Low Threshold**: Minimum value for the intensity gradient to decide if it is used as a edge.
 * **High Threshold**: Maximum value for the intensity gradient to decide if it is used as a edge.
