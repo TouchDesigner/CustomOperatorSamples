@@ -22,7 +22,7 @@ include_guard(GLOBAL)
 # another version's runtime either fails to load or doesn't match what
 # TouchDesigner uses. Not a cache option on purpose: update it here when
 # TouchDesigner moves to a new CUDA major version.
-set(TD_CUDA_MAJOR_VERSION 12)
+set(TD_CUDA_MAJOR_VERSION 13)
 
 # TouchDesigner only supports CUDA on Windows.
 if(NOT CMAKE_HOST_WIN32)

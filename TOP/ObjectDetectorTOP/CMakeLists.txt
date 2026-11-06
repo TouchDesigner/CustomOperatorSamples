@@ -8,7 +8,7 @@ project(ObjectDetectorTOP LANGUAGES CXX)
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/TouchDesignerCustomOP.cmake)
 
 td_add_custom_op(ObjectDetectorTOP
-	OPENCV_COMPONENTS core imgproc objdetect
+	OPENCV_COMPONENTS core imgproc objdetect xobjdetect
 	SOURCES
 		ObjectDetectorTOP.cpp
 		Parameters.cpp
