@@ -55,8 +55,8 @@
 #   TD_EXECUTABLE             TouchDesigner executable used as the debugger target.
 #                             Empty (default) = derived from TD_INSTALLATION_PATH.
 #   TD_CUDA_ALLOW_UNSUPPORTED_COMPILER
-#                             Pass -allow-unsupported-compiler to nvcc (needed for
-#                             CUDA < 12.4 with newer Visual Studio 2022 toolsets).
+#                             Pass -allow-unsupported-compiler to nvcc (needed when
+#                             Visual Studio is newer than the CUDA Toolkit supports).
 
 include_guard(GLOBAL)
 
@@ -109,13 +109,13 @@ endif()
 # loaded at runtime). Plugins must be compiled against the same OpenCV that
 # TouchDesigner loads. Not a cache option on purpose: update it here when the
 # samples move to a TouchDesigner build with a new OpenCV major version.
-set(TD_OPENCV_MAJOR_VERSION 4)
+set(TD_OPENCV_MAJOR_VERSION 5)
 
 # TouchDesigner build series these samples target (the series that ships the
 # CUDA and OpenCV versions above), as it reads in messages:
 # "the latest TouchDesigner <series> series build". Only used in messages that
 # tell people which installation to point TD_INSTALLATION_PATH at.
-set(TD_BUILD_SERIES "2025")
+set(TD_BUILD_SERIES "2026 or later")
 if(APPLE)
 	set(_td_installation_hint "Set TD_INSTALLATION_PATH to the TouchDesigner.app of the latest TouchDesigner ${TD_BUILD_SERIES} series build.")
 else()
@@ -178,7 +178,7 @@ if(WIN32)
 	set(ONNXRUNTIME_ROOT "C:/Program Files/onnxruntime" CACHE PATH
 		"Root folder of the ONNX Runtime package (contains include/ and lib/)")
 	option(TD_CUDA_ALLOW_UNSUPPORTED_COMPILER
-		"Pass -allow-unsupported-compiler to nvcc (CUDA < 12.4 with newer MSVC)" OFF)
+		"Pass -allow-unsupported-compiler to nvcc (Visual Studio newer than the CUDA Toolkit supports)" OFF)
 else()
 	set(ONNXRUNTIME_ROOT "" CACHE PATH
 		"Root folder of the ONNX Runtime package (contains include/ and lib/)")
@@ -264,8 +264,9 @@ macro(td_enable_cuda)
 				set(TD_CUDA_AVAILABLE FALSE)
 			else()
 				if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-					# Real code for Pascal..Hopper plus PTX for older (JIT) and future GPUs.
-					set(CMAKE_CUDA_ARCHITECTURES "50-virtual;60;61;70;75;80;86;89;90;90-virtual")
+					# CUDA 13 supports Turing (sm_75) and newer only. Real code for
+					# Turing..Blackwell plus PTX for future GPUs (JIT-compiled by the driver).
+					set(CMAKE_CUDA_ARCHITECTURES "75-real;80-real;86-real;89-real;90-real;100-real;120-real;120-virtual")
 				endif()
 				# The macro runs once per directory and subdirectories inherit the
 				# flags, so only append them once.

@@ -21,6 +21,7 @@
 #include <vector>
 #include <opencv2/core.hpp>
 #include <opencv2/objdetect.hpp>
+#include <opencv2/xobjdetect.hpp>
 #include <opencv2/imgproc.hpp>
 
 enum class
