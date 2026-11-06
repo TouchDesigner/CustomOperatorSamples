@@ -4,7 +4,7 @@ This example implements a TOP to detect objects using OpenCV's Cascade Classifie
 more information on the parameters check cv::CascadeClassifier documentation.
 
 ## Prerequisites
-Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the OpenCV include and library folder.
+Uses the OpenCV that ships with TouchDesigner. CMake finds it in the TouchDesigner installation set by `TD_INSTALLATION_PATH`, see [Referencing OpenCV libraries](../../README.md#referencing-opencv-libraries).
 
 ## Parameters
 * **Classifier**:   A path to a .xml pretrained classifier. It can be either Haar or 

@@ -155,7 +155,7 @@ ContoursTOP::execute(TOP_Output* output, const TD::OP_Inputs* inputs, void*)
 
 		int16_t* outBuffer = (int16_t*)outbuf->data;
 
-		for (int i = 0; i < uploadInfo.textureDesc.height * uploadInfo.textureDesc.width; i++)
+		for (uint32_t i = 0; i < uploadInfo.textureDesc.height * uploadInfo.textureDesc.width; i++)
 		{
 			outBuffer[i] = 0;
 		}

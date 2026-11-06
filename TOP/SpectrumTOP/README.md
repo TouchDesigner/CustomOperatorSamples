@@ -7,11 +7,11 @@ For more information on image Fourier Transforms [read this OpenCV article](http
 
 
 ## Prerequisites
-Requires a [reference](https://github.com/TouchDesigner/CustomOperatorSamples#referencing-opencv-libraries) to the OpenCV include and library folder.
+Uses the OpenCV that ships with TouchDesigner. CMake finds it in the TouchDesigner installation set by `TD_INSTALLATION_PATH`, see [Referencing OpenCV libraries](../../README.md#referencing-opencv-libraries).
 This example uses OpenCV 4.11, bundled by default with TouchDesigner 2025.30000 builds.
 
 Requires an Nvidia GPU. Currently this example uses CUDA as the execution engine.
-Requires CUDA 12.8 Toolkit to be [installed](https://github.com/TouchDesigner/CustomOperatorSamples/blob/main/README.md#installing-the-cuda-toolkit-windows-only).
+Requires CUDA 12.8 Toolkit to be [installed](../../README.md#installing-the-cuda-toolkit-windows-only).
 
 ## Parameters
 * **Transform**:	One of [Image To DFT, DFT To Image], which determines if we calculate the forward or 

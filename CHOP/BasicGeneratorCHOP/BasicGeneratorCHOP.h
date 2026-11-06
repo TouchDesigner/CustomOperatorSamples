@@ -15,8 +15,19 @@
 #ifndef __BasicGeneratorCHOP__
 #define __BasicGeneratorCHOP__
 
+// Python.h has to be included before any other header (see the CPython docs).
+// The headers come from the TouchDesigner installation (td_add_custom_op's
+// PYTHON option), so they match the Python this plugin is loaded into.
+#include <Python.h>
+
+#ifdef Py_DEBUG
+	#error "Py_DEBUG is set (check for _DEBUG / /MDd); TouchDesigner's Python is a release build"
+#endif
+
 #include "CHOP_CPlusPlusBase.h"
 #include "Parameters.h"
+
+#include <atomic>
 
 using namespace TD;
 
@@ -28,9 +39,19 @@ This example implements a CHOP which takes the following parameters:
 	- Scale: A scalar by which the output signal is scaled.
 	- Operation: One of [Add, Multiply, Power] which controls which operation the output signal constitutes
 
-The output values are: scale*(channel operation sample)
+The output values are: scale*(channel operation sample) + offset
 
 This CHOP is a generator so it does not need an input and it is not time sliced.
+
+It also shows how a Custom Operator can extend its node with Python, using the
+CPython API (see the CPython docs for the Py* structures and functions used):
+	- op('basicgenerator1').Offset        read/write; added to every sample
+	- op('basicgenerator1').ExecuteCount  read-only; how many times the node cooked
+	- op('basicgenerator1').Reset()       sets Offset back to 0
+	- a callbacks DAT with a getScale(op, scale) function, which can change the
+	  scale used for each cook
+Note that the Python members and the callbacks DAT only exist when the plugin
+is installed as a Custom Operator, not when it's loaded into a CPlusPlus CHOP.
 */
 
 // Check methods [getNumInfoCHOPChans, getInfoCHOPChan, getInfoDATSize, getInfoDATEntries]
@@ -51,9 +72,20 @@ public:
 
 	virtual void		setupParameters(TD::OP_ParameterManager* manager, void*) override;
 
-private:
+	// Used by the Python members (see BasicGeneratorCHOP.cpp). Python may call
+	// these from another thread than the one cooking the node (TouchDesigner
+	// builds with free-threaded Python have no GIL to serialize them), so the
+	// values they share with execute() are atomic.
+	double		getOffset() const { return myOffset; }
+	void		setOffset(double v) { myOffset = v; }
+	int32_t		getExecuteCount() const { return myExecuteCount; }
 
-	Parameters myParms;
+private:
+	const OP_NodeInfo*		myNodeInfo;
+	Parameters				myParms;
+
+	std::atomic<double>		myOffset{0.0};
+	std::atomic<int32_t>	myExecuteCount{0};
 };
 
 #endif

@@ -1,56 +1,19 @@
-cmake_minimum_required(VERSION 3.10)
-project(WrapPoints) # the output name of the Plugin
+cmake_minimum_required(VERSION 4.4)
 
-message(STATUS "** Building ${PROJECT_NAME} SOP **")
+# Before project(): macOS deployment target.
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/TouchDesignerPreProject.cmake)
+project(WrapPointsSOP LANGUAGES CXX)
 
-if (APPLE)
-	set(CMAKE_CXX_STANDARD 17)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++")
-endif()
+# Shared TouchDesigner custom-operator build logic (repository root /cmake).
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/TouchDesignerCustomOP.cmake)
 
-
-set(OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugin)
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIRECTORY})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${OUTPUT_DIRECTORY})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTPUT_DIRECTORY})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIRECTORY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIRECTORY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${OUTPUT_DIRECTORY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTPUT_DIRECTORY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIRECTORY})
-
-###
-
-function(BuiltCustomOp OPNAME SRC LINK_LIBRARIES)
-
-	file(GLOB PROJECT_SRC
-		"*.h"
-		"*.hpp"
-		"*.cpp"
-	)
-
-	add_library(${OPNAME} MODULE ${PROJECT_SRC} ${DEP_SRC})
-
-	set_target_properties(${OPNAME} PROPERTIES LINKER_LANGUAGE CXX)
-	set_target_properties(${OPNAME} PROPERTIES PREFIX "")
-	set_target_properties(${OPNAME} PROPERTIES BUNDLE TRUE)
-	set_target_properties(${OPNAME} PROPERTIES BUNDLE_EXTENSION "plugin")
-
-	target_link_libraries(${OPNAME} PRIVATE ${LINK_LIBRARIES})
-
-	set(OPTEST ${OPNAME}_TEST)
-    add_custom_target(${OPTEST})
-
-    set_target_properties(${OPTEST} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugin)
-    set_target_properties(${OPTEST} PROPERTIES VS_DEBUGGER_ENVIRONMENT "TOUCH_TEXT_CONSOLE=1")
-    
-
-endfunction(BuiltCustomOp)
-
-###
-
-
-BuiltCustomOp(${PROJECT_NAME} "${PROJECT_NAME}SOP.cpp" "") # the name of the entry file
+td_add_custom_op(WrapPointsSOP
+	SOURCES
+		Parameters.cpp
+		WrapPointsSOP.cpp
+		CPlusPlus_Common.h
+		GL_Extensions.h
+		Parameters.h
+		SOP_CPlusPlusBase.h
+		WrapPointsSOP.h
+)

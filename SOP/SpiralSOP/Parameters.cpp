@@ -102,7 +102,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"Y",
 			"Z"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}
@@ -210,7 +210,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"Line",
 			"Triangle Strip"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}

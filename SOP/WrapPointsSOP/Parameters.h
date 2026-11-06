@@ -18,6 +18,7 @@
 #pragma once
 
 #include<string>
+#include <array>
 
 #pragma region ParNames and ParLabels
 

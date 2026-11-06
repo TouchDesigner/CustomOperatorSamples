@@ -215,14 +215,13 @@ ONNXCandyStyleTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void* re
 	if (inputs->getNumInputs() < 1)
 		return;
 
-	myError.clear();
 	if (!myORT)
 	{
 		std::string extraErr;
 		myORT = OrtGetApiBase()->GetApi(ORT_API_VERSION);
 		if (!myORT)
 		{
-			myError = "Failed to initialize ONNX runtime. Likely this plugin was compiled against headers newer than the onnx binaries included in TouchDesigner.";
+			myError = "Failed to initialize ONNX runtime. Likely this plugin was compiled against headers newer than the onnx binaries included in TouchDesigner, or the Public ONNX installer option has not been selected.";
 			return;
 		}
 		OrtStatus* status = myORT->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "CandyTOP", &myEnv);
@@ -402,6 +401,7 @@ ONNXCandyStyleTOP::execute(TOP_Output* output, const OP_Inputs* inputs, void* re
 	// consume the data once that event has occured.
 
 	myContext->endCUDAOperations(nullptr);
+	myError.clear();
 }
 
 int32_t

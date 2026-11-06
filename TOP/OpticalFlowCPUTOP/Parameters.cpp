@@ -230,7 +230,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"B",
 			"A"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}

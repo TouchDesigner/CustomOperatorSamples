@@ -20,7 +20,6 @@
 #include "CPlusPlus_Common.h"
 #include "SOP_CPlusPlusBase.h"
 
-class TD::SOP_Output;
 
 struct BoxNode;
 
@@ -36,7 +35,7 @@ public:
 private:
 	constexpr static int	myBoxNumber = 50000;
 
-	void processBox(TD::BoundingBox&, const TD::OP_SOPInput*);
+	void processBox(TD::BoundingBox, const TD::OP_SOPInput*);
 
 	std::vector<BoxNode>	myTree;
 	std::mt19937			myRNG;

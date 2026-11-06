@@ -1,49 +1,67 @@
-cmake_minimum_required(VERSION 3.10)
-project(CustomOperators)
+cmake_minimum_required(VERSION 4.4)
 
-set(OP_FAMILY_VALID "CHOP" "SOP" "DAT" "TOP")
-set(OP_FAMILY "CHOP" CACHE STRING "Operator families to build (CHOP,TOP,SOP,DAT)")
-set_property(CACHE OP_FAMILY PROPERTY STRINGS ${OP_FAMILY_VALID})
+# Before project(): macOS deployment target and CUDA Toolkit selection.
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/TouchDesignerPreProject.cmake)
+project(CustomOperatorSamples LANGUAGES CXX)
 
-# Validate input
-if(NOT OP_FAMILY IN_LIST OP_FAMILY_VALID)
-    message(FATAL_ERROR "Invalid OP_FAMILY='${OP_FAMILY}'. Must be one of: ${OP_FAMILY_VALID}")
+# Builds every TouchDesigner Custom Operator Sample as one project/solution.
+#
+# Each sample folder also has its own CMakeLists.txt and can be configured on
+# its own instead, e.g.:  cmake -S CHOP/BasicFilterCHOP -B CHOP/BasicFilterCHOP/build
+#
+# Samples whose dependencies (OpenCV, CUDA, ONNX Runtime) are not found, or that
+# don't support the current platform, are skipped with a warning.
+
+option(TD_BUILD_CHOPS "Build the CHOP samples" ON)
+option(TD_BUILD_DATS  "Build the DAT samples"  ON)
+option(TD_BUILD_SOPS  "Build the SOP samples"  ON)
+option(TD_BUILD_TOPS  "Build the TOP samples"  ON)
+
+# Tells td_add_custom_op() to skip (not fail on) samples with missing dependencies.
+set(TD_CUSTOM_OPS_ROOT_BUILD TRUE)
+
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/TouchDesignerCustomOP.cmake)
+
+# CUDA must be enabled in the top-level directory for any sample to use it.
+if(TD_BUILD_TOPS)
+	td_enable_cuda()
 endif()
 
-message(STATUS "Building operator families: ${OP_FAMILY}")
-
-# CHOPs
-if("CHOP" STREQUAL OP_FAMILY)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CHOP/BasicFilterCHOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CHOP/BasicGeneratorCHOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CHOP/OneEuroCHOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CHOP/TimeSliceFilterCHOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CHOP/TimeSliceGeneratorCHOP)
-	message(STATUS "-------------------------")
+if(TD_BUILD_CHOPS)
+	add_subdirectory(CHOP/BasicFilterCHOP)
+	add_subdirectory(CHOP/BasicGeneratorCHOP)
+	add_subdirectory(CHOP/OneEuroCHOP)
+	add_subdirectory(CHOP/TimeSliceFilterCHOP)
+	add_subdirectory(CHOP/TimeSliceGeneratorCHOP)
 endif()
 
-# DATs
-if("DAT" STREQUAL OP_FAMILY)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/DAT/FilterDAT)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/DAT/GeneratorDAT)
-	message(STATUS "-------------------------")
+if(TD_BUILD_DATS)
+	add_subdirectory(DAT/FilterDAT)
+	add_subdirectory(DAT/GeneratorDAT)
 endif()
 
-# SOPs
-if("SOP" STREQUAL OP_FAMILY)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/FilterSOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/GeneratorSOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/IntersectPointsSOP)
-	# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/SpiralSOP)
-	# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/SprinkleSOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/SOP/WrapPointsSOP)
-	message(STATUS "-------------------------")
+if(TD_BUILD_SOPS)
+	add_subdirectory(SOP/FilterSOP)
+	add_subdirectory(SOP/GeneratorSOP)
+	add_subdirectory(SOP/IntersectPointsSOP)
+	add_subdirectory(SOP/SpiralSOP)
+	add_subdirectory(SOP/SprinkleSOP)
+	add_subdirectory(SOP/WrapPointsSOP)
 endif()
 
-# TOPs
-if("TOP" STREQUAL OP_FAMILY)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TOP/BasicFilterTOP)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TOP/DistanceTransformTOP)
-	# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TOP/ObjectDetectorTOP)
-	message(STATUS "-------------------------")
+if(TD_BUILD_TOPS)
+	add_subdirectory(TOP/BasicFilterTOP)
+	add_subdirectory(TOP/CannyEdgeTOP)
+	add_subdirectory(TOP/ContoursTOP)
+	add_subdirectory(TOP/DistanceTransformTOP)
+	add_subdirectory(TOP/ObjectDetectorTOP)
+	add_subdirectory(TOP/ONNXCandyStyleTOP)
+	add_subdirectory(TOP/OpticalFlowCPUTOP)
+	add_subdirectory(TOP/SpectrumTOP)
+endif()
+
+get_property(_td_skipped GLOBAL PROPERTY TD_SKIPPED_SAMPLES)
+if(_td_skipped)
+	list(JOIN _td_skipped ", " _td_skipped)
+	message(STATUS "Skipped samples (see warnings above): ${_td_skipped}")
 endif()

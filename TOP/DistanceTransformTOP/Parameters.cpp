@@ -72,7 +72,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"L2",
 			"C"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}
@@ -95,7 +95,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"5x5",
 			"Precise"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}
@@ -132,7 +132,7 @@ Parameters::setup(TD::OP_ParameterManager* manager)
 			"B",
 			"A"
 		};
-		TD::OP_ParAppendResult res = manager->appendMenu(p, Names.size(), Names.data(), Labels.data());
+		TD::OP_ParAppendResult res = manager->appendMenu(p, (int)Names.size(), Names.data(), Labels.data());
 
 		assert(res == TD::OP_ParAppendResult::Success);
 	}

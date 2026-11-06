@@ -8,22 +8,25 @@ A few basic examples can be found in the Samples/CPlusPlus folder of the TouchDe
 
 * [List of Operators](#Operators)
 * [Compiling Custom Operators](#Compiling-Custom-Operators)
-  * [Installing Visual Studio](#Installing-Visual-Studio-Community-Edition)
-  * [Installing CMake (Cross Platform)](#installing-cmake-cross-platform)
-    * [MacOS](#macos)
-  * [Installing CUDA Toolkit](#Installing-the-CUDA-Toolkit)
-    * [Reference CUDA in VS](#Referencing-CUDA-libraries)
-  * [Referencing OpenCV in VS](#Referencing-OpenCV-libraries)
-    * [Windows](#windows)
-    * [MacOS (CMake)](#macos-cmake)
-    * [Using external OpenCV libraries (Windows)](#using-external-opencv-libraries-windows)
-    * [Using external OpenCV libraries (MacOS CMake)](#using-external-opencv-libraries-macos---cmake)
+  * [Installing Visual Studio](#installing-visual-studio-community-edition-windows-only)
+  * [Installing CMake](#installing-cmake)
+  * [Installing CUDA Toolkit](#installing-the-cuda-toolkit-windows-only)
+  * [Installing the ONNX Runtime](#installing-the-onnx-runtime-windows-only)
+  * [Using TouchDesigner's Python](#using-touchdesigners-python)
+  * [Referencing OpenCV libraries](#Referencing-OpenCV-libraries)
+    * [Windows](#windows-1)
+    * [MacOS](#macos-1)
+    * [Using external OpenCV libraries](#using-external-opencv-libraries)
+* [Building with CMake](#building-with-cmake)
+  * [Building all samples](#building-all-samples)
+  * [Building a single sample](#building-a-single-sample)
+  * [CMake options](#cmake-options)
+  * [Adding your own operator](#adding-your-own-operator)
 * [Compiling OpenCV with CUDA support](#Compiling-OpenCV-with-CUDA-support)
   * [Prerequisites](#Prerequisites)
   * [Create OpenCV build files (Windows)](#generating-opencv-build-files-with-cmake-windows)
 * [CUDA and NVIDIA hardware compatability](#Specifying-the-Nvidia-GPUs-to-generate-Code-for)
 * [Fixes for OpenCV or CUDA version updates](#Fixes-for-OpenCV-or-CUDA-version-updates)
-* [Building Projects using CMake (MacOS)](#building-projects-using-cmake-macos)
 * [Loading Custom Operators in TouchDesigner](#Loading-Custom-Operators-in-TouchDesigner)
 
 ## Operators
@@ -69,9 +72,13 @@ This text should be a small guide to getting started with compiling custom opera
 
 ![alt_text](images/image3.png "visual studio 2019 install options")
 
-### Installing CMake (Cross Platform)
+### Installing CMake
 
-[CMake](https://cmake.org/) is a cross platform build system that allows you to compile the same code base on both Windows and MacOS. 
+All samples are built with [CMake](https://cmake.org/), a cross platform build system that generates Visual Studio solutions on Windows and Xcode projects (or Makefiles) on macOS from the same `CMakeLists.txt` files. CMake 4.4 or newer is required; check with `cmake --version`.
+
+#### Windows
+
+Visual Studio's “Desktop Development with C++” workload includes a copy of CMake, and Visual Studio can open any folder containing a `CMakeLists.txt` directly (File > Open > Folder). That copy may be older than CMake 4.4, in which case configuring stops with an error saying CMake 4.4 is required. Install the current release from [https://cmake.org/download/](https://cmake.org/download/) to use it from a terminal or the CMake GUI, or to generate a Visual Studio solution.
 
 #### MacOS
 
@@ -89,69 +96,70 @@ _For some of the projects a CUDA Development environment is required. Which vers
 
 ![alt_text](images/image4.png "NVIDIA CUDA Toolkit Installer")
 
-#### Referencing CUDA libraries
+The toolkit's major version must match the CUDA version TouchDesigner uses, currently **CUDA 12**: the plugins link the shared CUDA runtime, and TouchDesigner only ships the runtime DLL for its own major version (`cudart64_12.dll`). Any 12.x toolkit works. CMake checks this when configuring and skips the CUDA samples, with a message, if the toolkit it finds is another major version.
 
-*   After loading a project in Visual Studio, open the Project’s Properties via the Project>Properties or by hitting Alt+F7
-*   Make sure to set the “Configuration“ Dropdown to “All Configurations”
-*   In the Configuration Properties, navigate to C/C++ and edit the “Additional Include Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitIncludeDir), is present.
+CMake finds the CUDA 12 toolkit automatically, even if other CUDA versions are installed too: it picks the newest 12.x toolkit from the default install folder (`C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.*`) or from the `CUDA_PATH_V12_*` environment variables the installer sets, rather than the default toolkit (`CUDA_PATH`, which points at the last toolkit installed). The toolkit it chose is printed when you configure. To pick one yourself, pass `-DCMAKE_CUDA_COMPILER="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8/bin/nvcc.exe"`, or with the Visual Studio generator, `-T cuda=12.8`, in a fresh build folder.
 
-![alt_text](images/image6.png "$(CudaToolkitIncludeDir)")
+CUDA 12 doesn't support Visual Studio 2026, so build the CUDA samples with **Visual Studio 2022**: generate with `-G "Visual Studio 17 2022"`, or use Ninja from a Visual Studio 2022 developer prompt. With the Visual Studio 2026 generator or compiler, CMake reports this and skips the CUDA samples (or stops, when configuring one of them on its own).
 
-*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to make sure the value to the CUDA toolkit, $(CudaToolkitIncludeDir), is present.
+### Installing the ONNX Runtime (Windows only)
 
-![alt_text](images/image9.png "$(CudaToolkitIncludeDir)")
+Samples that run ONNX AI models, such as [ONNXCandyStyleTOP](TOP/ONNXCandyStyleTOP), use the [ONNX Runtime](https://onnxruntime.ai) C API.
+
+* They require TouchDesigner 2025.32302 or later, installed via the Web Installer with the 'Public ONNX' installer option selected. This is due to a conflict with the `onnxruntime.dll` version that Kinect Azure requires.
+* They require ONNX Runtime version 1.23.2, for CUDA 12. Download it from the [ONNX Runtime GitHub releases](https://github.com/microsoft/onnxruntime/releases/download/v1.23.2/onnxruntime-win-x64-gpu-1.23.2.zip) and unzip it into `C:/Program Files/onnxruntime`, so that these folders exist with the `.lib` and `.h` files:
+  * `C:/Program Files/onnxruntime/lib`
+  * `C:/Program Files/onnxruntime/include`
+* CMake looks for the ONNX Runtime headers and libraries in `C:/Program Files/onnxruntime` by default. To use another location, configure with `-DONNXRUNTIME_ROOT=<path>`.
+* Only the headers and `.lib` files are used to build. The `.dll` files from the download are not used: the plugin loads the `onnxruntime.dll` that comes with TouchDesigner.
+
+### Using TouchDesigner's Python
+
+An operator that uses Python's C API is built against the Python that ships with TouchDesigner, so it matches the interpreter it's loaded into; add `PYTHON` to its `td_add_custom_op()` call (see [Adding your own operator](#adding-your-own-operator)). No separate Python install is needed:
+
+* Windows: TouchDesigner 2025 series builds bundle Python's headers in `<TD_INSTALLATION_PATH>/Samples/CPlusPlus/3rdParty/Python/Include` and `Include/PC` (where `pyconfig.h` is) and its import library (`python3XX.lib`) in `<TD_INSTALLATION_PATH>/Samples/CPlusPlus/3rdParty/Python/lib/x64`.
+* macOS: the headers come from `<TD_INSTALLATION_PATH>/Contents/Frameworks/Python.framework`. The plugin isn't linked against a Python library; it uses the Python TouchDesigner has already loaded.
+
+On Windows these operators always use the release C runtime, because the debug runtime would make Python's `pyconfig.h` switch to a debug build of Python. The Python version found is shown in the configure output, e.g. `Adding CHOP sample: BasicGeneratorCHOP (Python 3.11 from TouchDesigner)`.
 
 ### Referencing OpenCV libraries
 
-_Some projects make use of various OpenCV modules. Which OpenCV release is required depends on the version used by the creator. 
+_Some projects make use of various OpenCV modules._
+
+The samples are written for **OpenCV 4** and are compiled against the OpenCV that ships with the TouchDesigner build you point CMake at, so the plugins use the same headers and libraries TouchDesigner loads. When configuring, CMake reads the OpenCV version from that install's `opencv2/core/version.hpp` and stops with a message if it isn't OpenCV 4.x. The version is shown next to each OpenCV sample in the configure output, e.g. `Adding TOP sample: ContoursTOP (OpenCV 4.11.0 from TouchDesigner)`.
+
+These samples are for the **TouchDesigner 2025 series**. They find everything they use from TouchDesigner's installation through one CMake variable, **TD_INSTALLATION_PATH**, which points at the root of the install of the latest 2025 series build. If TouchDesigner is installed in its default location you don't need to set it:
+
+* Windows: the install folder, default `C:/Program Files/Derivative/TouchDesigner`
+* macOS: the application bundle, default `/Applications/TouchDesigner.app`
+
+```bash
+cmake -S . -B build -DTD_INSTALLATION_PATH="D:/Apps/TouchDesigner.2025.31550"
+```
+
+The installation path is printed when you configure.
 
 #### Windows
-Since TouchDesigner 2020.44130, OpenCV libraries are included in the TouchDesigner Install folder at Samples\CPlusPlus\3rdParty. The solutions using OpenCV require an environmental variable called **TOUCHDESIGNER_3RDPARTY_TOOLS_PATH** which should point to the before mentioned _3rdParty_ path. Before building, add this variable via Windows' _System Properties_ dialog. 
+Since TouchDesigner 2020.44130, OpenCV libraries are included in the TouchDesigner Install folder at Samples\CPlusPlus\3rdParty. CMake takes the headers and libraries from `<TD_INSTALLATION_PATH>/Samples/CPlusPlus/3rdParty/opencv`.
 
-![alt_text](images/image10.png "system variabes")
+The library names carry the OpenCV version (e.g. `opencv_core4110.lib` for OpenCV 4.11.0). CMake links the libraries whose version matches the headers, so there is no need to edit library names when TouchDesigner updates OpenCV, and libraries left over from another version are never picked up.
 
-#### MacOS (CMake)
-The OpenCV libraries included in the TouchDesigner install do not provide the necessary files to include OpenCV in your CMake project. To get the OpenCV library install them via brew:
+**Note:** The OpenCV libraries shipped with TouchDesigner are "Release" binaries. To still allow Debug builds, samples linking TouchDesigner's OpenCV always use the release C runtime (`/MD`), in every configuration.
+
+#### MacOS
+TouchDesigner also bundles OpenCV on macOS: CMake takes the headers from `<TD_INSTALLATION_PATH>/Contents/Resources/tfs/Samples/CPlusPlus/3rdParty/opencv/include/opencv4` and the `.dylib`s matching their version (e.g. `libopencv_core.4.11.0.dylib`) from `<TD_INSTALLATION_PATH>/Contents/Frameworks`. The plugins are given an rpath to TouchDesigner's Frameworks folder, so they load the same OpenCV that TouchDesigner uses.
+
+If TouchDesigner's OpenCV isn't found at all, CMake falls back to a regular install, e.g. `brew install opencv`, which must also be OpenCV 4.x. It doesn't fall back when TouchDesigner's OpenCV is there but is another major version or is missing a library, since the plugin would then not match the OpenCV TouchDesigner loads.
+
+#### Using external OpenCV libraries
+
+If you want to use a different OpenCV 4 release than the one that ships with TouchDesigner, or OpenCV is installed in a non-standard location, point CMake at the folder containing `OpenCVConfig.cmake`:
+
+```bash
+cmake -S . -B build -DTD_USE_BUNDLED_OPENCV=OFF -DOpenCV_DIR="C:/opencv/build"
 ```
-% brew install opencv
-```
 
-#### Using external OpenCV libraries (Windows)
-
-If you want to use a different OpenCV version than what ships with TouchDesigner, you can follow these instructions. If you additionally need CUDA support, follow instructions [below](#Compiling-OpenCV-with-CUDA-support) to compile OpenCV with CUDA support.
-
-*   Download the precompiled version of the OpenCV windows libraries from here: [https://github.com/opencv/opencv/releases](https://github.com/opencv/opencv/releases) - there are self extracting archives available 
-*   Extract to a location on your computer
-*   After loading a project in Visual Studio, open the Project’s Properties via the Project>Properties or by hitting Alt+F7
-*   In the Configuration Properties, navigate to C/C++ and edit the “Additional Include Directories” to include the path to the folder containing the OpenCV libraries
-
-![alt_text](images/image2.png "image_tooltip")
-
-*   Still in the Configuration Properties, navigate to Linker and edit the “Additional Library Directories” to include the path to the folder containing the OpenCV libraries. 
-
-![alt_text](images/image9.png "OpenCV Linker")
-
-*   Finally, make sure that all required libraries are correctly referenced under the Linker/Input section. Add any missing libraries to the list under “Additional Dependencies”.
-
-![alt_text](images/image5.png "additional dependencies")
-
-**Note:** By default, the binaries and libs shipped with TouchDesigner are "Release" binaries. The examples of this repository might fail to compile in the Debug configuration of Visual Studio. If you wish to compile with debug features, you should manually compile OpenCV with CUDA.
-
-#### Using external OpenCV libraries (MacOS - CMake)
-In order to include the OpenCV libraries in your CMake project you need to add the following instruction in your `CMakeLists.txt`
-```cmake
-# require the OpenCV library
-find_package(OpenCV REQUIRED)
-# include the OpenCV headers
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-...
-...
-BuiltCustomOp(${PROJECT_NAME} "${PROJECT_NAME}TOP.cpp" "${OpenCV_LIBS}")
-```
-This commands will search for the libraries in your `$PATH`. If you have installed `opencv` via `brew` (**recommended**) no further steps should be taken.
-
-For a complete example check the `TOP/ObjectDetectorTOP` project
-
+If you additionally need CUDA support, follow instructions [below](#Compiling-OpenCV-with-CUDA-support) to compile OpenCV with CUDA support. Remember to place the OpenCV DLLs next to your plugin (see [Loading Custom Operators](#Loading-Custom-Operators-in-TouchDesigner)).
 
 ## Compiling OpenCV with CUDA support (Not necessary for building these examples.)
 
@@ -202,13 +210,13 @@ This can be resolved by using 7zip as explained here: [https://stackoverflow.com
 
 ## Specifying the Nvidia GPUs to generate Code for
 
-Projects in this repositroy are setup to support all previous and future gpu hardware by compiling for virtual support for any pre pascal hardware and any post turing hardware. To make changes to this configuration:
+The CUDA samples compile real GPU code for the Pascal to Hopper architectures (`sm_60` … `sm_90`) plus PTX for older (`compute_50`) and future GPUs, which the driver compiles just-in-time. To change this, set the standard CMake variable `CMAKE_CUDA_ARCHITECTURES` when configuring, e.g. only for an RTX 40-series card:
 
-*   In the Configuration Properties, navigate to CUDA C/C++ and edit the “Code Generation” entry to include all NVIDIA architectures to compile code for. 
-*   For a reference on GPU compilation and virtual as well as gpu features, please refer to [https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures](https://docs.nvidia.com/cuda/archive/10.2/cuda-compiler-driver-nvcc/index.html#virtual-architectures)
-*   For best performance, when omitting older architectures, specify _compute_xx,compute_xx_ for each omitted architecture. To support all future architecture, also add an additional _compute_xx,compute_xx_ entry for the newest architecture. Here _xx_ is referring to the 2 digit hardware architecture identifier.
+```bash
+cmake -S . -B build -DCMAKE_CUDA_ARCHITECTURES="89"
+```
 
-![alt_text](images/image1.png "cuda architecture")
+For a reference on GPU compilation and virtual as well as gpu features, please refer to the [nvcc documentation](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#virtual-architectures) and the [CMAKE_CUDA_ARCHITECTURES documentation](https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html).
 
 ## Fixes for Cuda version `< 12.4` compilation error
 
@@ -216,46 +224,118 @@ Microsoft Visual Studio 2022 might throw an error due to the toolset (v143) comp
 
 A `MSB3721` error and `C1189`	error referencing the `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include\crt\host_config.h` can arise.
 
-Use [the following flag](https://stackoverflow.com/a/78576792/11056845) to remedy this ( in Properties -> Cuda C/C++ -> Command Line):
-
-```-allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH ```
-
-(second half of the compilation is to allow Visual Studio to accept Cuda < 12.4 ).
-
+Configure with `-DTD_CUDA_ALLOW_UNSUPPORTED_COMPILER=ON` to remedy this. It passes [the following flags](https://stackoverflow.com/a/78576792/11056845) to the compilers: `-allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH` (the second half allows Visual Studio to accept Cuda < 12.4).
 
 ## Fixes for OpenCV or CUDA version updates
 
-Some newer TouchDesigner Versions might be delivered with an updated OpenCV and/or require a newer CUDA Version. In this case it is easiest to edit the solutions `*.vcxproj` file. The files are XML strucutred.
+Some newer TouchDesigner Versions might be delivered with an updated OpenCV and/or require a newer CUDA Version.
 
 ### Changing the OpenCV version
 
-Open the `*.vcxproj` file in a texteditor and search for the xml node `<AdditionalDependencies>`. In the value, there should be something like `opencv_world451.lib`.Change this file to the file available in your TouchDesigner install folder under `Samples/CPlusPlus/3rdParty/opencv/lib/Win64`. For example OpenCV version 4.5 would reference `opencv_world450.lib` while OpenCV version 4.5.1 would have to reference `opencv_world451.lib`.
-There should be at least 2 sections in the file where this is referenecd, once under `Debug` and once under `Release`.
+Within the same major version there is nothing to change: CMake reads the version from TouchDesigner's OpenCV headers and links the libraries that match it. Re-run CMake (or delete the `build` folder) after updating TouchDesigner.
+
+The required major version is set by `TD_OPENCV_MAJOR_VERSION` in `cmake/TouchDesignerCustomOP.cmake`. When the samples move to a TouchDesigner build with a new OpenCV major version, update it there (along with any source changes the new OpenCV requires).
 
 ### Changing the CUDA version
 
-Open the `*.vcxproj` file in a text editor and search for an xml node similar to `<Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />`. Change the version to match the CUDA Toolkit version you have installed. This should match the major version of CUDA (11, 12 etc.) that the version of TouchDesigner you are using is on. This will have to be done in 2 places.
+Install the CUDA Toolkit version matching the major version of CUDA (11, 12 etc.) that the version of TouchDesigner you are using is on, then re-configure in a fresh build folder. The required major version is set by `TD_CUDA_MAJOR_VERSION` in `cmake/TouchDesignerCUDAToolkit.cmake`; if it's not the one your TouchDesigner uses, update it there. See [Installing the CUDA Toolkit](#installing-the-cuda-toolkit-windows-only) for selecting a specific toolkit when several are installed.
 
-## Building Projects using CMake (MacOS)
-- Navigate into a project folder (ex. `cd CHOP/BasicFilterCHOP`)
-- create a folder called `build` and `cd` into it
-- configure your project using `cmake ..`
-- build running `cmake --build .`
+## Building with CMake
 
-**Full example**
+Every sample folder has its own `CMakeLists.txt`, and the repository root has a `CMakeLists.txt` that builds all samples in one project. Both use the shared helper in [`cmake/TouchDesignerCustomOP.cmake`](cmake/TouchDesignerCustomOP.cmake).
+
+The compiled plugins (`.dll` on Windows, `.plugin` bundles on macOS) are written to a `plugins` folder inside the build folder, e.g. `build/plugins/BasicFilterCHOP.dll`.
+
+### Installing into TouchDesigner
+
+TouchDesigner loads custom operators from its system-wide Plugins folder when it starts. After building, copy the plugins there with:
+
 ```bash
-% cd CHOP/BasicFilterCHOP
-% mkdir build && cd build
-% cmake ..
-% cmake --build .
+cmake --install build --config Release
 ```
-The compiled plugin can be found in `CHOP/BasicFilterCHOP/plugin`
 
-_Note that you can configure your project using different Generators (such as `Xcode`, `Unix Makefiles`) using the `-G` flag:_
+The default install folder is:
+
+* Windows: `Documents/Derivative/Plugins` (your actual Documents folder, also when it's redirected, e.g. to OneDrive)
+* macOS: `~/Library/Application Support/Derivative/TouchDesigner099/Plugins`
+
+To install somewhere else, such as a `Plugins` folder next to your `.toe` file, pass `--prefix <folder>` to `cmake --install`, or set `CMAKE_INSTALL_PREFIX` when configuring. Restart TouchDesigner to pick up a newly installed plugin.
+
+### Building all samples
+
 ```bash
-% cmake -G"Unix Makefiles" ..
+cmake -S . -B build
+cmake --build build --config Release
 ```
-_instead of `cmake ..`_
+
+On Windows this generates `build/CustomOperatorSamples.sln`, with the samples grouped into CHOP / DAT / SOP / TOP folders. On macOS add `-G Xcode` to get an Xcode project instead of Makefiles.
+
+Samples whose dependencies aren't available (OpenCV, the CUDA Toolkit, the ONNX Runtime) or that don't support the current platform (the CUDA samples are Windows only) are skipped with a warning, and the rest still build. Use `-DTD_BUILD_CHOPS=OFF` (or `_DATS`, `_SOPS`, `_TOPS`) to leave out an operator family.
+
+### Building a single sample
+
+Configure the sample's folder directly:
+
+```bash
+cd CHOP/BasicFilterCHOP
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+On Windows you can also open `build/BasicFilterCHOP.sln`, or open the sample folder in Visual Studio with File > Open > Folder. When building a single sample, a missing dependency is an error instead of a warning.
+
+_Generators: use `-G` to choose a specific generator, such as `-G "Visual Studio 17 2022"`, `-G Xcode` or `-G "Unix Makefiles"`._
+
+Visual Studio and Xcode are set up to launch TouchDesigner (with `TOUCH_TEXT_CONSOLE=1`) when you start debugging a plugin. This uses the TouchDesigner in `TD_INSTALLATION_PATH`; set `TD_EXECUTABLE` only to debug with a different executable.
+
+### CMake options
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `TD_BUILD_CHOPS` / `TD_BUILD_DATS` / `TD_BUILD_SOPS` / `TD_BUILD_TOPS` | `ON` | Root project only: which operator families to build. |
+| `TD_PLUGIN_OUTPUT_DIR` | `<build folder>/plugins` | Folder the built plugins are written to. |
+| `CMAKE_INSTALL_PREFIX` | TouchDesigner's Plugins folder | Where `cmake --install` copies the plugins (see [Installing into TouchDesigner](#installing-into-touchdesigner)). |
+| `TD_INSTALLATION_PATH` | `C:/Program Files/Derivative/TouchDesigner` (Windows), `/Applications/TouchDesigner.app` (macOS) | Root of the TouchDesigner installation. Its bundled OpenCV and the debugger executable are found relative to it. |
+| `TD_USE_BUNDLED_OPENCV` | `ON` | Link TouchDesigner's OpenCV. `OFF` uses `find_package(OpenCV)` / `OpenCV_DIR`. |
+| `ONNXRUNTIME_ROOT` | `C:/Program Files/onnxruntime` | Location of the extracted ONNX Runtime package (see [Installing the ONNX Runtime](#installing-the-onnx-runtime-windows-only)). |
+| `CMAKE_CUDA_ARCHITECTURES` | see [above](#Specifying-the-Nvidia-GPUs-to-generate-Code-for) | GPU architectures for the CUDA samples. |
+| `TD_CUDA_ALLOW_UNSUPPORTED_COMPILER` | `OFF` | Windows: allow CUDA < 12.4 with newer Visual Studio toolsets. |
+| `TD_EXECUTABLE` | _empty_ (TouchDesigner in `TD_INSTALLATION_PATH`) | Program launched when debugging from Visual Studio / Xcode. |
+| `CMAKE_OSX_DEPLOYMENT_TARGET` | `12.0` | macOS: oldest macOS version the plugins run on. |
+
+### Adding your own operator
+
+Copy one of the samples (keep it two folders below the repository root, or adjust the `include()` path to `cmake/TouchDesignerCustomOP.cmake`), rename it, and update its `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 4.4)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/TouchDesignerPreProject.cmake)  # must come before project()
+project(MyFilterTOP LANGUAGES CXX)
+
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/TouchDesignerCustomOP.cmake)
+
+# td_enable_cuda()     # only needed if the operator has .cu files
+
+td_add_custom_op(MyFilterTOP
+	OPENCV_COMPONENTS core imgproc   # optional: OpenCV modules to link
+	# CUDA                           # optional: compile .cu files, link the CUDA runtime
+	# PYTHON                         # optional: build against TouchDesigner's Python
+	# CXX_STANDARD 20                # optional: C++ standard (default 17)
+	# INCLUDE_DIRECTORIES include    # optional: extra header folders
+	# WINDOWS_ONLY                   # optional: skip/fail on other platforms
+	SOURCES
+		MyFilterTOP.cpp
+		Parameters.cpp
+		MyFilterTOP.h
+		Parameters.h
+		CPlusPlus_Common.h
+		TOP_CPlusPlusBase.h
+)
+```
+
+To include it in the all-samples build, add an `add_subdirectory()` line for it to the root `CMakeLists.txt`.
+
+On Windows the operators are compiled with the Unicode character set (`UNICODE`/`_UNICODE`), as the original Visual Studio projects were, and on macOS for macOS 12.0 or newer (`CMAKE_OSX_DEPLOYMENT_TARGET`). If an operator's `CPlusPlus_Common.h` imports `<Metal/Metal.h>`, as newer TouchDesigner headers do, its sources are compiled as Objective-C++ on macOS and linked with the Foundation and Metal frameworks automatically.
 
 ## Loading Custom Operators in TouchDesigner
 

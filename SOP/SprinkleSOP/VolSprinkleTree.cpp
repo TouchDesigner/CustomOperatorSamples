@@ -17,6 +17,7 @@
 #include "SOP_CPlusPlusBase.h"
 #include <random>
 #include <array>
+#include <algorithm>
 
 using namespace TD;
 
@@ -93,7 +94,7 @@ VolSprinkleTree::getPoint(float r1, float r2, float r3, float r4)
 }
 
 void
-VolSprinkleTree::processBox(BoundingBox& bb, const TD::OP_SOPInput* sop)
+VolSprinkleTree::processBox(BoundingBox bb, const TD::OP_SOPInput* sop)
 {
 	Position	p;
 

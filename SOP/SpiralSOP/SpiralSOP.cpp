@@ -269,7 +269,7 @@ SpiralSOP::calculateOutputPoints()
 }
 
 void 
-SpiralSOP::calculateSpiralPoints(std::vector<Position>::iterator& it, int numPts)
+SpiralSOP::calculateSpiralPoints(std::vector<Position>::iterator it, int numPts)
 {
 	const double deltaA = (2 * PI * myTurns) / numPts;
 	const double deltaR = (myTopRad - myBotRad) / numPts;
@@ -299,7 +299,7 @@ SpiralSOP::calculateSpiralPoints(std::vector<Position>::iterator& it, int numPts
 }
 
 void
-SpiralSOP::calculateNormals(std::vector<Vector>::iterator& N, std::vector<Position>::const_iterator& pts, int numPts)
+SpiralSOP::calculateNormals(std::vector<Vector>::iterator N, std::vector<Position>::const_iterator pts, int numPts)
 {
 	Vector reference;
 	switch (myOrientation)

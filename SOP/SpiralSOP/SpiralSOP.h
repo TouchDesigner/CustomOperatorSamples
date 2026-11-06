@@ -61,9 +61,9 @@ private:
 
 	void		calculateOutputPoints();
 
-	void		calculateSpiralPoints(std::vector<TD::Position>::iterator&, int numPts);
+	void		calculateSpiralPoints(std::vector<TD::Position>::iterator, int numPts);
 
-	void		calculateNormals(std::vector<TD::Vector>::iterator&, std::vector<TD::Position>::const_iterator&, int numPts);
+	void		calculateNormals(std::vector<TD::Vector>::iterator, std::vector<TD::Position>::const_iterator, int numPts);
 
 	void		calculateTriangleStrip();
 

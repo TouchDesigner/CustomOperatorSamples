@@ -137,9 +137,9 @@ DistanceTransformTOP::setupParameters(TD::OP_ParameterManager* manager, void*)
 void
 DistanceTransformTOP::cvMatToOutput(TD::TOP_Output* out, TD::TOP_UploadInfo info) const
 {
-	size_t	height = info.textureDesc.height;
-	size_t	width = info.textureDesc.width;
-	size_t imgsize = 1 * height * width * sizeof(float);
+	uint32_t height = info.textureDesc.height;
+	uint32_t width = info.textureDesc.width;
+	size_t imgsize = 1 * size_t(height) * width * sizeof(float);
 
 	TD::OP_SmartRef<TD::TOP_Buffer> buf = myContext->createOutputBuffer(imgsize, TD::TOP_BufferFlags::None, nullptr);
 	float* pixel = static_cast<float*>(buf->data);
