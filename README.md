@@ -121,6 +121,8 @@ An operator that uses Python's C API is built against the Python that ships with
 * Windows: TouchDesigner 2026 or later series builds have Python's headers in `<TD_INSTALLATION_PATH>/bin/include` and its import library in `<TD_INSTALLATION_PATH>/bin/libs`. Whether TouchDesigner's Python is the free-threaded build is detected from the interpreter DLL it ships (e.g. `python314t.dll`), and `Py_GIL_DISABLED` is defined to match.
 * macOS: the headers come from `<TD_INSTALLATION_PATH>/Contents/Frameworks/Python.framework`. The plugin isn't linked against a Python library; it uses the Python TouchDesigner has already loaded.
 
+These samples require the free-threaded build of Python 3.14 (3.14t), the Python that the TouchDesigner builds they target ship; configuring stops with a message if the installation has another Python, which usually means `TD_INSTALLATION_PATH` points at a different TouchDesigner series. The required version is set by `TD_PYTHON_VERSION` and `TD_PYTHON_FREE_THREADED` in `cmake/TouchDesignerCustomOP.cmake`.
+
 On Windows these operators always use the release C runtime, because the debug runtime would make Python's `pyconfig.h` switch to a debug build of Python. The Python version found is shown in the configure output, e.g. `Adding CHOP sample: BasicGeneratorCHOP (Python 3.14t from TouchDesigner)`.
 
 ### Referencing OpenCV libraries
