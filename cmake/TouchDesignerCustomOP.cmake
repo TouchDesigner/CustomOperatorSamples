@@ -200,6 +200,14 @@ if(APPLE)
 	enable_language(OBJCXX)
 endif()
 
+# Xcode: a scheme for every target, including ALL_BUILD, install and
+# ZERO_CHECK, and each plugin (so Product > Archive can be run on one plugin).
+# This has to be all or nothing: as soon as CMake generates any scheme, it
+# turns off Xcode's automatic scheme creation for the project, which is the
+# only other way ALL_BUILD and install would get one. Set here (the top-level
+# scope in the all-samples build) so the built-in targets see it too.
+set(CMAKE_XCODE_GENERATE_SCHEME ON)
+
 # ----------------------------------------------------------------------------
 # td_enable_cuda()
 #
@@ -788,9 +796,7 @@ function(td_add_custom_op target)
 			# archive, and puts them at Products/$(INSTALL_PATH); bundle targets
 			# default to SKIP_INSTALL=YES, which leaves the archive empty.
 			XCODE_ATTRIBUTE_SKIP_INSTALL NO
-			XCODE_ATTRIBUTE_INSTALL_PATH "/"
-			# Own scheme, so Archive can be run on this target rather than ALL_BUILD.
-			XCODE_GENERATE_SCHEME TRUE)
+			XCODE_ATTRIBUTE_INSTALL_PATH "/")
 
 		# Newer TouchDesigner headers `#import <Metal/Metal.h>` and use
 		# id<MTL...> types on macOS, so the sources must be Objective-C++.
