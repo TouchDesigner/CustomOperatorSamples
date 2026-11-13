@@ -111,8 +111,17 @@ endif()
 # samples move to a TouchDesigner build with a new OpenCV major version.
 set(TD_OPENCV_MAJOR_VERSION 4)
 
+# Python version the TouchDesigner build ships (major.minor), and whether it is
+# the free-threaded build (3.14t etc.). Samples using Python (td_add_custom_op's
+# PYTHON option) are built against the Python in the installation, and
+# configuring stops if that isn't this version, which catches TD_INSTALLATION_PATH
+# pointing at another series. Not a cache option on purpose: update it here
+# when the samples move to a TouchDesigner build with a new Python.
+set(TD_PYTHON_VERSION "3.11")
+set(TD_PYTHON_FREE_THREADED FALSE)
+
 # TouchDesigner build series these samples target (the series that ships the
-# CUDA and OpenCV versions above), as it reads in messages:
+# CUDA, OpenCV and Python versions above), as it reads in messages:
 # "the latest TouchDesigner <series> series build". Only used in messages that
 # tell people which installation to point TD_INSTALLATION_PATH at.
 set(TD_BUILD_SERIES "2025")
@@ -605,6 +614,23 @@ function(_td_find_python prefix)
 			if(gil)
 				set(free_threaded TRUE)
 			endif()
+		endif()
+	endif()
+
+	# The installation's Python must be the one these samples target; "t" marks
+	# the free-threaded build, e.g. 3.14t.
+	if(found)
+		set(found_label "${version}")
+		if(free_threaded)
+			string(APPEND found_label "t")
+		endif()
+		set(expected_label "${TD_PYTHON_VERSION}")
+		if(TD_PYTHON_FREE_THREADED)
+			string(APPEND expected_label "t")
+		endif()
+		if(NOT found_label STREQUAL expected_label)
+			set(found FALSE)
+			set(error "TouchDesigner in '${TD_INSTALLATION_PATH}' ships Python ${found_label}, but these samples are looking for Python ${expected_label}, which ships with TouchDesigner ${TD_BUILD_SERIES} series builds. ${_td_installation_hint}")
 		endif()
 	endif()
 
