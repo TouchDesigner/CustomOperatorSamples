@@ -250,6 +250,11 @@ macro(td_enable_cuda)
 	if(NOT WIN32)
 		# TouchDesigner only supports CUDA on Windows.
 		set(TD_CUDA_AVAILABLE FALSE)
+	elseif(NOT TD_BUILD_CUDA_SAMPLES)
+		# Turned off (see TouchDesignerCUDAToolkit.cmake): CUDA is never enabled,
+		# so no project in the solution gets the CUDA build customization.
+		set(TD_CUDA_AVAILABLE FALSE)
+		set(TD_CUDA_ERROR "the CUDA samples are turned off (TD_BUILD_CUDA_SAMPLES is OFF)")
 	elseif(TD_CUDA_MAJOR_VERSION VERSION_LESS 13
 			AND (CMAKE_GENERATOR MATCHES "^Visual Studio 18 " OR (MSVC AND MSVC_VERSION GREATER_EQUAL 1950)))
 		# CUDA 12 doesn't support Visual Studio 2026: its nvcc doesn't accept
@@ -313,6 +318,15 @@ macro(td_enable_cuda)
 		else()
 			set(TD_CUDA_AVAILABLE FALSE)
 		endif()
+	endif()
+
+	# Visual Studio 2026: CUDA's build customization is imported into every
+	# project of the solution, and can make IntelliSense fail for all of them.
+	get_property(_td_cuda_vs_note GLOBAL PROPERTY _TD_CUDA_VS2026_NOTE)
+	if(TD_CUDA_AVAILABLE AND TD_CUSTOM_OPS_ROOT_BUILD AND NOT _td_cuda_vs_note
+			AND CMAKE_GENERATOR MATCHES "^Visual Studio 18 ")
+		set_property(GLOBAL PROPERTY _TD_CUDA_VS2026_NOTE TRUE)
+		message(NOTICE "Note: CUDA is enabled for this ${CMAKE_GENERATOR} solution, so CMake adds the CUDA build customization to every project in it. If Visual Studio reports \"Designtime build failed\" (IntelliSense unavailable) for all projects, configure this build folder with -DTD_BUILD_CUDA_SAMPLES=OFF, and build the CUDA samples in a build folder of their own, configured from the sample's folder.")
 	endif()
 endmacro()
 
@@ -715,6 +729,15 @@ function(td_add_custom_op target)
 
 	if(ARG_WINDOWS_ONLY AND NOT WIN32)
 		list(APPEND missing "this sample only builds on Windows")
+	endif()
+
+	# CUDA samples turned off on purpose: in the all-samples build that's not a
+	# problem to warn about. (Configuring the sample on its own with the option
+	# off still stops, via the CUDA check below.)
+	if(ARG_CUDA AND NOT missing AND NOT TD_BUILD_CUDA_SAMPLES AND TD_CUSTOM_OPS_ROOT_BUILD)
+		message(STATUS "Skipping ${target}: the CUDA samples are turned off (TD_BUILD_CUDA_SAMPLES is OFF)")
+		set_property(GLOBAL APPEND PROPERTY TD_SKIPPED_SAMPLES "${target}")
+		return()
 	endif()
 
 	if(ARG_CUDA AND NOT missing)

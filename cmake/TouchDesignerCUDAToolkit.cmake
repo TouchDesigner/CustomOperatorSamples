@@ -24,8 +24,23 @@ include_guard(GLOBAL)
 # TouchDesigner moves to a new CUDA major version.
 set(TD_CUDA_MAJOR_VERSION 13)
 
+# Whether to build the samples that use CUDA. Turning this off keeps CUDA out of
+# the build entirely: when CUDA is enabled, CMake's Visual Studio generator adds
+# the CUDA build customization to every project in the solution, not just the
+# CUDA ones, and with some Visual Studio / CUDA combinations (e.g. Visual Studio
+# 2026 with CUDA 13.5) that makes IntelliSense fail for all of them. The CUDA
+# samples can still be built in their own build folder, configured from a
+# sample's folder. Defined here, before project(), so the toolkit selection
+# below can be skipped too.
+option(TD_BUILD_CUDA_SAMPLES "Build the samples that use CUDA (Windows only)" ON)
+
 # TouchDesigner only supports CUDA on Windows.
 if(NOT CMAKE_HOST_WIN32)
+	return()
+endif()
+
+# CUDA samples turned off: don't give Visual Studio a CUDA toolset either.
+if(NOT TD_BUILD_CUDA_SAMPLES)
 	return()
 endif()
 
