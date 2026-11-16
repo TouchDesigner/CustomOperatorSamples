@@ -687,6 +687,52 @@ endfunction()
 # td_add_custom_op(<target> ...)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+# Internal: folders for the sample's files in Visual Studio and Xcode, so the
+# files users edit are kept apart from the TouchDesigner API headers:
+#   include    CPlusPlus_Common.h, BitMaskFlags.h, <FAMILY>_CPlusPlusBase.h ...
+#   Headers    the sample's own headers
+#   Sources    .cpp / .cu / .mm
+#   Shaders    GLSL sources (.comp, .vert, .frag, .glsl ...)
+#   Generated  files the build creates, e.g. compiled SPIR-V headers
+# The TouchDesigner headers are recognized by name, so this works whether they
+# are in an include/ folder or next to the sources.
+# ----------------------------------------------------------------------------
+function(_td_group_sources)
+	set(api "")
+	set(headers "")
+	set(sources "")
+	set(shaders "")
+	set(generated "")
+	foreach(src IN LISTS ARGN)
+		get_filename_component(path "${src}" ABSOLUTE)
+		get_filename_component(name "${src}" NAME)
+		string(FIND "${path}/" "${CMAKE_CURRENT_BINARY_DIR}/" in_build_dir)
+		if(in_build_dir EQUAL 0)
+			list(APPEND generated "${path}")
+		elseif(name MATCHES "^(CPlusPlus_Common|BitMaskFlags|[A-Z]+_CPlusPlus(Panel)?Base)\\.h$")
+			list(APPEND api "${path}")
+		elseif(name MATCHES "\\.(h|hh|hpp|hxx|cuh)$")
+			list(APPEND headers "${path}")
+		elseif(name MATCHES "\\.(comp|vert|frag|geom|tesc|tese|glsl|hlsl|metal)$")
+			list(APPEND shaders "${path}")
+		else()
+			list(APPEND sources "${path}")
+		endif()
+	endforeach()
+	foreach(group IN ITEMS include Headers Sources Shaders Generated)
+		if(group STREQUAL "include")
+			set(files ${api})
+		else()
+			string(TOLOWER "${group}" var)
+			set(files ${${var}})
+		endif()
+		if(files)
+			source_group("${group}" FILES ${files})
+		endif()
+	endforeach()
+endfunction()
+
+# ----------------------------------------------------------------------------
 # td_skip_custom_op(<target> <reason>)
 # ----------------------------------------------------------------------------
 function(td_skip_custom_op target reason)
@@ -800,6 +846,7 @@ function(td_add_custom_op target)
 
 	# ---- Target -------------------------------------------------------------
 	add_library(${target} MODULE ${ARG_SOURCES})
+	_td_group_sources(${ARG_SOURCES})
 
 	target_compile_features(${target} PRIVATE cxx_std_${ARG_CXX_STANDARD})
 	set_target_properties(${target} PROPERTIES
